@@ -20,3 +20,29 @@ export function formatFullNumber(value: number | bigint): string {
 export function bigintToNumber(value: bigint | null | undefined): number {
   return value == null ? 0 : Number(value);
 }
+
+const relativeFormatter = new Intl.RelativeTimeFormat("en-US", {
+  numeric: "auto",
+});
+const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
+  dateStyle: "short",
+});
+
+// "never" | "just now" | "2 hours ago" | "5 days ago" | "9/1/24"
+export function formatLastSynced(date: Date | null | undefined): string {
+  if (!date) return "never";
+
+  const seconds = Math.round((Date.now() - date.getTime()) / 1000);
+  if (seconds < 60) return relativeFormatter.format(-seconds, "second");
+
+  const minutes = Math.round(seconds / 60);
+  if (minutes < 60) return relativeFormatter.format(-minutes, "minute");
+
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return relativeFormatter.format(-hours, "hour");
+
+  const days = Math.round(hours / 24);
+  if (days < 30) return relativeFormatter.format(-days, "day");
+
+  return shortDateFormatter.format(date);
+}

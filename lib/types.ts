@@ -2,6 +2,16 @@
 
 export type Platform = "youtube" | "instagram" | "tiktok";
 
+// Prisma enum values used by the form, actions, and UI.
+export const PLATFORM_VALUES = ["YOUTUBE", "INSTAGRAM", "TIKTOK"] as const;
+export type PlatformValue = (typeof PLATFORM_VALUES)[number];
+
+export const PLATFORM_LABELS: Record<PlatformValue, string> = {
+  YOUTUBE: "YouTube",
+  INSTAGRAM: "Instagram",
+  TIKTOK: "TikTok",
+};
+
 // Static identity of a tracked account.
 export interface AccountMeta {
   platform: Platform;
