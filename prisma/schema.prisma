@@ -1,0 +1,130 @@
+// ClipsTrack — multi-platform content tracker (YouTube, Instagram, TikTok)
+// Prisma schema. Tables are snake_case; fields are camelCase Prisma defaults.
+//
+// One User owns many Channels (one per platform+username). Each Channel owns
+// its Videos (YouTube videos / TikTok videos / Instagram posts) and a time
+// series of ChannelSnapshots. Each Video owns a time series of VideoSnapshots.
+//
+// Numbers are stored as full integers — never rounded to k/M — and view
+// counters use BigInt because YouTube's lifetime view totals can exceed the
+// 32-bit range (2.1B).
+
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---- Enums -----------------------------------------------------------------
+
+enum Platform {
+  YOUTUBE
+  INSTAGRAM
+  TIKTOK
+}
+
+// Follower-type label differs per platform (subscribers/followers) — we use
+// `followers` everywhere for model simplicity and label it in the UI.
+
+// ---- Users -----------------------------------------------------------------
+
+// Per-user data isolation: a visitor can only ever query their own channels.
+// No auth system yet — the client sends a per-visitor id (cookie) that we use
+// as the User id.
+model User {
+  id        String    @id @default(cuid(2))
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  channels  Channel[]
+
+  @@map("users")
+}
+
+// ---- Channels --------------------------------------------------------------
+
+model Channel {
+  id          String    @id @default(cuid(2))
+  platform    Platform
+  username    String // handle as tracked, e.g. "mrbeast" (no @)
+  externalId  String // platform account id: YT channelId / IG pk / TT uid
+  displayName String?
+  avatarUrl   String?
+  profileUrl  String
+  lastSyncedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  videos    Video[]
+  snapshots ChannelSnapshot[]
+
+  @@unique([userId, platform, username])
+  @@index([platform, username])
+  @@index([userId])
+  @@map("channels")
+}
+
+// ---- Videos / Posts ---------------------------------------------------------
+
+// One row per video/post/reel/short on a channel. `externalId` is the
+// platform-native id (YouTube videoId, Instagram media id, TikTok video id)
+// and is required so upserts stay idempotent across hourly sync runs.
+model Video {
+  id           String   @id @default(cuid(2))
+  externalId   String // platform-native video/post id
+  title        String?
+  url          String
+  thumbnailUrl String?
+  publishedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  channelId String
+  channel   Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  snapshots VideoSnapshot[]
+
+  @@unique([channelId, externalId])
+  @@index([channelId, publishedAt])
+  @@map("videos")
+}
+
+// ---- Snapshots --------------------------------------------------------------
+
+// Channel-level stats, captured every hourly sync. One row per sync.
+// followers = subscribers on YouTube. totalPosts = video/post count.
+model ChannelSnapshot {
+  id          String   @id @default(cuid(2))
+  followers   Int
+  following   Int?
+  totalPosts  Int
+  totalViews  BigInt? // lifetime channel views (YouTube); can exceed 32-bit
+  recordedAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  channelId String
+  channel   Channel @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@index([channelId, recordedAt])
+  @@map("channel_snapshots")
+}
+
+// Per-video stats, captured every hourly sync. One row per video per sync.
+model VideoSnapshot {
+  id         String   @id @default(cuid(2))
+  views      BigInt // YouTube/TikTok views, Instagram play/impressions
+  likes      Int
+  comments   Int
+  favorites  Int? // TikTok "favorites"; null elsewhere
+  recordedAt DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  videoId String
+  video   Video @relation(fields: [videoId], references: [id], onDelete: Cascade)
+
+  @@index([videoId, recordedAt])
+  @@map("video_snapshots")
+}
