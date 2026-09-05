@@ -1,17 +1,14 @@
-import { PrismaNeonHttp } from "@prisma/adapter-neon";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../app/generated/prisma/client";
 
-// Two supported database styles, chosen by the DATABASE_URL scheme:
+// DATABASE_URL scheme determines which driver adapter to use:
 //
-//   prisma+postgres://…      Local Prisma Postgres (`prisma dev`). The
-//                            api_key payload embeds the underlying postgres://
-//                            TCP URL, which we connect to with the pg driver
-//                            adapter.
-//   postgresql://… (Neon)    Remote Neon Postgres, wired through the fetch-based
-//                            HTTP driver so the same client runs on the VPS cron
-//                            too. HTTP mode has no interactive transactions —
-//                            fine here.
+//   prisma+postgres://…   Local Prisma Postgres (`prisma dev`).
+//                         The api_key embeds the underlying postgres:// TCP URL.
+//
+//   postgresql://…        Neon Postgres (or any standard Postgres).
+//                         Uses the pg driver over TCP — full transaction support,
+//                         works from the VPS cron job too.
 //
 // Usage elsewhere: `import { prisma } from "@/lib/db"`.
 
@@ -19,8 +16,8 @@ const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient;
 };
 
-function decodePrismaPostgresUrl(connectionString: string): string {
-  const parsed = new URL(connectionString);
+function decodePrismaPostgresUrl(url: string): string {
+  const parsed = new URL(url);
   const key = parsed.searchParams.get("api_key");
   if (!key) {
     throw new Error("prisma+postgres:// URL is missing api_key");
@@ -40,8 +37,7 @@ function createPrismaClient(): PrismaClient {
   }
 
   if (connectionString.startsWith("prisma+postgres://")) {
-    // Local Prisma Postgres exposes one connection at a time — keep the pool
-    // to a single slot to avoid queuing stalls in the web runtime.
+    // Local Prisma Postgres: one connection at a time — keep pool at 1.
     const adapter = new PrismaPg({
       connectionString: decodePrismaPostgresUrl(connectionString),
       max: 1,
@@ -49,7 +45,8 @@ function createPrismaClient(): PrismaClient {
     return new PrismaClient({ adapter });
   }
 
-  const adapter = new PrismaNeonHttp(connectionString, {});
+  // Standard postgres:// (Neon pooler, direct Postgres, etc.).
+  const adapter = new PrismaPg({ connectionString });
   return new PrismaClient({ adapter });
 }
 
