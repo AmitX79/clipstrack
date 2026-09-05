@@ -47,52 +47,53 @@ function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div className="min-w-0">
       <dt className="mono-eyebrow text-mute">{label}</dt>
-      <dd className="mt-0.5 truncate font-medium text-ink tabular-nums">
+      <dd className="mt-1 truncate text-xl font-semibold tracking-[-0.4px] text-ink tabular-nums">
         {value}
       </dd>
     </div>
   );
 }
 
-function RecentVideos({ channel }: { channel: LoadedChannel }) {
-  if (channel.videos.length === 0) return null;
-
+function VideoRow({
+  title,
+  views,
+  likes,
+  comments,
+}: {
+  title: string | null;
+  views: bigint;
+  likes: number;
+  comments: number;
+}) {
   return (
-    <ul className="mt-4 divide-y divide-hairline border-t border-hairline">
-      {channel.videos.map((video) => {
-        const snapshot = video.snapshots[0];
-        return (
-          <li
-            key={video.id}
-            className="flex items-center gap-3 py-2.5 text-sm"
-          >
-            <span className="min-w-0 flex-1 truncate text-body" title={video.title ?? undefined}>
-              {video.title ?? "Untitled"}
-            </span>
-            {snapshot && (
-              <span className="shrink-0 font-mono text-xs tabular-nums text-mute">
-                {formatFullNumber(snapshot.views)} views ·{" "}
-                {formatFullNumber(snapshot.likes)} ·{" "}
-                {formatFullNumber(snapshot.comments)}
-              </span>
-            )}
-          </li>
-        );
-      })}
-    </ul>
+    <li className="flex items-center gap-3 py-2.5 text-sm">
+      <span
+        className="min-w-0 flex-1 truncate text-body"
+        title={title ?? undefined}
+      >
+        {title ?? "Untitled"}
+      </span>
+      <span className="shrink-0 font-mono text-xs tabular-nums text-mute">
+        {formatFullNumber(views)} views · {formatFullNumber(likes)} ·{" "}
+        {formatFullNumber(comments)}
+      </span>
+    </li>
   );
 }
 
 function ChannelCard({ channel }: { channel: LoadedChannel }) {
   const snapshot = channel.snapshots[0];
   const synced = channel.lastSyncedAt ? formatLastSynced(channel.lastSyncedAt) : null;
+  const fresh =
+    channel.lastSyncedAt &&
+    Date.now() - channel.lastSyncedAt.getTime() < 36 * 60 * 60 * 1000;
 
   return (
-    <article className="rounded-[12px] border border-hairline bg-elevated p-6">
+    <article className="rounded-md border border-hairline bg-elevated p-6 shadow-[0px_1px_1px_rgba(0,0,0,0.04)]">
       <div className="flex items-start gap-3">
         <Avatar name={channel.displayName ?? channel.username} />
         <div className="min-w-0 flex-1">
-          <h3 className="truncate text-base font-semibold text-ink">
+          <h3 className="display-md truncate text-ink">
             {channel.displayName ?? channel.username}
           </h3>
           <p className="truncate text-sm text-mute">@{channel.username}</p>
@@ -103,7 +104,7 @@ function ChannelCard({ channel }: { channel: LoadedChannel }) {
       </div>
 
       {snapshot ? (
-        <dl className="mt-5 grid grid-cols-3 gap-4">
+        <dl className="mt-6 grid grid-cols-3 gap-4">
           <Stat label="Followers" value={formatFullNumber(snapshot.followers)} />
           <Stat label="Posts" value={formatFullNumber(snapshot.totalPosts)} />
           <Stat
@@ -116,17 +117,52 @@ function ChannelCard({ channel }: { channel: LoadedChannel }) {
           />
         </dl>
       ) : (
-        <p className="mt-5 text-sm text-mute">
+        <p className="mt-6 text-sm text-mute">
           No stats collected yet — waiting for the first sync.
         </p>
       )}
 
-      <RecentVideos channel={channel} />
+      {channel.videos.length > 0 && (
+        <ul className="mt-4 divide-y divide-hairline border-t border-hairline">
+          {channel.videos.map((video) => {
+            const s = video.snapshots[0];
+            if (!s) return null;
+            return (
+              <VideoRow
+                key={video.id}
+                title={video.title}
+                views={s.views}
+                likes={s.likes}
+                comments={s.comments}
+              />
+            );
+          })}
+        </ul>
+      )}
 
-      <p className="mt-4 text-xs text-mute">
+      <p className="mt-5 flex items-center gap-2 text-xs text-mute">
+        {fresh && <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-link" />}
         {synced ? `Synced ${synced}` : "Not synced yet"}
       </p>
     </article>
+  );
+}
+
+function FeatureCard({
+  index,
+  title,
+  children,
+}: {
+  index: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="rounded-md border border-hairline bg-elevated p-6">
+      <p className="mono-eyebrow text-faint">{index}</p>
+      <h3 className="display-md mt-3 text-ink">{title}</h3>
+      <p className="mt-2 text-sm leading-relaxed text-body">{children}</p>
+    </div>
   );
 }
 
@@ -138,10 +174,10 @@ function GroupSection({
   channels: LoadedChannel[];
 }) {
   return (
-    <section aria-labelledby={`group-${platform}`}>
+    <section aria-labelledby={`group-${platform}`} className="mt-6">
       <h2
         id={`group-${platform}`}
-        className="flex items-baseline gap-2 scroll-mt-24 border-t border-hairline pt-8"
+        className="flex items-baseline gap-2 scroll-mt-24"
       >
         <span className="mono-eyebrow text-mute">{PLATFORM_LABELS[platform]}</span>
         <span className="text-xs tabular-nums text-faint">
@@ -176,79 +212,207 @@ export default async function Home() {
     channels: channels.filter((c) => c.platform === platform),
   })).filter((group) => group.channels.length > 0);
 
+  const navLinks = [
+    { href: "#how", label: "How it works" },
+    { href: "#accounts", label: "Tracked accounts" },
+  ];
+
   return (
     <div className="min-h-screen bg-canvas">
       <header className="border-b border-hairline bg-canvas">
         <nav
-          className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3"
+          className="mx-auto flex h-12 max-w-6xl items-center gap-4 px-6"
           aria-label="Primary"
         >
-          <span className="text-base font-semibold tracking-tight text-ink">
+          <a href="#top" className="text-base font-semibold tracking-[-0.4px] text-ink">
             ClipsTrack
-          </span>
-          <span className="mono-eyebrow text-mute">
-            Multi-platform tracker
-          </span>
+          </a>
+          <div className="ml-auto hidden items-center gap-1 sm:flex">
+            {navLinks.map(({ href, label }) => (
+              <a
+                key={href}
+                href={href}
+                className="rounded-full px-3 py-1.5 text-sm text-body hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+              >
+                {label}
+              </a>
+            ))}
+          </div>
+          <a
+            href="#add"
+            className="rounded-[6px] bg-ink px-3.5 py-2 text-sm font-medium text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+          >
+            Add channel
+          </a>
         </nav>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 pb-16">
-        <section className="py-10 md:py-14">
-          <p className="mono-eyebrow text-mute">
-            YouTube · Instagram · TikTok
-          </p>
-          <h1 className="display-tight mt-3 max-w-xl text-3xl font-semibold leading-tight text-ink md:text-4xl">
-            Every view, tracked.
-          </h1>
-          <p className="mt-3 max-w-lg text-base leading-relaxed text-body">
-            Add a handle and ClipsTrack snapshots its followers, views, likes
-            and comments every hour — displayed in full, never abbreviated.
-          </p>
-        </section>
-
-        <section aria-label="Add a channel">
-          <div className="rounded-[12px] border border-hairline bg-elevated p-6">
-            <AddChannelForm />
-          </div>
-        </section>
-
-        {dbError && (
-          <section
-            role="status"
-            className="mt-6 rounded-[12px] border border-warning bg-warning-soft p-4 text-sm text-warning-deep"
-          >
-            Can’t reach the database — check that{" "}
-            <code className="font-mono">DATABASE_URL</code> points to a running
-            Postgres, then reload.
-          </section>
-        )}
-
-        {!dbError && groups.length === 0 && (
-          <section className="mt-6 rounded-[12px] border border-hairline bg-elevated px-6 py-12 text-center">
-            <p className="mono-eyebrow text-mute">No channels yet</p>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight text-ink">
-              Track your first account.
-            </h2>
-            <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-body">
-              Pick a platform and add a username above. Stats start appearing
-              after the first sync.
+      <main id="top" className="mx-auto max-w-6xl px-6 pb-16">
+        {/* Hero */}
+        <section
+          aria-label="Intro"
+          className="relative -mx-6 mb-10 overflow-hidden px-6 py-16 md:py-24"
+        >
+          <div aria-hidden="true" className="hero-mesh pointer-events-none absolute inset-0" />
+          <div className="relative">
+            <p className="mono-eyebrow text-mute">Multi-platform tracker</p>
+            <h1 className="display-2xl mt-4 max-w-2xl text-ink">
+              Every view, tracked.
+            </h1>
+            <p className="mt-4 max-w-lg text-base leading-relaxed text-body">
+              Add a YouTube, Instagram or TikTok handle. ClipsTrack snapshots
+              its followers, posts and total views every hour — shown in
+              full, never abbreviated.
             </p>
-          </section>
-        )}
-
-        {groups.map((group) => (
-          <div key={group.platform} className="mt-6">
-            <GroupSection platform={group.platform} channels={group.channels} />
+            <div className="mt-8 flex flex-wrap items-center gap-3">
+              <a
+                href="#add"
+                className="h-11 rounded-full bg-ink px-7 text-base font-medium text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+              >
+                Add a channel
+              </a>
+              <a
+                href="#how"
+                className="h-11 rounded-full border border-hairline bg-elevated px-7 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+              >
+                How it works
+              </a>
+            </div>
+            <p className="mono-eyebrow mt-10 text-mute">
+              YouTube&nbsp;&nbsp;·&nbsp;&nbsp;Instagram&nbsp;&nbsp;·&nbsp;&nbsp;TikTok
+            </p>
           </div>
-        ))}
+        </section>
+
+        {/* How it works */}
+        <section id="how" aria-label="How it works" className="scroll-mt-24">
+          <p className="mono-eyebrow text-mute">Why ClipsTrack</p>
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            <FeatureCard index="01" title="Hourly snapshots">
+              A background job captures stats on the hour, so you can watch a
+              channel climb — day by day, full number by full number.
+            </FeatureCard>
+            <FeatureCard index="02" title="Full numbers">
+              No 1.2M or 400K guesses. Followers, views, likes and comments are
+              stored and shown at their exact value.
+            </FeatureCard>
+            <FeatureCard index="03" title="Multi-platform">
+              YouTube, Instagram and TikTok in one place, grouped per platform
+              under a single set of cards and charts-ready time series.
+            </FeatureCard>
+          </div>
+        </section>
+
+        {/* Add channel */}
+        <section
+          id="add"
+          aria-label="Track an account"
+          className="scroll-mt-24 pt-16"
+        >
+          <div className="grid items-start gap-8 md:grid-cols-2">
+            <div>
+              <p className="mono-eyebrow text-mute">Track an account</p>
+              <h2 className="display-lg mt-3 text-ink">
+                Add a handle to get started.
+              </h2>
+              <p className="mt-3 text-sm leading-relaxed text-body">
+                Pick the platform, enter a username, and the first sync starts
+                immediately. New numbers are collected hourly after that.
+              </p>
+              <ul className="mt-6 space-y-3 text-sm leading-relaxed text-body">
+                <li className="flex gap-3">
+                  <span aria-hidden="true" className="mt-0.5 text-link">→</span>
+                  Everyone only ever sees their own tracked accounts.
+                </li>
+                <li className="flex gap-3">
+                  <span aria-hidden="true" className="mt-0.5 text-link">→</span>
+                  Re-adding a handle updates it instead of duplicating.
+                </li>
+                <li className="flex gap-3">
+                  <span aria-hidden="true" className="mt-0.5 text-link">→</span>
+                  Not synced yet? It stays queued for the next hourly run.
+                </li>
+              </ul>
+            </div>
+            <div className="rounded-md border border-hairline bg-elevated p-6 shadow-[0px_1px_1px_rgba(0,0,0,0.04)]">
+              <AddChannelForm />
+            </div>
+          </div>
+        </section>
+
+        {/* Tracked accounts */}
+        <section
+          id="accounts"
+          aria-label="Tracked accounts"
+          className="scroll-mt-24 pt-16"
+        >
+          <p className="mono-eyebrow text-mute">
+            Tracked accounts
+            {channels.length > 0 && (
+              <span className="text-faint"> · {channels.length}</span>
+            )}
+          </p>
+
+          {dbError && (
+            <div
+              role="status"
+              className="mt-4 rounded-md border border-warning bg-warning-soft p-4 text-sm text-warning-deep"
+            >
+              Can’t reach the database — check that{" "}
+              <code className="font-mono">DATABASE_URL</code> points to a
+              running Postgres, then reload.
+            </div>
+          )}
+
+          {!dbError && groups.length === 0 && (
+            <div className="mt-4 rounded-md border border-hairline bg-elevated px-6 py-14 text-center">
+              <p className="mono-eyebrow text-mute">No accounts yet</p>
+              <h3 className="display-md mt-3 text-ink">
+                Your tracked accounts will appear here.
+              </h3>
+              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-body">
+                Add the first handle{" "}
+                <a href="#add" className="text-link hover:text-link-deep">
+                  above
+                </a>{" "}
+                — stats start appearing after the first sync.
+              </p>
+            </div>
+          )}
+
+          {groups.map((group) => (
+            <GroupSection
+              key={group.platform}
+              platform={group.platform}
+              channels={group.channels}
+            />
+          ))}
+        </section>
+
+        {/* CTA band */}
+        <section aria-label="Start tracking" className="pt-16">
+          <div className="border-t border-hairline pt-14 text-center">
+            <p className="mono-eyebrow text-mute">Ready when you are</p>
+            <h2 className="display-lg mt-3 text-ink">Start tracking.</h2>
+            <a
+              href="#add"
+              className="mt-6 inline-flex h-11 items-center rounded-full bg-ink px-7 text-base font-medium text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+            >
+              Add a channel
+            </a>
+          </div>
+        </section>
       </main>
 
       <footer className="border-t border-hairline">
-        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-6 py-6">
-          <span className="text-xs text-mute">
-            ClipsTrack — numbers always shown in full.
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 px-6 py-16">
+          <span className="text-sm text-body">
+            <span className="font-semibold text-ink">ClipsTrack</span> — numbers
+            always shown in full.
           </span>
-          <span className="mono-eyebrow text-faint">Self-hosted</span>
+          <span className="mono-eyebrow text-faint">
+            Self-hosted · YouTube · Instagram · TikTok
+          </span>
         </div>
       </footer>
     </div>

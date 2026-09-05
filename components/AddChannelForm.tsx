@@ -58,7 +58,7 @@ export function AddChannelForm() {
                 }}
                 className={
                   "rounded-[64px] border px-4 h-9 text-sm font-medium transition-colors " +
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 " +
+                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated " +
                   (active
                     ? "bg-ink text-white border-ink"
                     : "bg-elevated text-body border-hairline hover:border-ink hover:text-ink")
@@ -96,7 +96,7 @@ export function AddChannelForm() {
               disabled={isPending}
               required
               placeholder="mrbeast…"
-              className="h-10 w-full rounded-[6px] border border-hairline bg-elevated pl-7 pr-3 text-sm text-ink placeholder:text-faint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:border-link disabled:opacity-60"
+              className="h-10 w-full rounded-[6px] border border-hairline bg-elevated pl-7 pr-3 text-sm text-ink placeholder:text-faint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated focus-visible:border-link disabled:opacity-60"
             />
           </div>
           <button
@@ -104,7 +104,7 @@ export function AddChannelForm() {
             disabled={isPending}
             className={
               "h-10 rounded-[6px] bg-ink px-4 text-sm font-medium text-white " +
-              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 " +
+              "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated " +
               "hover:bg-black disabled:opacity-60"
             }
           >
