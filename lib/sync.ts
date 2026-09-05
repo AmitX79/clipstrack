@@ -17,16 +17,26 @@ const FETCHERS = {
   TIKTOK: fetchTikTokChannel,
 } as const;
 
-export async function fetchChannel(channel: Channel): Promise<ChannelFetchResult> {
+export async function fetchChannel(
+  channel: Channel,
+  limit?: number,
+): Promise<ChannelFetchResult> {
   const fetcher = FETCHERS[channel.platform];
-  return fetcher(channel.username);
+  return fetcher(channel.username, limit);
 }
 
 export async function syncChannel(channel: Channel): Promise<void> {
   let result: ChannelFetchResult;
 
+  // First sync on a channel = the one-time "Old" backfill window; every sync
+  // after that only looks at the newest uploads ("Latest").
+  const doingBackfill = !channel.backfilled;
+  const trackVideos = doingBackfill
+    ? channel.oldVideoCount
+    : channel.latestVideoCount;
+
   try {
-    result = await fetchChannel(channel);
+    result = await fetchChannel(channel, trackVideos > 0 ? trackVideos : 0);
   } catch (err) {
     // Bot-wall, quota, or network error — report and keep the rest alive.
     console.error(`[sync] ${channel.platform} @${channel.username}:`, err);
@@ -71,6 +81,7 @@ export async function syncChannel(channel: Channel): Promise<void> {
         url: item.meta.url,
         thumbnailUrl: item.meta.thumbnailUrl,
         publishedAt: item.meta.publishedAt,
+        isBackfill: doingBackfill,
       },
       update: {
         title: item.meta.title,
@@ -89,6 +100,15 @@ export async function syncChannel(channel: Channel): Promise<void> {
         favorites: item.stats.favorites,
         recordedAt: new Date(),
       },
+    });
+  }
+
+  // Close the one-time backfill window once it has run (even if the platform
+  // returned no media), so the next syncs track only the newest uploads.
+  if (doingBackfill) {
+    await prisma.channel.update({
+      where: { id: channel.id },
+      data: { backfilled: true },
     });
   }
 

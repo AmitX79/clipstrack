@@ -33,7 +33,7 @@ import type {
 
 export const PLATFORM = "tiktok" as const;
 
-export const fetchTikTokChannel: PlatformFetcher = async (username) => {
+export const fetchTikTokChannel: PlatformFetcher = async (username, limit) => {
   const cleaned = username.replace(/^@/, "");
   const profileUrl = `https://www.tiktok.com/@${cleaned}/`;
   const html = await fetchHtml(profileUrl);
@@ -57,7 +57,13 @@ export const fetchTikTokChannel: PlatformFetcher = async (username) => {
     totalViews: payload?.heartCount, // lifetime hearts ≈ total engagement
   };
 
-  return { account, stats, media: parsePosts(payload?.posts) };
+  // The hydration payload lists posts newest-first; honor the requested cap.
+  const media = parsePosts(payload?.posts);
+  return {
+    account,
+    stats,
+    media: limit != null ? media.slice(0, Math.max(0, limit)) : media,
+  };
 };
 
 interface TtUserInfo {

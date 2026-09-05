@@ -54,6 +54,14 @@ model Channel {
   avatarUrl   String?
   profileUrl  String
   lastSyncedAt DateTime?
+
+  // Video-window config (per channel): oldVideoCount = how many of the most
+  // recent *existing* videos to backfill once; latestVideoCount = how many of
+  // the newest uploads to keep tracking on every sync. `backfilled` flips true
+  // after the one-time old-video backfill has run.
+  oldVideoCount   Int     @default(8)
+  latestVideoCount Int    @default(8)
+  backfilled      Boolean @default(false)
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -82,6 +90,9 @@ model Video {
   publishedAt  DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
+  // true = captured during the one-time old-video backfill (renders under the
+  // card's "Old" section); false = tracked going forward (card "Latest").
+  isBackfill   Boolean  @default(false)
 
   channelId String
   channel   Channel        @relation(fields: [channelId], references: [id], onDelete: Cascade)

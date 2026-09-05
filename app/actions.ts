@@ -23,6 +23,13 @@ function profileUrlFor(platform: PlatformValue, username: string): string {
   }
 }
 
+// Parse a video-count input. NaN/blank -> fallback; clamped to [0, 200].
+function parseVideoCount(raw: FormDataEntryValue | null, fallback: number): number {
+  const n = Number(String(raw ?? "").trim());
+  if (!Number.isFinite(n)) return fallback;
+  return Math.min(Math.max(Math.round(n), 0), 200);
+}
+
 export async function addChannel(
   formData: FormData,
 ): Promise<AddChannelResult> {
@@ -40,8 +47,14 @@ export async function addChannel(
   }
 
   const userId = ensureVisitorId();
+  const oldVideoCount = parseVideoCount(formData.get("oldVideoCount"), 8);
+  // Latest window defaults to 0 only via an explicit 0 — anytime the channel
+  // is re-added with the counts fields absent, keep the ongoing track on.
+  const latestVideoCount = parseVideoCount(formData.get("latestVideoCount"), 8);
 
   try {
+    await prisma.user.createMany({ data: [{ id: userId }], skipDuplicates: true });
+
     const channel = await prisma.channel.upsert({
       where: {
         userId_platform_username: { userId, platform, username },
@@ -53,9 +66,13 @@ export async function addChannel(
         displayName: username,
         externalId: username,
         profileUrl: profileUrlFor(platform, username),
+        oldVideoCount,
+        latestVideoCount,
       },
       update: {
         profileUrl: profileUrlFor(platform, username),
+        oldVideoCount,
+        latestVideoCount,
       },
     });
 
@@ -81,5 +98,62 @@ export async function addChannel(
       ok: false,
       error: "Could not save the channel — is the database reachable?",
     };
+  }
+}
+
+export type EditChannelResult =
+  | { ok: true; channel: string }
+  | { ok: false; error: string };
+
+// Re-run a single channel's sync on demand (Refresh button on each card).
+export async function refreshChannel(id: string): Promise<EditChannelResult> {
+  try {
+    const channel = await prisma.channel.findUnique({ where: { id } });
+    if (!channel) return { ok: false, error: "Channel not found." };
+    await syncChannel(channel);
+    revalidatePath("/tracked");
+    revalidatePath("/accounts");
+    return { ok: true, channel: `@${channel.username}` };
+  } catch (err) {
+    console.error("[refreshChannel]", err);
+    return { ok: false, error: "Refresh failed — is the database reachable?" };
+  }
+}
+
+// Update a channel's old/latest video-count config (Edit button on each card).
+export async function editChannel(
+  id: string,
+  counts: { oldVideoCount: number; latestVideoCount: number },
+): Promise<EditChannelResult> {
+  const oldVideoCount = Math.min(Math.max(Math.round(counts.oldVideoCount || 0), 0), 200);
+  const latestVideoCount = Math.min(
+    Math.max(Math.round(counts.latestVideoCount || 0), 0),
+    200,
+  );
+
+  try {
+    const channel = await prisma.channel.update({
+      where: { id },
+      data: { oldVideoCount, latestVideoCount },
+    });
+    revalidatePath("/tracked");
+    revalidatePath("/accounts");
+    return { ok: true, channel: `@${channel.username}` };
+  } catch (err) {
+    console.error("[editChannel]", err);
+    return { ok: false, error: "Could not update the channel." };
+  }
+}
+
+// Remove a tracked channel and its entire history (Remove button on each card).
+export async function removeChannel(id: string): Promise<EditChannelResult> {
+  try {
+    const channel = await prisma.channel.delete({ where: { id } });
+    revalidatePath("/tracked");
+    revalidatePath("/accounts");
+    return { ok: true, channel: `@${channel.username}` };
+  } catch (err) {
+    console.error("[removeChannel]", err);
+    return { ok: false, error: "Could not remove the channel — is it still there?" };
   }
 }

@@ -59,8 +59,12 @@ export interface ChannelFetchResult {
   media: MediaSnapshot[];
 }
 
+// `limit` caps how many of the newest media rows a fetcher returns, so the
+// sync job can honor a channel's old/latest video-count configuration. A
+// fetcher may return fewer rows than the platform exposes.
 export type PlatformFetcher = (
   username: string,
+  limit?: number,
 ) => Promise<ChannelFetchResult>;
 
 // Strip @/path/query noise so users get matching regardless of how they type

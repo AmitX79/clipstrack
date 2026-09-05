@@ -20,6 +20,7 @@ export const PLATFORM = "youtube" as const;
 
 const API_BASE = "https://www.googleapis.com/youtube/v3";
 const MAX_RESULTS = 30; // trim to save quota; stats only need a rolling window
+const MAX_LIMIT = 50; // playlistItems maxResults ceiling the API accepts
 
 interface YtChannelItem {
   id: string;
@@ -64,7 +65,7 @@ async function get<T>(path: string): Promise<T> {
   return json as T;
 }
 
-export const fetchYouTubeChannel: PlatformFetcher = async (username) => {
+export const fetchYouTubeChannel: PlatformFetcher = async (username, limit) => {
   const handle = `@${username.replace(/^@/, "")}`;
 
   const channelResult = await get<{ items?: YtChannelItem[] }>(
@@ -94,10 +95,17 @@ export const fetchYouTubeChannel: PlatformFetcher = async (username) => {
   const uploadsPlaylistId = item.contentDetails?.relatedPlaylists?.uploads;
   const media: MediaSnapshot[] = [];
 
-  if (uploadsPlaylistId) {
+  const wanted =
+    limit == null
+      ? MAX_RESULTS
+      : limit <= 0
+        ? 0
+        : Math.min(limit, MAX_LIMIT);
+
+  if (uploadsPlaylistId && wanted > 0) {
     const playlistResult = await get<{ items?: YtPlaylistItem[] }>(
       `/playlistItems?part=contentDetails&playlistId=${uploadsPlaylistId}` +
-        `&maxResults=${MAX_RESULTS}`,
+        `&maxResults=${wanted}`,
     );
     const videoIds = (playlistResult.items ?? [])
       .map((i) => i.contentDetails?.videoId)

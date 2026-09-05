@@ -46,3 +46,33 @@ export function formatLastSynced(date: Date | null | undefined): string {
 
   return shortDateFormatter.format(date);
 }
+
+// Compressed relative age for video rows: "12s ago" | "3m ago" | "2h ago" | "4d ago".
+export function formatRelativeCompact(date: Date, now: number = Date.now()): string {
+  const ms = Math.max(0, now - date.getTime());
+  if (ms < 60_000) return `${Math.floor(ms / 1000)}s ago`;
+  if (ms < 3_600_000) return `${Math.floor(ms / 60_000)}m ago`;
+  if (ms < 86_400_000) return `${Math.floor(ms / 3_600_000)}h ago`;
+  return `${Math.floor(ms / 86_400_000)}d ago`;
+}
+
+// Views/hour between two adjacent snapshots: "▲ 123/hr", or null when there
+// is no earlier snapshot or the rate is not positive.
+export function formatGrowthPerHour(
+  previous: { views: number; recordedAt: Date } | null,
+  current: { views: number; recordedAt: Date },
+): string | null {
+  if (!previous) return null;
+  const hours =
+    (current.recordedAt.getTime() - previous.recordedAt.getTime()) / 3_600_000;
+  if (!(hours > 0)) return null;
+  const rate = Math.round((current.views - previous.views) / hours);
+  return rate > 0 ? `▲ ${formatFullNumber(rate)}/hr` : null;
+}
+
+// Like-ratio for a video row: likes / views as a percent ("46.2%"), or null
+// when views are unknown.
+export function formatLikeRatio(likes: number, views: number): string | null {
+  if (!views || views <= 0) return null;
+  return `${((likes / views) * 100).toFixed(1)}%`;
+}

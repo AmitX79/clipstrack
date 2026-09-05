@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { addChannel } from "@/app/actions";
@@ -23,14 +24,18 @@ export function AddChannelForm() {
     setError(null);
     setMessage(null);
 
-    const formData = new FormData(event.currentTarget);
+    // Capture the element before the first await — React nulls
+    // `event.currentTarget` once the synchronous handler finishes, and the
+    // transition callback only runs after it (and after the action) resolves.
+    const form = event.currentTarget;
+    const formData = new FormData(form);
     startTransition(async () => {
       const result = await addChannel(formData);
       if (!result.ok) {
         setError(result.error);
         return;
       }
-      event.currentTarget.reset();
+      form.reset();
       setMessage(
         result.synced
           ? `${result.channel} added and synced.`
@@ -42,6 +47,7 @@ export function AddChannelForm() {
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-4">
+      <input type="hidden" name="platform" value={platform} />
       <fieldset className="flex flex-col gap-2">
         <legend className="mono-eyebrow mb-1 text-mute">Platform</legend>
         <div className="flex flex-wrap items-center gap-2">
@@ -140,6 +146,47 @@ export function AddChannelForm() {
         </div>
       </div>
 
+      <div className="grid gap-4 sm:grid-cols-2">
+        <label htmlFor="oldVideoCount" className="flex flex-col gap-1.5">
+          <span className="mono-eyebrow text-mute">Old videos count</span>
+          <input
+            id="oldVideoCount"
+            name="oldVideoCount"
+            type="number"
+            min={0}
+            max={200}
+            step={1}
+            inputMode="numeric"
+            defaultValue={8}
+            disabled={isPending}
+            aria-describedby="oldVideoCount-hint"
+            className="h-10 w-full rounded-[6px] border border-hairline bg-elevated px-3 text-sm text-ink placeholder:text-faint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated focus-visible:border-link disabled:opacity-60"
+          />
+          <span id="oldVideoCount-hint" className="text-xs leading-relaxed text-faint">
+            Most recent existing videos, backfilled once.
+          </span>
+        </label>
+        <label htmlFor="latestVideoCount" className="flex flex-col gap-1.5">
+          <span className="mono-eyebrow text-mute">Latest videos count</span>
+          <input
+            id="latestVideoCount"
+            name="latestVideoCount"
+            type="number"
+            min={0}
+            max={200}
+            step={1}
+            inputMode="numeric"
+            defaultValue={8}
+            disabled={isPending}
+            aria-describedby="latestVideoCount-hint"
+            className="h-10 w-full rounded-[6px] border border-hairline bg-elevated px-3 text-sm text-ink placeholder:text-faint focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated focus-visible:border-link disabled:opacity-60"
+          />
+          <span id="latestVideoCount-hint" className="text-xs leading-relaxed text-faint">
+            Newest uploads to keep tracking going forward.
+          </span>
+        </label>
+      </div>
+
       <div aria-live="polite">
         {error && (
           <p className="text-sm text-error" role="status">
@@ -148,7 +195,10 @@ export function AddChannelForm() {
         )}
         {message && (
           <p className="text-sm text-link" role="status">
-            {message}
+            {message}{" "}
+            <Link href="/tracked" className="underline hover:text-link-deep">
+              View tracked accounts →
+            </Link>
           </p>
         )}
       </div>
