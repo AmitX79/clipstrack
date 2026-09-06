@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { AddChannelForm } from "@/components/AddChannelForm";
 import { Footer } from "@/components/Footer";
 import { NavBar } from "@/components/NavBar";
 
@@ -39,12 +38,12 @@ export default function Home() {
             </h1>
             <p className="mt-4 max-w-lg text-base leading-relaxed text-body">
               Add a YouTube, Instagram or TikTok handle. ClipsTrack snapshots
-              its followers, posts and total views every hour — shown in
-              full, never abbreviated.
+              each video&apos;s views, likes and comments every hour — shown
+              in full, never abbreviated.
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-3">
               <a
-                href="/#add"
+                href="/tracked#add"
                 className="h-11 rounded-full bg-ink px-7 text-base font-medium text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 Add a channel
@@ -53,7 +52,7 @@ export default function Home() {
                 href="/tracked"
                 className="h-11 rounded-full border border-hairline bg-elevated px-7 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
-                View tracked accounts
+                View my accounts
               </Link>
             </div>
             <p className="mono-eyebrow mt-10 text-mute">
@@ -71,50 +70,13 @@ export default function Home() {
               channel climb — day by day, full number by full number.
             </FeatureCard>
             <FeatureCard index="02" title="Full numbers">
-              No 1.2M or 400K guesses. Followers, views, likes and comments are
-              stored and shown at their exact value.
+              No 1.2M or 400K guesses. Views, likes and comments are stored
+              and shown at their exact value.
             </FeatureCard>
             <FeatureCard index="03" title="Multi-platform">
               YouTube, Instagram and TikTok in one place, grouped per platform
               under a single set of cards and charts-ready time series.
             </FeatureCard>
-          </div>
-        </section>
-
-        {/* Add channel */}
-        <section
-          id="add"
-          aria-label="Track an account"
-          className="scroll-mt-24 pt-16"
-        >
-          <div className="grid items-start gap-8 md:grid-cols-2">
-            <div>
-              <p className="mono-eyebrow text-mute">Track an account</p>
-              <h2 className="display-lg mt-3 text-ink">
-                Add a handle to get started.
-              </h2>
-              <p className="mt-3 text-sm leading-relaxed text-body">
-                Pick the platform, enter a username, and the first sync starts
-                immediately. New numbers are collected hourly after that.
-              </p>
-              <ul className="mt-6 space-y-3 text-sm leading-relaxed text-body">
-                <li className="flex gap-3">
-                  <span aria-hidden="true" className="mt-0.5 text-link">→</span>
-                  Everyone only ever sees their own tracked accounts.
-                </li>
-                <li className="flex gap-3">
-                  <span aria-hidden="true" className="mt-0.5 text-link">→</span>
-                  Re-adding a handle updates it instead of duplicating.
-                </li>
-                <li className="flex gap-3">
-                  <span aria-hidden="true" className="mt-0.5 text-link">→</span>
-                  Not synced yet? It stays queued for the next hourly run.
-                </li>
-              </ul>
-            </div>
-            <div className="rounded-md border border-hairline bg-elevated p-6 shadow-[0px_1px_1px_rgba(0,0,0,0.04)]">
-              <AddChannelForm />
-            </div>
           </div>
         </section>
 
@@ -125,7 +87,7 @@ export default function Home() {
             <h2 className="display-lg mt-3 text-ink">Start tracking.</h2>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
-                href="/#add"
+                href="/tracked#add"
                 className="inline-flex h-11 items-center rounded-full bg-ink px-7 text-base font-medium text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 Add a channel
@@ -134,7 +96,7 @@ export default function Home() {
                 href="/tracked"
                 className="inline-flex h-11 items-center rounded-full border border-hairline bg-elevated px-7 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
-                View tracked accounts
+                View my accounts
               </Link>
             </div>
           </div>

@@ -2,11 +2,10 @@ import Link from "next/link";
 
 const LINKS = [
   { href: "/#how", label: "How it works", key: "how" },
-  { href: "/tracked", label: "Tracked accounts", key: "tracked" },
-  { href: "/accounts", label: "All Accounts", key: "accounts" },
+  { href: "/tracked", label: "My Accounts", key: "tracked" },
 ];
 
-export function NavBar({ active }: { active?: "tracked" | "accounts" }) {
+export function NavBar({ active }: { active?: "tracked" }) {
   return (
     <header className="border-b border-hairline bg-canvas">
       <nav
@@ -34,7 +33,7 @@ export function NavBar({ active }: { active?: "tracked" | "accounts" }) {
           ))}
         </div>
         <Link
-          href="/#add"
+          href="/tracked#add"
           className="rounded-[6px] bg-ink px-3.5 py-2 text-sm font-medium text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
         >
           Add channel

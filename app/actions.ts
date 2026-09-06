@@ -3,12 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { syncChannel } from "@/lib/sync";
-import { normalizeUsername } from "@/lib/types";
+import { normalizeUsername, PLATFORM_VALUES } from "@/lib/types";
 import type { PlatformValue } from "@/lib/types";
 import { ensureVisitorId } from "@/lib/visitor";
 
-export type AddChannelResult =
-  | { ok: true; synced: boolean; channel: string }
+export type AddChannelsResult =
+  | { ok: true; added: string[]; message: string }
   | { ok: false; error: string };
 
 function profileUrlFor(platform: PlatformValue, username: string): string {
@@ -30,74 +30,116 @@ function parseVideoCount(raw: FormDataEntryValue | null, fallback: number): numb
   return Math.min(Math.max(Math.round(n), 0), 200);
 }
 
-export async function addChannel(
-  formData: FormData,
-): Promise<AddChannelResult> {
-  const rawPlatform = String(formData.get("platform") ?? "").toUpperCase();
-  const rawUsername = String(formData.get("username") ?? "");
+const MAX_HANDLES = 25;
 
-  if (!["YOUTUBE", "INSTAGRAM", "TIKTOK"].includes(rawPlatform)) {
+// "mrbeast, @veritasium / mrbeast@tt" -> ["mrbeast", "veritasium"], deduped.
+function parseHandles(raw: string): string[] {
+  const seen = new Set<string>();
+  const handles: string[] = [];
+  for (const token of raw.split(/[\s,;]+/)) {
+    const username = normalizeUsername(token);
+    if (!username || seen.has(username)) continue;
+    seen.add(username);
+    handles.push(username);
+    if (handles.length >= MAX_HANDLES) break;
+  }
+  return handles;
+}
+
+// Add one or more comma-separated handles in a single action, all on the
+// platform picked in the form. A handle that the platform can't resolve is
+// still saved so it shows up immediately and stays queued for the hourly cron.
+export async function addChannels(
+  formData: FormData,
+): Promise<AddChannelsResult> {
+  const handles = parseHandles(String(formData.get("usernames") ?? ""));
+  if (handles.length === 0) {
+    return { ok: false, error: "Enter at least one handle, e.g. @mrbeast, @veritasium." };
+  }
+
+  const rawPlatform = String(formData.get("platform") ?? "").toUpperCase();
+  if (!PLATFORM_VALUES.includes(rawPlatform as PlatformValue)) {
     return { ok: false, error: "Pick a platform first." };
   }
   const platform = rawPlatform as PlatformValue;
 
-  const username = normalizeUsername(rawUsername);
-  if (!username) {
-    return { ok: false, error: "Enter a username, e.g. mrbeast." };
-  }
-
   const userId = ensureVisitorId();
   const oldVideoCount = parseVideoCount(formData.get("oldVideoCount"), 8);
-  // Latest window defaults to 0 only via an explicit 0 — anytime the channel
-  // is re-added with the counts fields absent, keep the ongoing track on.
+  // Latest window defaults back to the ongoing track whenever the counts are
+  // absent — re-adding a handle must not turn tracking off unless it was set
+  // to 0 explicitly.
   const latestVideoCount = parseVideoCount(formData.get("latestVideoCount"), 8);
 
   try {
     await prisma.user.createMany({ data: [{ id: userId }], skipDuplicates: true });
 
-    const channel = await prisma.channel.upsert({
-      where: {
-        userId_platform_username: { userId, platform, username },
-      },
-      create: {
-        userId,
-        platform,
-        username,
-        displayName: username,
-        externalId: username,
-        profileUrl: profileUrlFor(platform, username),
-        oldVideoCount,
-        latestVideoCount,
-      },
-      update: {
-        profileUrl: profileUrlFor(platform, username),
-        oldVideoCount,
-        latestVideoCount,
-      },
-    });
+    const added: string[] = [];
+    let syncedCount = 0;
 
-    // Attempt an immediate first sync. Failures (e.g. missing YouTube key)
-    // leave the channel queued for the hourly cron — adding must not error.
-    let synced = false;
-    try {
-      await syncChannel(channel);
-      const fresh = await prisma.channel.findUnique({
-        where: { id: channel.id },
-        select: { lastSyncedAt: true },
-      });
-      synced = Boolean(fresh?.lastSyncedAt);
-    } catch (err) {
-      console.error(`[addChannel] sync @${username}:`, err);
+    for (const username of handles) {
+      // Re-adding must update the same row, even when the platform changed.
+      const existing = await prisma.channel.findFirst({ where: { userId, username } });
+
+      let channel;
+      if (existing) {
+        channel = await prisma.channel.update({
+          where: { id: existing.id },
+          data: {
+            platform,
+            profileUrl: profileUrlFor(platform, username),
+            oldVideoCount,
+            latestVideoCount,
+          },
+        });
+      } else {
+        channel = await prisma.channel.upsert({
+          where: {
+            userId_platform_username: { userId, platform, username },
+          },
+          create: {
+            userId,
+            platform,
+            username,
+            displayName: username,
+            externalId: username,
+            profileUrl: profileUrlFor(platform, username),
+            oldVideoCount,
+            latestVideoCount,
+          },
+          update: {
+            profileUrl: profileUrlFor(platform, username),
+            oldVideoCount,
+            latestVideoCount,
+          },
+        });
+      }
+
+      added.push(username);
+
+      // Attempt an immediate first sync. Failures (e.g. missing YouTube key)
+      // leave the channel queued for the hourly cron — adding must not error.
+      try {
+        await syncChannel(channel);
+        const fresh = await prisma.channel.findUnique({
+          where: { id: channel.id },
+          select: { lastSyncedAt: true },
+        });
+        if (fresh?.lastSyncedAt) syncedCount += 1;
+      } catch (err) {
+        console.error(`[addChannels] sync @${username}:`, err);
+      }
     }
 
     revalidatePath("/");
-    return { ok: true, synced, channel: `@${username}` };
+    revalidatePath("/tracked");
+
+    const label = added.map((handle) => `@${handle}`).join(", ");
+    const suffix =
+      syncedCount === added.length ? " added and synced." : " added — syncing shortly.";
+    return { ok: true, added, message: label + suffix };
   } catch (err) {
-    console.error("[addChannel]", err);
-    return {
-      ok: false,
-      error: "Could not save the channel — is the database reachable?",
-    };
+    console.error("[addChannels]", err);
+    return { ok: false, error: "Could not save the channels — is the database reachable?" };
   }
 }
 
@@ -112,7 +154,6 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
     if (!channel) return { ok: false, error: "Channel not found." };
     await syncChannel(channel);
     revalidatePath("/tracked");
-    revalidatePath("/accounts");
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {
     console.error("[refreshChannel]", err);
@@ -137,7 +178,6 @@ export async function editChannel(
       data: { oldVideoCount, latestVideoCount },
     });
     revalidatePath("/tracked");
-    revalidatePath("/accounts");
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {
     console.error("[editChannel]", err);
@@ -150,7 +190,6 @@ export async function removeChannel(id: string): Promise<EditChannelResult> {
   try {
     const channel = await prisma.channel.delete({ where: { id } });
     revalidatePath("/tracked");
-    revalidatePath("/accounts");
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {
     console.error("[removeChannel]", err);

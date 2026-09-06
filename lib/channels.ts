@@ -9,7 +9,6 @@ export const GROUP_ORDER = PLATFORM_VALUES;
 // stats and the per-hour growth between them. BigInt/Date values are
 // serialized here so the data is safe to pass into client components.
 const CHANNEL_INCLUDE = {
-  snapshots: { orderBy: { recordedAt: "desc" as const }, take: 1 },
   videos: {
     orderBy: { publishedAt: "desc" as const },
     take: 100,
@@ -47,9 +46,6 @@ export interface LoadedChannel {
   oldVideoCount: number;
   latestVideoCount: number;
   backfilled: boolean;
-  followers: number | null;
-  totalPosts: number | null;
-  totalViews: number | null;
   videos: LoadedVideo[];
 }
 
@@ -58,7 +54,6 @@ type ChannelWithInclude = Prisma.ChannelGetPayload<{
 }>;
 
 function serializeChannel(channel: ChannelWithInclude): LoadedChannel {
-  const snapshot = channel.snapshots[0];
   return {
     id: channel.id,
     platform: channel.platform,
@@ -70,9 +65,6 @@ function serializeChannel(channel: ChannelWithInclude): LoadedChannel {
     oldVideoCount: channel.oldVideoCount,
     latestVideoCount: channel.latestVideoCount,
     backfilled: channel.backfilled,
-    followers: snapshot ? snapshot.followers : null,
-    totalPosts: snapshot ? snapshot.totalPosts : null,
-    totalViews: snapshot?.totalViews == null ? null : Number(snapshot.totalViews),
     videos: channel.videos.map((video) => {
       const latest = video.snapshots[0];
       const previous = video.snapshots[1];
@@ -110,15 +102,6 @@ export async function loadChannels(userId: string): Promise<LoadedChannel[]> {
   const channels = await prisma.channel.findMany({
     where: { userId },
     orderBy: { createdAt: "asc" },
-    include: CHANNEL_INCLUDE,
-  });
-  return channels.map(serializeChannel);
-}
-
-// Every tracked channel across all users (for the /accounts directory).
-export async function loadAllChannels(): Promise<LoadedChannel[]> {
-  const channels = await prisma.channel.findMany({
-    orderBy: { username: "asc" },
     include: CHANNEL_INCLUDE,
   });
   return channels.map(serializeChannel);

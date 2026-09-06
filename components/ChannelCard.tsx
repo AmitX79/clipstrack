@@ -10,6 +10,8 @@ import {
   formatRelativeCompact,
 } from "@/lib/format";
 import { PLATFORM_LABELS } from "@/lib/types";
+import { sortVideos } from "@/lib/sort";
+import type { SortKey } from "@/lib/sort";
 import type { LoadedChannel, LoadedVideo } from "@/lib/channels";
 import type { PlatformValue } from "@/lib/types";
 
@@ -261,13 +263,18 @@ function useNow(): number | null {
   return mounted ? Date.now() : null;
 }
 
-export function ChannelCard({ channel }: { channel: LoadedChannel }) {
+export function ChannelCard({
+  channel,
+  sortBy,
+}: {
+  channel: LoadedChannel;
+  sortBy: SortKey;
+}) {
   const [editing, setEditing] = useState(false);
   const now = useNow();
   const name = channel.displayName ?? channel.username;
   const latest = channel.videos.filter((video) => !video.isBackfill);
   const old = channel.videos.filter((video) => video.isBackfill);
-  const hasStats = channel.followers != null;
   const synced = channel.lastSyncedAt;
   const fresh =
     synced && Date.now() - new Date(synced).getTime() < 36 * 60 * 60 * 1000;
@@ -322,30 +329,11 @@ export function ChannelCard({ channel }: { channel: LoadedChannel }) {
         />
       )}
 
-      {hasStats ? (
-        <dl className="mt-6 grid grid-cols-3 gap-4">
-          <Stat label="Followers" value={formatFullNumber(channel.followers ?? 0)} />
-          <Stat label="Posts" value={formatFullNumber(channel.totalPosts ?? 0)} />
-          <Stat
-            label="Views"
-            value={
-              channel.totalViews == null
-                ? "—"
-                : formatFullNumber(channel.totalViews)
-            }
-          />
-        </dl>
-      ) : (
-        <p className="mt-6 text-sm text-mute">
-          No stats collected yet — waiting for the first sync.
-        </p>
-      )}
-
       {latest.length > 0 && (
-        <VideoSection label="Latest" count={latest.length} videos={latest} />
+        <VideoSection label="Latest" count={latest.length} videos={latest} sortBy={sortBy} />
       )}
       {old.length > 0 && (
-        <VideoSection label="Old" count={old.length} videos={old} />
+        <VideoSection label="Old" count={old.length} videos={old} sortBy={sortBy} />
       )}
 
       {channel.videos.length === 0 && (
@@ -370,26 +358,18 @@ export function ChannelCard({ channel }: { channel: LoadedChannel }) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="min-w-0">
-      <dt className="mono-eyebrow text-mute">{label}</dt>
-      <dd className="mt-1 truncate text-xl font-semibold tracking-[-0.4px] text-ink tabular-nums">
-        {value}
-      </dd>
-    </div>
-  );
-}
-
 function VideoSection({
   label,
   count,
   videos,
+  sortBy,
 }: {
   label: string;
   count: number;
   videos: LoadedVideo[];
+  sortBy: SortKey;
 }) {
+  const sorted = sortVideos(videos, sortBy);
   return (
     <section className="border-t border-hairline pt-3">
       <h4 className="mono-eyebrow flex items-baseline gap-2 text-mute">
@@ -397,7 +377,7 @@ function VideoSection({
         <span className="text-xs tabular-nums text-faint">{count}</span>
       </h4>
       <ul className="mt-1 divide-y divide-hairline">
-        {videos.map((video) => (
+        {sorted.map((video) => (
           <VideoRow key={video.id} video={video} />
         ))}
       </ul>
@@ -495,9 +475,11 @@ function VideoRow({ video }: { video: LoadedVideo }) {
 export function ChannelGroupSection({
   platform,
   channels,
+  sortBy,
 }: {
   platform: PlatformValue;
   channels: LoadedChannel[];
+  sortBy: SortKey;
 }) {
   return (
     <section aria-labelledby={`group-${platform}`} className="mt-6">
@@ -510,7 +492,7 @@ export function ChannelGroupSection({
       </h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {channels.map((channel) => (
-          <ChannelCard key={channel.id} channel={channel} />
+          <ChannelCard key={channel.id} channel={channel} sortBy={sortBy} />
         ))}
       </div>
     </section>

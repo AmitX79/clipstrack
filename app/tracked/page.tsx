@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ChannelGroupSection } from "@/components/ChannelCard";
+import { AddChannelBar } from "@/components/AddChannelBar";
 import { Footer } from "@/components/Footer";
 import { NavBar } from "@/components/NavBar";
-import { GROUP_ORDER, loadChannels } from "@/lib/channels";
+import { TrackedAccounts } from "@/components/TrackedAccounts";
+import { loadChannels } from "@/lib/channels";
 import type { LoadedChannel } from "@/lib/channels";
 import { getVisitorId } from "@/lib/visitor";
 
@@ -22,43 +23,38 @@ export default async function TrackedPage() {
     }
   }
 
-  const groups = GROUP_ORDER.map((platform) => ({
-    platform,
-    channels: channels.filter((c) => c.platform === platform),
-  })).filter((group) => group.channels.length > 0);
-
   return (
     <div className="min-h-screen bg-canvas">
       <NavBar active="tracked" />
-      <main className="mx-auto max-w-6xl px-6 pb-16">
+      <main className="mx-auto max-w-6xl px-6 pb-12">
         <section
-          aria-label="Tracked accounts"
-          className="flex flex-wrap items-start justify-between gap-6 pt-10 md:pt-16"
+          aria-label="My Accounts"
+          className="flex flex-wrap items-start justify-between gap-6 pt-8 md:pt-12"
         >
           <div>
             <p className="mono-eyebrow text-mute">
-              Tracked accounts
+              My Accounts
               {channels.length > 0 && (
                 <span className="text-faint"> · {channels.length}</span>
               )}
             </p>
             <h1 className="display-lg mt-3 text-ink">
-              Accounts you&apos;re following.
+              The handles you track.
             </h1>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-body">
-              Every tracked handle, grouped by platform. Numbers update on the
-              hour — always shown in full, never abbreviated.
+              Your tracked accounts — private to you. Video stats update on the
+              hour, always shown in full, never abbreviated.
             </p>
           </div>
           <Link
-            href="/#add"
+            href="#add"
             className="inline-flex h-10 items-center rounded-full border border-hairline bg-elevated px-5 text-sm font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
           >
             Add another
           </Link>
         </section>
 
-        <div className="pt-8">
+        <div className="pt-6">
           {dbError && (
             <div
               role="status"
@@ -70,29 +66,15 @@ export default async function TrackedPage() {
             </div>
           )}
 
-          {!dbError && groups.length === 0 && (
-            <div className="rounded-md border border-hairline bg-elevated px-6 py-14 text-center">
-              <p className="mono-eyebrow text-mute">No accounts yet</p>
-              <h2 className="display-md mt-3 text-ink">
-                Your tracked accounts will appear here.
-              </h2>
-              <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-body">
-                Add the first handle{" "}
-                <Link href="/#add" className="text-link hover:text-link-deep">
-                  here
-                </Link>{" "}
-                — stats start appearing after the first sync.
-              </p>
-            </div>
-          )}
+          <section
+            id="add"
+            aria-label="Track an account"
+            className="scroll-mt-24 rounded-md border border-hairline bg-elevated p-5"
+          >
+            <AddChannelBar />
+          </section>
 
-          {groups.map((group) => (
-            <ChannelGroupSection
-              key={group.platform}
-              platform={group.platform}
-              channels={group.channels}
-            />
-          ))}
+          {!dbError && <TrackedAccounts channels={channels} />}
         </div>
       </main>
       <Footer />
