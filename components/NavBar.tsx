@@ -9,7 +9,7 @@ export function NavBar({ active }: { active?: "tracked" }) {
   return (
     <header className="border-b border-hairline bg-canvas">
       <nav
-        className="mx-auto flex h-12 max-w-6xl items-center gap-4 px-6"
+        className="mx-auto flex h-12 max-w-7xl items-center gap-4 px-6"
         aria-label="Primary"
       >
         <Link href="/" className="text-base font-semibold tracking-[-0.4px] text-ink">

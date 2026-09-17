@@ -26,7 +26,7 @@ export default async function TrackedPage() {
   return (
     <div className="min-h-screen bg-canvas">
       <NavBar active="tracked" />
-      <main className="mx-auto max-w-6xl px-6 pb-12">
+      <main className="mx-auto max-w-7xl px-6 pb-12">
         <section
           aria-label="My Accounts"
           className="flex flex-wrap items-start justify-between gap-6 pt-8 md:pt-12"
