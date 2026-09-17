@@ -24,7 +24,7 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-canvas">
       <NavBar />
-      <main className="mx-auto w-full max-w-[1400px] px-6 pb-16">
+      <main className="mx-auto max-w-6xl px-6 pb-16">
         {/* Hero */}
         <section
           aria-label="Intro"
