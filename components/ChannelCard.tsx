@@ -490,7 +490,7 @@ export function ChannelGroupSection({
         <span className="mono-eyebrow text-mute">{PLATFORM_LABELS[platform]}</span>
         <span className="text-xs tabular-nums text-faint">{channels.length}</span>
       </h2>
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
+      <div className="mt-4 grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
         {channels.map((channel) => (
           <ChannelCard key={channel.id} channel={channel} sortBy={sortBy} />
         ))}
