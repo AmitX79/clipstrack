@@ -202,6 +202,44 @@ try {
     .waitFor({ state: "visible", timeout: 30000 });
   check("empty state returns after removing all", true);
 
+  // --- Instagram live fetch (ScrapeCreators, key from .env) ---
+  await page.getByRole("button", { name: "Instagram", exact: true }).click();
+  await page
+    .getByPlaceholder("Add channels… e.g. @mrbeast, @veritasium")
+    .fill("mrbeast");
+  await page.getByRole("button", { name: "+ Add", exact: true }).click();
+  const igStatus = page.locator('[aria-live="polite"] p');
+  await igStatus
+    .filter({ hasText: /@mrbeast/ })
+    .waitFor({ state: "visible", timeout: 150000 });
+  await page.getByText("@mrbeast", { exact: true }).first().waitFor({ state: "visible" });
+  const igCard = page
+    .locator("article", { hasText: "@mrbeast" })
+    .filter({ hasText: "Instagram" });
+  await igCard.waitFor({ state: "visible" });
+  await igCard.getByText(/Views/i).first().waitFor({ state: "visible", timeout: 60000 });
+  const igCardText = await igCard.innerText();
+  check("IG card renders with Instagram pill instead of TikTok", /Instagram/i.test(igCardText));
+  check("IG card renders Views stat", /Views/i.test(igCardText), "Views label");
+  check(
+    "IG card renders Likes stat",
+    /Likes/i.test(igCardText),
+    "Likes label",
+  );
+  check(
+    "IG card renders Comments stat",
+    /Comments/i.test(igCardText),
+    "Comments label",
+  );
+
+  page.once("dialog", (dialog) => dialog.accept());
+  const igChannelId = (await igCard.getAttribute("data-channel-id")).replace(/"/g, "");
+  await igCard.getByRole("button", { name: /^Remove @/ }).click();
+  await page
+    .getByText("Your tracked accounts will appear here.")
+    .waitFor({ state: "visible", timeout: 30000 });
+  check("empty state returns after removing IG channel", true);
+
   // --- Runtime sanity: no hydration errors / page errors ---
   const realConsoleErrors = consoleErrors.filter(
     (text) => !/favicon/i.test(text) && !/net::ERR/i.test(text),

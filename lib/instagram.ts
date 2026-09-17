@@ -1,19 +1,15 @@
-// Instagram — custom scraper for the public profile page.
+// Instagram — ScrapeCreators API (https://docs.scrapecreators.com).
 //
-// Method: fetch https://www.instagram.com/<username>/ and parse the embedded
-// JSON scripts:
-//   - `<script type="application/ld+json">` holds account metadata and
-//     interaction counts (followers, likes) as `interactionStatistic`.
-//   - Recent posts come from Instagram's internal windows (historically
-//     `window._sharedData` / injected `__additionalDataLoaded`), which are
-//     fragile. Extract the first N rows defensively and skip anything that
-//     fails to parse.
+// TikTok/YT style: two live public endpoints, no logins, no fragile HTML:
+//   - GET /v2/instagram/user/posts      recent posts reels (like/comment/play
+//                                        counts, taken_at, shortcode, thumbnails)
+//   - GET /v1/instagram/profile         account identity + follower/following/
+//                                        post counts (data.user)
 //
-// Because this is screen-scraping Instagram's HTML, the exact JSON shapes
-// change without notice. Every extraction is isolated in a try/catch so one
-// breaking field degrades to null/[] instead of failing the whole sync.
+// Pages of posts are walked with `next_max_id`. A profile call rounds out the
+// follower counts; if it fails the posts payload already carries identity, so
+// the sync still succeeds.
 
-import { extractScriptTag, fetchHtml, parseJsonScript } from "./html";
 import type {
   AccountMeta,
   ChannelStats,
@@ -23,74 +19,160 @@ import type {
 
 export const PLATFORM = "instagram" as const;
 
-export const fetchInstagramChannel: PlatformFetcher = async (username) => {
+const API = "https://api.scrapecreators.com";
+
+interface PostsResponse {
+  success: boolean;
+  message?: string;
+  items?: PostItem[];
+  user?: PostUser;
+  next_max_id?: string;
+  more_available?: boolean;
+}
+
+interface PostUser {
+  pk?: string | number;
+  username?: string;
+  full_name?: string;
+  profile_pic_url?: string;
+  follower_count?: number;
+}
+
+interface PostItem {
+  pk: string | number;
+  code?: string;
+  taken_at?: number;
+  media_type?: number;
+  like_count?: number;
+  comment_count?: number;
+  play_count?: number;
+  caption?: { text?: string };
+  image_versions2?: { candidates?: { url?: string }[] };
+  video_versions?: { url?: string }[];
+}
+
+interface ProfileResponse {
+  success: boolean;
+  message?: string;
+  data?: {
+    user?: {
+      id?: string | number;
+      full_name?: string;
+      username?: string;
+      profile_pic_url?: string;
+      edge_followed_by?: { count?: number };
+      edge_follow?: { count?: number };
+      edge_owner_to_timeline_media?: { count?: number };
+    };
+  };
+}
+
+async function scrapeGet<T>(
+  path: string,
+  params: Record<string, string | number>,
+): Promise<T> {
+  const apiKey = process.env.SCRAPECREATORS_API_KEY;
+  if (!apiKey) {
+    throw new Error("SCRAPECREATORS_API_KEY is not set");
+  }
+  const url = new URL(`${API}${path}`);
+  for (const [key, value] of Object.entries(params)) {
+    if (value != null) url.searchParams.set(key, String(value));
+  }
+  const res = await fetch(url, {
+    headers: { "x-api-key": apiKey },
+    cache: "no-store",
+  });
+  const data = (await res.json()) as { success?: boolean; message?: string };
+  if (!res.ok || data.success === false) {
+    throw new Error(`ScrapeCreators ${path}: ${data.message ?? res.status}`);
+  }
+  return data as T;
+}
+
+function toSnapshot(item: PostItem): MediaSnapshot {
+  const caption = (item.caption?.text ?? "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, 200);
+  const candidate =
+    item.image_versions2?.candidates?.find((c) => c.url)?.url ??
+    item.video_versions?.[0]?.url;
+
+  return {
+    meta: {
+      externalId: String(item.pk),
+      title: caption || undefined,
+      url: item.code
+        ? `https://www.instagram.com/p/${item.code}/`
+        : `https://www.instagram.com/p/${item.pk}/`,
+      thumbnailUrl: candidate,
+      publishedAt: item.taken_at ? new Date(item.taken_at * 1000) : undefined,
+    },
+    stats: {
+      views: item.play_count ?? 0,
+      likes: item.like_count ?? 0,
+      comments: item.comment_count ?? 0,
+    },
+  };
+}
+
+export const fetchInstagramChannel: PlatformFetcher = async (username, limit) => {
   const cleaned = username.replace(/^@/, "");
-  const profileUrl = `https://www.instagram.com/${cleaned}/`;
-  const html = await fetchHtml(profileUrl);
+  const requestLimit = Math.max(1, Math.min(limit ?? 8, 200));
 
-  const ldJson = extractScriptTag(html, { type: "application/ld+json" });
-  const ld = ldJson ? parseLdJson(ldJson) : null;
+  const first = await scrapeGet<PostsResponse>("/v2/instagram/user/posts", {
+    handle: cleaned,
+  });
 
+  // Walk additional pages until the requested item count is met.
+  const items = [...(first.items ?? [])];
+  let cursor = first.next_max_id;
+  let pages = 0;
+  while (
+    items.length < requestLimit &&
+    cursor &&
+    first.more_available !== false &&
+    pages < 20
+  ) {
+    const next = await scrapeGet<PostsResponse>("/v2/instagram/user/posts", {
+      handle: cleaned,
+      next_max_id: cursor,
+    });
+    items.push(...(next.items ?? []));
+    cursor = next.next_max_id;
+    pages += 1;
+  }
+  const sliced = items.slice(0, requestLimit);
+
+  // Profile call rounds out follower/following/post totals. Tolerated if it
+  // fails — identity already comes from the posts payload.
+  let profileUser: NonNullable<ProfileResponse["data"]>["user"];
+  try {
+    const profile = await scrapeGet<ProfileResponse>("/v1/instagram/profile", {
+      handle: cleaned,
+    });
+    profileUser = profile.data?.user;
+  } catch {
+    // fall through with posts-only metadata
+  }
+
+  const pu = first.user ?? {};
   const account: AccountMeta = {
     platform: PLATFORM,
     username: cleaned,
     displayName:
-      ld?.author?.name ?? ld?.name ?? cleaned,
-    externalId: ld?.author?.url?.replace(/^https?:\/\/www\.instagram\.com\//, "").replace(/\/$/, "") ?? cleaned,
-    avatarUrl: ld?.image,
-    profileUrl,
+      profileUser?.full_name ?? pu.full_name ?? cleaned,
+    externalId: String(profileUser?.id ?? pu.pk ?? cleaned),
+    avatarUrl: profileUser?.profile_pic_url ?? pu.profile_pic_url,
+    profileUrl: `https://www.instagram.com/${cleaned}/`,
   };
 
   const stats: ChannelStats = {
-    followers: ld?.followers ?? 0,
-    following: undefined,
-    totalPosts: ld?.posts ?? 0,
+    followers: profileUser?.edge_followed_by?.count ?? pu.follower_count ?? 0,
+    following: profileUser?.edge_follow?.count,
+    totalPosts: profileUser?.edge_owner_to_timeline_media?.count ?? sliced.length,
   };
 
-  return { account, stats, media: parseRecentPosts(html) };
+  return { account, stats, media: sliced.map(toSnapshot) };
 };
-
-interface LdAccount {
-  name?: string;
-  image?: string;
-  author?: {
-    name?: string;
-    url?: string;
-  };
-  interactionStatistic?: {
-    interactionType?: string;
-    userInteractionCount?: number | string;
-  }[];
-}
-
-function parseLdJson(script: string) {
-  try {
-    const data = parseJsonScript<LdAccount>(script);
-    const counts: Record<string, number> = {};
-    for (const s of data.interactionStatistic ?? []) {
-      const key = s.interactionType?.split("/").pop()?.toLowerCase() ?? "";
-      if (s.userInteractionCount != null) {
-        counts[key] = Number(s.userInteractionCount);
-      }
-    }
-    return {
-      ...data,
-      followers: counts["follow"] ?? undefined,
-      posts: counts["post"] ?? undefined,
-    };
-  } catch {
-    return null;
-  }
-}
-
-// Instagram embeds recent posts in various injected script payloads. Kept as
-// an explicit TODO since the field paths must be verified against a live page.
-function parseRecentPosts(html: string): MediaSnapshot[] {
-  if (!html) return [];
-  return [];
-  // TODO(ig-scraper): locate the `__additionalDataLoaded('extra', ...)` /
-  // next-data script, parse the `edges` array, and map each media item to:
-  //   MediaMeta   { externalId, url, thumbnailUrl, publishedAt }
-  //   MediaStats  { views, likes (*2 approximation or native field), comments }
-  // Guard each item with try/catch; skip rows that don't parse.
-}

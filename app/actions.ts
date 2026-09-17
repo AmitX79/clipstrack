@@ -139,7 +139,8 @@ export async function addChannels(
     return { ok: true, added, message: label + suffix };
   } catch (err) {
     console.error("[addChannels]", err);
-    return { ok: false, error: "Could not save the channels — is the database reachable?" };
+    const detail = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: `Could not save the channels (${detail.slice(0, 160)})` };
   }
 }
 
