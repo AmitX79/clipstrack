@@ -185,23 +185,41 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
   }
 }
 
-// Trim one tracked bucket (isBackfill=true = Old, false = Latest) down to
-// `keep` videos, retaining the most recent N by publish date (nearest-date
-// first, same as backfill). Videos past the top-N are removed from track+view
-// along with their snapshot history.
+// Trim one tracked bucket (isBackfill=true = Old, false = Latest) to its own
+// membership rule: Old holds videos published at/before the channel's addedAt
+// (backfilled once); Latest only videos published after it. Rule-violating
+// members are dropped (never moved between buckets), then the remaining videos
+// are cut to the most recent `keep` by publish date — the same nearest-date
+// logic as the backfill.
 async function trimBucketToCount(
   channelId: string,
   isBackfill: boolean,
   keep: number,
+  addedAt: Date,
 ): Promise<void> {
   const videos = await prisma.video.findMany({
     where: { channelId, isBackfill },
     orderBy: { publishedAt: "desc" },
-    select: { id: true },
+    select: { id: true, publishedAt: true },
   });
-  if (videos.length <= keep) return;
-  const drop = videos.slice(keep).map((video) => video.id);
-  await prisma.video.deleteMany({ where: { id: { in: drop } } });
+
+  const violatesRule = (video: { publishedAt: Date | null }) =>
+    isBackfill
+      ? video.publishedAt != null && video.publishedAt > addedAt
+      : video.publishedAt == null || video.publishedAt <= addedAt;
+
+  const ruleBreakers = videos
+    .filter(violatesRule)
+    .map((video) => video.id);
+  const overCap = videos
+    .filter((video) => !violatesRule(video))
+    .slice(keep)
+    .map((video) => video.id);
+
+  const drop = [...ruleBreakers, ...overCap];
+  if (drop.length > 0) {
+    await prisma.video.deleteMany({ where: { id: { in: drop } } });
+  }
 }
 
 // Update a channel's video-config (Edit button on each card): old/latest
@@ -230,9 +248,10 @@ export async function editChannel(
       data: { oldVideoCount, latestVideoCount, minLikeRatio },
     });
 
-    // Lowered window on either bucket? Trim to the most recent N immediately.
-    await trimBucketToCount(channel.id, true, channel.oldVideoCount);
-    await trimBucketToCount(channel.id, false, channel.latestVideoCount);
+    // Lowered window on either bucket? Trim to that bucket's own rule
+    // (publish date vs addedAt) immediately — never a cross-bucket move.
+    await trimBucketToCount(channel.id, true, channel.oldVideoCount, channel.createdAt);
+    await trimBucketToCount(channel.id, false, channel.latestVideoCount, channel.createdAt);
 
     // Raised Old window on an already-backfilled channel? Re-open the one-time
     // backfill so the immediate refresh picks up the additional older videos.

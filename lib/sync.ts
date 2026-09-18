@@ -66,7 +66,28 @@ export async function syncChannel(channel: Channel): Promise<void> {
     },
   });
 
+  // Bucket membership is decided by publish date vs the channel's addedAt
+  // (createdAt): videos published at/before addedAt belong to "Old" (backfilled
+  // once); later uploads belong to "Latest". Membership is assigned only at
+  // creation and never changed on update — a video never moves buckets.
+  const addedAt = channel.createdAt;
+  const existing = await prisma.video.findMany({
+    where: { channelId: channel.id },
+    select: { externalId: true },
+  });
+  const existingExternal = new Set(existing.map((video) => video.externalId));
+
   for (const item of result.media) {
+    const publishedAt = item.meta.publishedAt;
+    const belongsLatest = publishedAt != null && publishedAt > addedAt;
+    const alreadyTracked = existingExternal.has(item.meta.externalId);
+
+    // The "Old" window is frozen after its one-time backfill. A routine sync
+    // must never (re)create pre-existing videos — they were backfilled once,
+    // or intentionally trimmed away by a count edit. Skipping them is what
+    // keeps a trim (4 -> 2) from being undone on the next sync.
+    if (!alreadyTracked && !doingBackfill && !belongsLatest) continue;
+
     const video = await prisma.video.upsert({
       where: {
         channelId_externalId: {
@@ -81,7 +102,7 @@ export async function syncChannel(channel: Channel): Promise<void> {
         url: item.meta.url,
         thumbnailUrl: item.meta.thumbnailUrl,
         publishedAt: item.meta.publishedAt,
-        isBackfill: doingBackfill,
+        isBackfill: !belongsLatest,
       },
       update: {
         title: item.meta.title,
@@ -101,6 +122,8 @@ export async function syncChannel(channel: Channel): Promise<void> {
         recordedAt: new Date(),
       },
     });
+
+    existingExternal.add(item.meta.externalId);
   }
 
   // Close the one-time backfill window once it has run (even if the platform
