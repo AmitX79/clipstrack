@@ -124,9 +124,12 @@ model ChannelSnapshot {
 }
 
 // Per-video stats, captured every hourly sync. One row per video per sync.
+// `views` is nullable: YouTube/TikTok always report plays, but Instagram has
+// no public view metric for image/carousel posts (only reels), so those rows
+// store NULL and the UI renders "—" instead of a misleading 0.
 model VideoSnapshot {
   id         String   @id @default(cuid(2))
-  views      BigInt // YouTube/TikTok views, Instagram play/impressions
+  views      BigInt?
   likes      Int
   comments   Int
   favorites  Int? // TikTok "favorites"; null elsewhere

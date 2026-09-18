@@ -434,7 +434,9 @@ function VideoRow({ video }: { video: LoadedVideo }) {
               <span>
                 <dt className="mono-eyebrow text-faint">Views</dt>
                 <dd className="mt-0.5 truncate tabular-nums text-body">
-                  {formatFullNumber(latest.views)}
+                  {latest.views == null
+                    ? "—"
+                    : formatFullNumber(latest.views)}
                 </dd>
               </span>
               <span>

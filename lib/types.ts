@@ -39,9 +39,10 @@ export interface MediaMeta {
   publishedAt?: Date;
 }
 
-// Per-item stats.
+// Per-item stats. `views` is missing (not 0) when the platform exposes no
+// view metric for the post type — Instagram images/carousels, for example.
 export interface MediaStats {
-  views: number;
+  views?: number | null;
   likes: number;
   comments: number;
   favorites?: number; // TikTok "favorites"; null elsewhere

@@ -57,12 +57,14 @@ export function formatRelativeCompact(date: Date, now: number = Date.now()): str
 }
 
 // Views/hour between two adjacent snapshots: "▲ 123/hr", or null when there
-// is no earlier snapshot or the rate is not positive.
+// is no earlier snapshot, either snapshot is missing view data, or the rate
+// is not positive.
 export function formatGrowthPerHour(
-  previous: { views: number; recordedAt: Date } | null,
-  current: { views: number; recordedAt: Date },
+  previous: { views: number | null; recordedAt: Date } | null,
+  current: { views: number | null; recordedAt: Date },
 ): string | null {
   if (!previous) return null;
+  if (previous.views == null || current.views == null) return null;
   const hours =
     (current.recordedAt.getTime() - previous.recordedAt.getTime()) / 3_600_000;
   if (!(hours > 0)) return null;
@@ -72,7 +74,7 @@ export function formatGrowthPerHour(
 
 // Like-ratio for a video row: likes / views as a percent ("46.2%"), or null
 // when views are unknown.
-export function formatLikeRatio(likes: number, views: number): string | null {
-  if (!views || views <= 0) return null;
+export function formatLikeRatio(likes: number, views: number | null): string | null {
+  if (views == null || views <= 0) return null;
   return `${((likes / views) * 100).toFixed(1)}%`;
 }

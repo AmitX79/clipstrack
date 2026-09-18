@@ -17,7 +17,7 @@ const CHANNEL_INCLUDE = {
 } as const;
 
 export interface LoadedVideoSnapshot {
-  views: number;
+  views: number | null;
   likes: number;
   comments: number;
   recordedAt: string;
@@ -78,7 +78,7 @@ function serializeChannel(channel: ChannelWithInclude): LoadedChannel {
         updatedAt: video.updatedAt.toISOString(),
         latest: latest
           ? {
-              views: Number(latest.views),
+              views: latest.views == null ? null : Number(latest.views),
               likes: latest.likes,
               comments: latest.comments,
               recordedAt: latest.recordedAt.toISOString(),
@@ -86,7 +86,7 @@ function serializeChannel(channel: ChannelWithInclude): LoadedChannel {
           : null,
         previous: previous
           ? {
-              views: Number(previous.views),
+              views: previous.views == null ? null : Number(previous.views),
               likes: previous.likes,
               comments: previous.comments,
               recordedAt: previous.recordedAt.toISOString(),

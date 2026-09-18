@@ -92,7 +92,10 @@ async function scrapeGet<T>(
   return data as T;
 }
 
-function snapshotViews(item: PostItem): number {
+// Instagram has no public view metric for image and image-only carousel
+// posts — only reels report play counts — so return undefined (rendered as
+// "—") instead of a misleading 0.
+function snapshotViews(item: PostItem): number | undefined {
   if (typeof item.play_count === "number") return item.play_count;
   if (typeof item.ig_play_count === "number") return item.ig_play_count;
   const children = item.carousel_media ?? [];
@@ -100,7 +103,7 @@ function snapshotViews(item: PostItem): number {
     const sum = children.reduce((acc, c) => acc + (c.play_count ?? 0), 0);
     if (sum > 0) return sum;
   }
-  return 0;
+  return undefined;
 }
 
 function toSnapshot(item: PostItem): MediaSnapshot {

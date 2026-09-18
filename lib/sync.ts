@@ -94,7 +94,7 @@ export async function syncChannel(channel: Channel): Promise<void> {
     await prisma.videoSnapshot.create({
       data: {
         videoId: video.id,
-        views: BigInt(item.stats.views),
+        views: item.stats.views == null ? null : BigInt(item.stats.views),
         likes: item.stats.likes,
         comments: item.stats.comments,
         favorites: item.stats.favorites,
