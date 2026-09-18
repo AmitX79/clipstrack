@@ -11,6 +11,25 @@ import {
 } from "@/lib/format";
 import { PLATFORM_LABELS } from "@/lib/types";
 import { PlatformLogoBadge } from "@/components/PlatformLogo";
+
+// Channel avatar with a graceful fallback: when the profile image is missing
+// or fails to load (e.g. expired CDN signature), show the platform's brand
+// logo instead of a broken image.
+function ChannelAvatar({ channel }: { channel: LoadedChannel }) {
+  const [failed, setFailed] = useState(false);
+  if (!channel.avatarUrl || failed) {
+    return <PlatformLogoBadge platform={channel.platform} className="h-10 w-10" />;
+  }
+  return (
+    // eslint-disable-next-line @next/next/no-img-element
+    <img
+      src={channel.avatarUrl}
+      alt=""
+      onError={() => setFailed(true)}
+      className="h-10 w-10 shrink-0 rounded-full object-cover"
+    />
+  );
+}
 import { sortVideos } from "@/lib/sort";
 import type { SortKey } from "@/lib/sort";
 import type { LoadedChannel, LoadedVideo } from "@/lib/channels";
@@ -286,16 +305,7 @@ export function ChannelCard({
       className="flex flex-col rounded-md border border-hairline bg-elevated p-6 shadow-[0px_1px_1px_rgba(0,0,0,0.04)]"
     >
       <div className="flex items-start gap-3">
-        {channel.avatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={channel.avatarUrl}
-            alt=""
-            className="h-10 w-10 shrink-0 rounded-full object-cover"
-          />
-        ) : (
-          <PlatformLogoBadge platform={channel.platform} className="h-10 w-10" />
-        )}
+        <ChannelAvatar channel={channel} />
         <div className="min-w-0 flex-1">
           <h3 className="display-md truncate text-ink">{name}</h3>
           <p className="truncate text-sm text-mute">

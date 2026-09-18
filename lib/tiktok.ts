@@ -59,10 +59,25 @@ interface TtAweme {
 
 // Browsers can't decode TikTok's .heic images. The CDN hands back several
 // URL variants per image (heic first, then a .jpeg with a valid signature),
-// so prefer the first browser-friendly entry and bail out (URL is unusable)
-// when only .heic variants exist.
+// so prefer the first browser-friendly entry and return undefined (URL
+// unusable) when only .heic variants exist.
 function pickUrl(urls: string[] | undefined): string | undefined {
   return urls?.find((u) => /\.(jpe?g|png|webp|avif)(\?|$)/i.test(u));
+}
+
+// Profile_videos serves avatars as .heic only (app-format URLs). The
+// dedicated profile endpoint returns the same image as a browser-friendly
+// .jpeg, so fall back to it when needed.
+async function fetchTikTokAvatar(handle: string): Promise<string | undefined> {
+  try {
+    const profile = await scrapeGet<{ user?: { avatarLarger?: string } }>(
+      "/v1/tiktok/profile",
+      { handle },
+    );
+    return profile?.user?.avatarLarger;
+  } catch {
+    return undefined;
+  }
 }
 
 function extractUrls(video: TtAweme["video"]): string | undefined {
@@ -145,10 +160,12 @@ export const fetchTikTokChannel: PlatformFetcher = async (username, limit) => {
     username: cleaned,
     displayName: author.nickname ?? cleaned,
     externalId: String(author.uid ?? author.sec_uid ?? cleaned),
-    // Only store a browser-friendly avatar; TikTok's CDN serves avatars as
-    // .heic, which no browser decodes — missing avatar falls back to the
-    // channel's initial in the UI.
-    avatarUrl: pickUrl(author.avatar_larger?.url_list),
+    // Prefer a browser-friendly avatar. profile_videos only hands back .heic
+    // URLs, so when none exist fall back to the /v1/tiktok/profile avatar
+    // (a .jpeg that browsers can decode).
+    avatarUrl:
+      pickUrl(author.avatar_larger?.url_list) ??
+      (await fetchTikTokAvatar(cleaned)),
     profileUrl: `https://www.tiktok.com/@${cleaned}/`,
   };
 
