@@ -7,6 +7,7 @@ import type { VideoLayout } from "@/components/ChannelCard";
 import { SORT_OPTIONS } from "@/lib/sort";
 import type { SortKey } from "@/lib/sort";
 import { PLATFORM_VALUES } from "@/lib/types";
+import { getDictionary, type Locale } from "@/lib/i18n";
 import type { LoadedChannel } from "@/lib/channels";
 
 const VIDEO_LAYOUT_KEY = "clipstrack.videoLayout";
@@ -24,7 +25,14 @@ function useVideoLayout(): [VideoLayout, (layout: VideoLayout) => void] {
   return [layout, change];
 }
 
-export function TrackedAccounts({ channels }: { channels: LoadedChannel[] }) {
+export function TrackedAccounts({
+  channels,
+  locale,
+}: {
+  channels: LoadedChannel[];
+  locale: Locale;
+}) {
+  const dict = getDictionary(locale);
   const [sortBy, setSortBy] = useState<SortKey>("published");
   const [layout, setLayout] = useVideoLayout();
 
@@ -36,16 +44,14 @@ export function TrackedAccounts({ channels }: { channels: LoadedChannel[] }) {
   if (groups.length === 0) {
     return (
       <div className="mt-6 rounded-md border border-hairline bg-elevated px-6 py-14 text-center">
-        <p className="mono-eyebrow text-mute">No accounts yet</p>
-        <h2 className="display-md mt-3 text-ink">
-          Your tracked accounts will appear here.
-        </h2>
+        <p className="mono-eyebrow text-mute">{dict.empty.eyebrow}</p>
+        <h2 className="display-md mt-3 text-ink">{dict.empty.title}</h2>
         <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-body">
-          Add the first handle{" "}
+          {dict.empty.before}
           <Link href="#add" className="text-link hover:text-link-deep">
-            here
-          </Link>{" "}
-          — stats start appearing after the first sync.
+            {dict.empty.link}
+          </Link>
+          {dict.empty.after}
         </p>
       </div>
     );
@@ -55,7 +61,7 @@ export function TrackedAccounts({ channels }: { channels: LoadedChannel[] }) {
     <>
       <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
         <label className="mono-eyebrow text-mute">
-          Sort by
+          {dict.sort.label}
           <select
             value={sortBy}
             onChange={(event) => setSortBy(event.target.value as SortKey)}
@@ -63,7 +69,7 @@ export function TrackedAccounts({ channels }: { channels: LoadedChannel[] }) {
           >
             {SORT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
-                {option.label}
+                {dict.sort[option.value]}
               </option>
             ))}
           </select>
@@ -85,7 +91,7 @@ export function TrackedAccounts({ channels }: { channels: LoadedChannel[] }) {
                   : "text-mute hover:text-ink"
               }`}
             >
-              {option === "horizontal" ? "Horizontal" : "Vertical"}
+              {dict.layout[option]}
             </button>
           ))}
         </div>
@@ -97,6 +103,7 @@ export function TrackedAccounts({ channels }: { channels: LoadedChannel[] }) {
           channels={group.channels}
           sortBy={sortBy}
           layout={layout}
+          locale={locale}
         />
       ))}
     </>

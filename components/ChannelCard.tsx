@@ -11,6 +11,7 @@ import {
 } from "@/lib/format";
 import { PLATFORM_LABELS } from "@/lib/types";
 import { PlatformLogoBadge } from "@/components/PlatformLogo";
+import { getDictionary, tpl, type Dictionary, type Locale } from "@/lib/i18n";
 
 // Channel avatar with a graceful fallback: when the profile image is missing
 // or fails to load (e.g. expired CDN signature), show the platform's brand
@@ -40,14 +41,19 @@ import type { PlatformValue } from "@/lib/types";
 function ChannelActions({
   channel,
   onEditToggle,
+  locale,
 }: {
   channel: LoadedChannel;
   onEditToggle: () => void;
+  locale: Locale;
 }) {
+  const dict = getDictionary(locale);
   const router = useRouter();
   const [busy, setBusy] = useState<"refresh" | "edit" | "remove" | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
+
+  const user = channel.username;
 
   function run(
     key: "refresh" | "edit" | "remove",
@@ -69,7 +75,7 @@ function ChannelActions({
   }
 
   function onRemove() {
-    if (!window.confirm(`Remove @${channel.username} and its video history?`)) {
+    if (!window.confirm(tpl(dict.card.confirmRemove, { user }))) {
       return;
     }
     run("remove", () => removeChannel(channel.id));
@@ -84,16 +90,16 @@ function ChannelActions({
           type="button"
           onClick={() => run("refresh", () => refreshChannel(channel.id))}
           disabled={disabled}
-          aria-label={`Refresh @${channel.username}`}
+          aria-label={tpl(dict.card.ariaRefresh, { user })}
           className={
             "inline-flex h-7 items-center gap-1.5 rounded-[6px] border border-hairline px-2.5 text-xs font-medium text-body " +
             "hover:border-ink hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated disabled:opacity-50"
           }
         >
           {busy === "refresh" ? (
-            <Spinner label="Syncing…" />
+            <Spinner label={dict.card.syncing} />
           ) : (
-            "Refresh"
+            dict.card.refresh
           )}
         </button>
         <button
@@ -103,19 +109,19 @@ function ChannelActions({
             onEditToggle();
           }}
           disabled={disabled}
-          aria-label={`Edit @${channel.username} video settings`}
+          aria-label={tpl(dict.card.ariaEdit, { user })}
           className="inline-flex h-7 items-center rounded-[6px] border border-hairline px-2.5 text-xs font-medium text-body hover:border-ink hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated disabled:opacity-50"
         >
-          Edit
+          {dict.card.edit}
         </button>
         <button
           type="button"
           onClick={onRemove}
           disabled={disabled}
-          aria-label={`Remove @${channel.username}`}
+          aria-label={tpl(dict.card.ariaRemove, { user })}
           className="inline-flex h-7 items-center rounded-[6px] border border-hairline px-2.5 text-xs font-medium text-error hover:border-error hover:text-error-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error focus-visible:ring-offset-2 focus-visible:ring-offset-elevated disabled:opacity-50"
         >
-          Remove
+          {dict.card.remove}
         </button>
       </div>
       {error && <p className="text-xs text-error">{error}</p>}
@@ -156,10 +162,12 @@ function EditPanel({
   channel,
   onSaved,
   onCancel,
+  dict,
 }: {
   channel: LoadedChannel;
   onSaved: () => void;
   onCancel: () => void;
+  dict: Dictionary;
 }) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
@@ -179,14 +187,14 @@ function EditPanel({
       oldVideoCount < 0 ||
       latestVideoCount < 0
     ) {
-      setError("Counts must be whole numbers between 0 and 200.");
+      setError(dict.card.errCounts);
       return;
     }
     if (
       minLikeRatio !== null &&
       (!Number.isFinite(minLikeRatio) || minLikeRatio < 0 || minLikeRatio > 100)
     ) {
-      setError("Min like ratio must be between 0 and 100, or left empty.");
+      setError(dict.card.errRatio);
       return;
     }
     startTransition(async () => {
@@ -219,20 +227,20 @@ function EditPanel({
     >
       <Field
         name="oldVideoCount"
-        label="Old videos count"
-        hint="Most recent videos to backfill once"
+        label={dict.card.oldCountLabel}
+        hint={dict.card.oldCountHint}
         defaultValue={channel.oldVideoCount}
       />
       <Field
         name="latestVideoCount"
-        label="Latest videos count"
-        hint="Newest uploads to track going forward"
+        label={dict.card.latestCountLabel}
+        hint={dict.card.latestCountHint}
         defaultValue={channel.latestVideoCount}
       />
       <Field
         name="minLikeRatio"
-        label="Min ratio %"
-        hint="Optional — flag videos below this like-ratio"
+        label={dict.card.ratioLabel}
+        hint={dict.card.ratioHint}
         defaultValue={channel.minLikeRatio}
         required={false}
         min={0}
@@ -245,7 +253,7 @@ function EditPanel({
           disabled={isPending}
           className="h-8 rounded-[6px] bg-ink px-3 text-xs font-medium text-on-ink hover:bg-ink-press disabled:opacity-60"
         >
-          {isPending ? "Saving…" : "Save"}
+          {isPending ? dict.card.saving : dict.card.save}
         </button>
         <button
           type="button"
@@ -253,7 +261,7 @@ function EditPanel({
           disabled={isPending}
           className="h-8 rounded-[6px] border border-hairline px-3 text-xs font-medium text-body hover:text-ink disabled:opacity-60"
         >
-          Cancel
+          {dict.card.cancel}
         </button>
       </div>
       {error && <p className="w-full text-xs text-error">{error}</p>}
@@ -323,11 +331,14 @@ export function ChannelCard({
   channel,
   sortBy,
   layout,
+  locale,
 }: {
   channel: LoadedChannel;
   sortBy: SortKey;
   layout: VideoLayout;
+  locale: Locale;
 }) {
+  const dict = getDictionary(locale);
   const [editing, setEditing] = useState(false);
   const now = useNow();
   const name = channel.displayName ?? channel.username;
@@ -361,7 +372,11 @@ export function ChannelCard({
           <span className="mono-eyebrow rounded-[64px] border border-hairline px-3 py-1 text-mute">
             {PLATFORM_LABELS[channel.platform]}
           </span>
-          <ChannelActions channel={channel} onEditToggle={() => setEditing((value) => !value)} />
+          <ChannelActions
+            channel={channel}
+            onEditToggle={() => setEditing((value) => !value)}
+            locale={locale}
+          />
         </div>
       </div>
 
@@ -370,37 +385,45 @@ export function ChannelCard({
           channel={channel}
           onSaved={() => setEditing(false)}
           onCancel={() => setEditing(false)}
+          dict={dict}
         />
       )}
 
       {latest.length > 0 && (
         <VideoSection
-          label="Latest"
+          label={dict.card.latest}
           count={latest.length}
           videos={latest}
           sortBy={sortBy}
           layout={layout}
           platform={channel.platform}
           minLikeRatio={channel.minLikeRatio}
+          dict={dict}
+          locale={locale}
         />
       )}
       {old.length > 0 && (
         <VideoSection
-          label="Old"
+          label={dict.card.old}
           count={old.length}
           videos={old}
           sortBy={sortBy}
           layout={layout}
           platform={channel.platform}
           minLikeRatio={channel.minLikeRatio}
+          dict={dict}
+          locale={locale}
         />
       )}
 
       {channel.videos.length === 0 && (
         <p className="mono-eyebrow mt-5 border-t border-hairline pt-3 text-faint">
           {channel.backfilled
-            ? "No videos tracked yet."
-            : `First sync backfills the ${channel.oldVideoCount} most recent videos, then tracks the newest ${channel.latestVideoCount} going forward.`}
+            ? dict.card.noVideos
+            : tpl(dict.card.backfill, {
+                old: channel.oldVideoCount,
+                latest: channel.latestVideoCount,
+              })}
         </p>
       )}
 
@@ -410,9 +433,11 @@ export function ChannelCard({
         )}
         {synced
           ? now != null
-            ? `Synced ${formatRelativeCompact(new Date(synced), now)}`
+            ? tpl(dict.card.synced, {
+                t: formatRelativeCompact(new Date(synced), now),
+              })
             : null
-          : "Not synced yet"}
+          : dict.card.notSynced}
       </p>
     </article>
   );
@@ -426,6 +451,8 @@ function VideoSection({
   layout,
   platform,
   minLikeRatio,
+  dict,
+  locale,
 }: {
   label: string;
   count: number;
@@ -434,6 +461,8 @@ function VideoSection({
   layout: VideoLayout;
   platform: PlatformValue;
   minLikeRatio: number | null;
+  dict: Dictionary;
+  locale: Locale;
 }) {
   const sorted = sortVideos(videos, sortBy);
   return (
@@ -456,6 +485,8 @@ function VideoSection({
             platform={platform}
             layout={layout}
             minLikeRatio={minLikeRatio}
+            dict={dict}
+            locale={locale}
           />
         ))}
       </ul>
@@ -468,17 +499,21 @@ function VideoRow({
   platform,
   layout,
   minLikeRatio,
+  dict,
+  locale,
 }: {
   video: LoadedVideo;
   platform: PlatformValue;
   layout: VideoLayout;
   minLikeRatio: number | null;
+  dict: Dictionary;
+  locale: Locale;
 }) {
   const now = useNow();
   const latest = video.latest;
   const likes = latest?.likes ?? 0;
   const comments = latest?.comments ?? 0;
-  const ratio = latest ? formatLikeRatio(likes, latest.views) : null;
+  const ratio = latest ? formatLikeRatio(likes, latest.views, locale) : null;
   const views = latest?.views ?? null;
   const likeRatioPct =
     views != null && views > 0 ? (likes / views) * 100 : null;
@@ -493,6 +528,8 @@ function VideoRow({
             }
           : null,
         { views: latest.views, recordedAt: new Date(latest.recordedAt) },
+        dict.fmt.growthUnit,
+        locale,
       )
     : null;
   const updatedAt = latest ? new Date(latest.recordedAt) : new Date(video.updatedAt);
@@ -545,26 +582,26 @@ function VideoRow({
           <>
             <dl className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1">
               <span className="col-span-2">
-                <dt className="mono-eyebrow text-faint">Views</dt>
+                <dt className="mono-eyebrow text-faint">{dict.card.views}</dt>
                 <dd
                   className="mt-0.5 whitespace-nowrap tabular-nums text-body"
                   title={
                     latest.views == null
                       ? platform === "INSTAGRAM"
-                        ? "Instagram doesn't expose a view count for photo/carousel posts — only reels"
-                        : "No view count available"
+                        ? dict.card.imgViewsTitle
+                        : dict.card.noViews
                       : undefined
                   }
                 >
                   {latest.views == null
                     ? "—"
-                    : formatFullNumber(latest.views)}
+                    : formatFullNumber(latest.views, locale)}
                 </dd>
               </span>
               <span>
-                <dt className="mono-eyebrow text-faint">Likes</dt>
+                <dt className="mono-eyebrow text-faint">{dict.card.likes}</dt>
                 <dd className="mt-0.5 whitespace-nowrap tabular-nums text-body">
-                  {formatFullNumber(likes)}
+                  {formatFullNumber(likes, locale)}
                   {ratio && (
                     <span
                       className={`ml-1 text-xs ${
@@ -576,7 +613,10 @@ function VideoRow({
                   )}
                   {belowMin && (
                     <span
-                      title={`Like-ratio ${ratio} below the ${minLikeRatio}% minimum`}
+                      title={tpl(dict.card.likeRatioTitle, {
+                        ratio: ratio ?? "",
+                        min: minLikeRatio ?? 0,
+                      })}
                       className="ml-1 inline-flex items-center align-[-1px] text-error"
                     >
                       <svg
@@ -588,16 +628,16 @@ function VideoRow({
                         <path d="M12 2 1 21h22L12 2Zm1 14.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-.5-2.5h-1V9h1v5Z" />
                       </svg>
                       <span className="sr-only">
-                        Below {minLikeRatio}% min like-ratio
+                        {tpl(dict.card.ratioBelow, { min: minLikeRatio ?? 0 })}
                       </span>
                     </span>
                   )}
                 </dd>
               </span>
               <span>
-                <dt className="mono-eyebrow text-faint">Comments</dt>
+                <dt className="mono-eyebrow text-faint">{dict.card.comments}</dt>
                 <dd className="mt-0.5 whitespace-nowrap tabular-nums text-body">
-                  {formatFullNumber(comments)}
+                  {formatFullNumber(comments, locale)}
                 </dd>
               </span>
             </dl>
@@ -606,16 +646,22 @@ function VideoRow({
               {now != null &&
                 video.publishedAt && (
                   <span>
-                    {formatRelativeCompact(new Date(video.publishedAt), now)} old
+                    {tpl(dict.card.publishedOld, {
+                      t: formatRelativeCompact(new Date(video.publishedAt), now),
+                    })}
                   </span>
                 )}
               {now != null && (
-                <span>updated {formatRelativeCompact(updatedAt, now)}</span>
+                <span>
+                  {tpl(dict.card.updated, {
+                    t: formatRelativeCompact(updatedAt, now),
+                  })}
+                </span>
               )}
             </p>
           </>
         ) : (
-          <p className="mt-1.5 text-xs text-mute">No stats collected yet.</p>
+          <p className="mt-1.5 text-xs text-mute">{dict.card.noStats}</p>
         )}
       </div>
     </li>
@@ -629,11 +675,13 @@ export function ChannelGroupSection({
   channels,
   sortBy,
   layout,
+  locale,
 }: {
   platform: PlatformValue;
   channels: LoadedChannel[];
   sortBy: SortKey;
   layout: VideoLayout;
+  locale: Locale;
 }) {
   return (
     <section aria-labelledby={`group-${platform}`} className="mt-6">
@@ -651,6 +699,7 @@ export function ChannelGroupSection({
             channel={channel}
             sortBy={sortBy}
             layout={layout}
+            locale={locale}
           />
         ))}
       </div>

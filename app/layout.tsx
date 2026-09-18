@@ -13,14 +13,10 @@ const geistMono = localFont({
   weight: "100 900",
 });
 
+// Base site-level metadata. Per-locale title/description/OG/twitter live in
+// app/[locale]/layout.tsx; metadataBase resolves the relative OG/canonical URLs.
 export const metadata: Metadata = {
   metadataBase: new URL("https://clipstrack.vercel.app"),
-  title: {
-    default: "Clips Track — YouTube Shorts, Reels & TikTok Tracker",
-    template: "%s | Clips Track",
-  },
-  description:
-    "Clips Track is a clip performance tracker for YouTube Shorts, Instagram Reels and TikTok videos — views, likes and comments every hour, in full numbers.",
   keywords: [
     "Clips Track",
     "clip tracker",
@@ -31,30 +27,6 @@ export const metadata: Metadata = {
     "track video views",
   ],
   robots: { index: true, follow: true },
-  openGraph: {
-    type: "website",
-    siteName: "Clips Track",
-    url: "/",
-    title: "Clips Track — YouTube Shorts, Reels & TikTok Tracker",
-    description:
-      "Track views, likes and comments for YouTube Shorts, Instagram Reels and TikTok videos — hourly, in full numbers.",
-    images: [
-      {
-        url: "/og.png",
-        width: 1200,
-        height: 630,
-        alt: "Clips Track — every view, tracked in full numbers",
-      },
-    ],
-    locale: "en_US",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Clips Track — YouTube Shorts, Reels & TikTok Tracker",
-    description:
-      "Track views, likes and comments for YouTube Shorts, Instagram Reels and TikTok videos — hourly, in full numbers.",
-    images: ["/og.png"],
-  },
 };
 
 export const viewport: Viewport = {

@@ -1,18 +1,26 @@
 // Number formatting helpers. ClipsTrack always shows FULL numbers — no k/M
 // abbreviations — so view counts stay truthful regardless of magnitude.
 
-const fullFormatter = new Intl.NumberFormat("en-US");
+const fullFormatters = new Map<string, Intl.NumberFormat>();
+function fullFormatter(locale: string) {
+  let formatter = fullFormatters.get(locale);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale);
+    fullFormatters.set(locale, formatter);
+  }
+  return formatter;
+}
 
-// Render a count with thousands separators: 1_234_567 -> "1,234,567".
+// Render a count with locale-aware thousands separators: 1_234_567 -> "1,234,567".
 // Accepts number or bigint (BigInt stats come back as `bigint` from Prisma).
-export function formatFullNumber(value: number | bigint): string {
+export function formatFullNumber(value: number | bigint, locale = "en"): string {
   if (typeof value === "bigint") {
-    return fullFormatter.format(value);
+    return fullFormatter(locale).format(value);
   }
   if (Number.isSafeInteger(value)) {
-    return fullFormatter.format(value);
+    return fullFormatter(locale).format(value);
   }
-  return value.toLocaleString("en-US", { maximumFractionDigits: 0 });
+  return value.toLocaleString(locale, { maximumFractionDigits: 0 });
 }
 
 // Convert a Prisma BigInt stat to a JS number for arithmetic/charts.
@@ -21,39 +29,56 @@ export function bigintToNumber(value: bigint | null | undefined): number {
   return value == null ? 0 : Number(value);
 }
 
-const relativeFormatter = new Intl.RelativeTimeFormat("en-US", {
-  numeric: "auto",
-});
-const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
-  dateStyle: "short",
-});
+const relativeFormatters = new Map<string, Intl.RelativeTimeFormat>();
+const shortDateFormatters = new Map<string, Intl.DateTimeFormat>();
+function relativeFormatter(locale: string) {
+  let formatter = relativeFormatters.get(locale);
+  if (!formatter) {
+    formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
+    relativeFormatters.set(locale, formatter);
+  }
+  return formatter;
+}
+function shortDateFormatter(locale: string) {
+  let formatter = shortDateFormatters.get(locale);
+  if (!formatter) {
+    formatter = new Intl.DateTimeFormat(locale, { dateStyle: "short" });
+    shortDateFormatters.set(locale, formatter);
+  }
+  return formatter;
+}
 
 // "never" | "just now" | "2 hours ago" | "5 days ago" | "9/1/24"
-export function formatLastSynced(date: Date | null | undefined): string {
+export function formatLastSynced(
+  date: Date | null | undefined,
+  locale = "en",
+): string {
   if (!date) return "never";
 
   const seconds = Math.round((Date.now() - date.getTime()) / 1000);
-  if (seconds < 60) return relativeFormatter.format(-seconds, "second");
+  if (seconds < 60) return relativeFormatter(locale).format(-seconds, "second");
 
   const minutes = Math.round(seconds / 60);
-  if (minutes < 60) return relativeFormatter.format(-minutes, "minute");
+  if (minutes < 60) return relativeFormatter(locale).format(-minutes, "minute");
 
   const hours = Math.round(minutes / 60);
-  if (hours < 24) return relativeFormatter.format(-hours, "hour");
+  if (hours < 24) return relativeFormatter(locale).format(-hours, "hour");
 
   const days = Math.round(hours / 24);
-  if (days < 30) return relativeFormatter.format(-days, "day");
+  if (days < 30) return relativeFormatter(locale).format(-days, "day");
 
-  return shortDateFormatter.format(date);
+  return shortDateFormatter(locale).format(date);
 }
 
-// Compressed relative age for video rows: "12s ago" | "3m ago" | "2h ago" | "4d ago".
+// Compact duration for video rows: "12s" | "3m" | "2h" | "4d". No trailing
+// "ago" — callers wrap the value in a localized template ("Synced {t} ago",
+// "há {t}", "{t}前" …).
 export function formatRelativeCompact(date: Date, now: number = Date.now()): string {
   const ms = Math.max(0, now - date.getTime());
-  if (ms < 60_000) return `${Math.floor(ms / 1000)}s ago`;
-  if (ms < 3_600_000) return `${Math.floor(ms / 60_000)}m ago`;
-  if (ms < 86_400_000) return `${Math.floor(ms / 3_600_000)}h ago`;
-  return `${Math.floor(ms / 86_400_000)}d ago`;
+  if (ms < 60_000) return `${Math.floor(ms / 1000)}s`;
+  if (ms < 3_600_000) return `${Math.floor(ms / 60_000)}m`;
+  if (ms < 86_400_000) return `${Math.floor(ms / 3_600_000)}h`;
+  return `${Math.floor(ms / 86_400_000)}d`;
 }
 
 // Views/hour between two adjacent snapshots: "▲ 123/hr", or null when there
@@ -62,6 +87,8 @@ export function formatRelativeCompact(date: Date, now: number = Date.now()): str
 export function formatGrowthPerHour(
   previous: { views: number | null; recordedAt: Date } | null,
   current: { views: number | null; recordedAt: Date },
+  unit = "/hr",
+  locale = "en",
 ): string | null {
   if (!previous) return null;
   if (previous.views == null || current.views == null) return null;
@@ -69,12 +96,26 @@ export function formatGrowthPerHour(
     (current.recordedAt.getTime() - previous.recordedAt.getTime()) / 3_600_000;
   if (!(hours > 0)) return null;
   const rate = Math.round((current.views - previous.views) / hours);
-  return rate > 0 ? `▲ ${formatFullNumber(rate)}/hr` : null;
+  return rate > 0 ? `▲ ${formatFullNumber(rate, locale)}${unit}` : null;
+}
+
+const ratioFormatters = new Map<string, Intl.NumberFormat>();
+function ratioFormatter(locale: string) {
+  let formatter = ratioFormatters.get(locale);
+  if (!formatter) {
+    formatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
+    ratioFormatters.set(locale, formatter);
+  }
+  return formatter;
 }
 
 // Like-ratio for a video row: likes / views as a percent ("46.2%"), or null
 // when views are unknown.
-export function formatLikeRatio(likes: number, views: number | null): string | null {
+export function formatLikeRatio(
+  likes: number,
+  views: number | null,
+  locale = "en",
+): string | null {
   if (views == null || views <= 0) return null;
-  return `${((likes / views) * 100).toFixed(1)}%`;
+  return `${ratioFormatter(locale).format((likes / views) * 100)}%`;
 }

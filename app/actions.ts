@@ -153,8 +153,8 @@ export async function addChannels(
       }
     }
 
-    revalidatePath("/");
-    revalidatePath("/tracked");
+    revalidatePath("/[locale]", "page");
+    revalidatePath("/[locale]/tracked", "page");
 
     const label = added.map((handle) => `@${handle}`).join(", ");
     const suffix =
@@ -177,7 +177,7 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
     const channel = await prisma.channel.findUnique({ where: { id } });
     if (!channel) return { ok: false, error: "Channel not found." };
     await syncChannel(channel);
-    revalidatePath("/tracked");
+    revalidatePath("/[locale]/tracked", "page");
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {
     console.error("[refreshChannel]", err);
@@ -267,7 +267,7 @@ export async function editChannel(
       }
     }
 
-    revalidatePath("/tracked");
+    revalidatePath("/[locale]/tracked", "page");
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {
     console.error("[editChannel]", err);
@@ -279,7 +279,7 @@ export async function editChannel(
 export async function removeChannel(id: string): Promise<EditChannelResult> {
   try {
     const channel = await prisma.channel.delete({ where: { id } });
-    revalidatePath("/tracked");
+    revalidatePath("/[locale]/tracked", "page");
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {
     console.error("[removeChannel]", err);

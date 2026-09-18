@@ -66,6 +66,7 @@ body {
 
 /* ---- DESIGN.md typography tokens (Geist, weight 600, tight tracking) ----
  * display-2xl = hero headline (48px / -2.4px)
+ * display-xl  = emphasized section heading (44px / -1.76px)
  * display-lg  = section heading (32px / -1.28px)
  * display-md  = card heading (20px / -0.4px)
  */
@@ -100,6 +101,21 @@ body {
   line-height: 28px;
   letter-spacing: -0.4px;
   font-weight: 600;
+}
+
+/* display-xl = emphasized section heading, e.g. FAQ (36px / -1.44px) */
+.display-xl {
+  font-size: 36px;
+  line-height: 42px;
+  letter-spacing: -1.44px;
+  font-weight: 600;
+}
+@media (min-width: 640px) {
+  .display-xl {
+    font-size: 44px;
+    line-height: 52px;
+    letter-spacing: -1.76px;
+  }
 }
 
 /* Mono eyebrows: small uppercase technical labels */

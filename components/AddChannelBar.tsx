@@ -5,11 +5,13 @@ import { useState, useTransition } from "react";
 import { addChannels } from "@/app/actions";
 import { PLATFORM_LABELS, PLATFORM_VALUES } from "@/lib/types";
 import type { PlatformValue } from "@/lib/types";
+import { getDictionary, type Locale } from "@/lib/i18n";
 
 // The My Accounts add bar: a comma-separated handles input, a platform picker,
 // old/latest count inputs and an Add button. Every handle in a batch is added
 // on the picked platform, matching the original ClipsTrack visual tokens.
-export function AddChannelBar() {
+export function AddChannelBar({ locale }: { locale: Locale }) {
+  const dict = getDictionary(locale);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -55,7 +57,7 @@ export function AddChannelBar() {
     <form onSubmit={onSubmit} className="flex flex-col gap-2">
       <fieldset>
         <legend className="mono-eyebrow mb-2 w-full text-mute">
-          Platform
+          {dict.add.platform}
         </legend>
         <div className="flex flex-wrap items-center gap-2">
           {PLATFORM_VALUES.map((value) => (
@@ -78,15 +80,15 @@ export function AddChannelBar() {
         <input
           name="usernames"
           type="text"
-          placeholder="Add channels… e.g. @mrbeast, @veritasium"
+          placeholder={dict.add.placeholder}
           autoComplete="off"
           autoCapitalize="off"
           spellCheck={false}
-          aria-label="Handles to track"
+          aria-label={dict.add.ariaHandles}
           className={`${fieldClass} min-w-[220px] flex-1`}
         />
         <label className="flex h-11 items-center gap-2 rounded-[6px] border border-hairline bg-elevated px-2.5">
-          <span className="mono-eyebrow text-mute">Old</span>
+          <span className="mono-eyebrow text-mute">{dict.add.old}</span>
           <input
             name="oldVideoCount"
             type="number"
@@ -95,12 +97,12 @@ export function AddChannelBar() {
             step={1}
             inputMode="numeric"
             defaultValue={4}
-            aria-label="Old videos count"
+            aria-label={dict.add.ariaOld}
             className="w-14 bg-transparent text-sm tabular-nums text-ink focus-visible:outline-none"
           />
         </label>
         <label className="flex h-11 items-center gap-2 rounded-[6px] border border-hairline bg-elevated px-2.5">
-          <span className="mono-eyebrow text-mute">Latest</span>
+          <span className="mono-eyebrow text-mute">{dict.add.latest}</span>
           <input
             name="latestVideoCount"
             type="number"
@@ -109,12 +111,12 @@ export function AddChannelBar() {
             step={1}
             inputMode="numeric"
             defaultValue={4}
-            aria-label="Latest videos count"
+            aria-label={dict.add.ariaLatest}
             className="w-14 bg-transparent text-sm tabular-nums text-ink focus-visible:outline-none"
           />
         </label>
         <label className="flex h-11 items-center gap-2 rounded-[6px] border border-hairline bg-elevated px-2.5">
-          <span className="mono-eyebrow text-mute">Ratio%</span>
+          <span className="mono-eyebrow text-mute">{dict.add.ratio}</span>
           <input
             name="minLikeRatio"
             type="number"
@@ -123,8 +125,8 @@ export function AddChannelBar() {
             step={0.1}
             inputMode="decimal"
             placeholder="—"
-            aria-label="Min like ratio percent, optional"
-            title="Optional: flag videos whose like-ratio (likes/views %) falls below this"
+            aria-label={dict.add.ariaRatio}
+            title={dict.add.ratioTitle}
             className="w-16 bg-transparent text-sm tabular-nums text-ink placeholder:text-faint focus-visible:outline-none"
           />
         </label>
@@ -133,7 +135,7 @@ export function AddChannelBar() {
           disabled={isPending}
           className="h-11 rounded-[6px] bg-ink px-5 text-sm font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:opacity-60"
         >
-          {isPending ? "Adding…" : "+ Add"}
+          {isPending ? dict.add.adding : dict.add.submit}
         </button>
       </div>
       <div aria-live="polite">
@@ -148,12 +150,7 @@ export function AddChannelBar() {
           </p>
         )}
       </div>
-      <p className="text-xs leading-relaxed text-mute">
-        Separate handles with commas — each is added on the platform you pick,
-        in one go. The first snapshot starts immediately, then one sits every
-        hour. Re-adding a handle updates it instead of duplicating. A Ratio% set
-        per handle flags videos with a lower like-ratio as a warning.
-      </p>
+      <p className="text-xs leading-relaxed text-mute">{dict.add.helper}</p>
     </form>
   );
 }

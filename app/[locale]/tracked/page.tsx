@@ -5,18 +5,39 @@ import { NavBar } from "@/components/NavBar";
 import { TrackedAccounts } from "@/components/TrackedAccounts";
 import { loadChannels } from "@/lib/channels";
 import type { LoadedChannel } from "@/lib/channels";
+import { LOCALES, getDictionary, isLocale } from "@/lib/i18n";
 import { getVisitorId } from "@/lib/visitor";
 
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "My Accounts",
-  description:
-    "Your tracked YouTube Shorts, Instagram Reels and TikTok video channels — private to you, updated hourly.",
-  robots: { index: false, follow: true },
-};
+export function generateMetadata({
+  params,
+}: {
+  params: { locale: string };
+}): Metadata {
+  const locale = isLocale(params.locale) ? params.locale : "en";
+  const dict = getDictionary(locale);
+  const languages = Object.fromEntries(
+    LOCALES.map((l) => [l, `/${l}/tracked`]),
+  );
+  return {
+    title: dict.meta.trackedTitle,
+    description: dict.meta.trackedDescription,
+    robots: { index: false, follow: true },
+    alternates: {
+      canonical: `/${locale}/tracked`,
+      languages,
+    },
+  };
+}
 
-export default async function TrackedPage() {
+export default async function TrackedPage({
+  params,
+}: {
+  params: { locale: string };
+}) {
+  const locale = isLocale(params.locale) ? params.locale : "en";
+  const dict = getDictionary(locale);
   const userId = getVisitorId();
 
   let channels: LoadedChannel[] = [];
@@ -32,25 +53,22 @@ export default async function TrackedPage() {
 
   return (
     <div className="min-h-screen bg-canvas">
-      <NavBar active="tracked" />
+      <NavBar active="tracked" locale={locale} />
       <main className="mx-auto max-w-6xl px-6 pb-12">
         <section
-          aria-label="My Accounts"
+          aria-label={dict.acct.eyebrow}
           className="flex flex-wrap items-start justify-between gap-6 pt-8 md:pt-12"
         >
           <div>
             <p className="mono-eyebrow text-mute">
-              My Accounts
+              {dict.acct.eyebrow}
               {channels.length > 0 && (
                 <span className="text-faint"> · {channels.length}</span>
               )}
             </p>
-            <h1 className="display-lg mt-3 text-ink">
-              The handles you track.
-            </h1>
+            <h1 className="display-lg mt-3 text-ink">{dict.acct.title}</h1>
             <p className="mt-3 max-w-xl text-sm leading-relaxed text-body">
-              Your tracked accounts — private to you. Video stats update on the
-              hour, always shown in full, never abbreviated.
+              {dict.acct.sub}
             </p>
           </div>
         </section>
@@ -61,9 +79,9 @@ export default async function TrackedPage() {
               role="status"
               className="rounded-md border border-warning bg-warning-soft p-4 text-sm text-warning-deep"
             >
-              Can’t reach the database — check that{" "}
-              <code className="font-mono">DATABASE_URL</code> points to a
-              running Postgres, then reload.
+              {dict.acct.dbError1}
+              <code className="font-mono">DATABASE_URL</code>
+              {dict.acct.dbError2}
             </div>
           )}
 
@@ -72,13 +90,13 @@ export default async function TrackedPage() {
             aria-label="Track an account"
             className="scroll-mt-24 rounded-md border border-hairline bg-elevated p-5"
           >
-            <AddChannelBar />
+            <AddChannelBar locale={locale} />
           </section>
 
-          {!dbError && <TrackedAccounts channels={channels} />}
+          {!dbError && <TrackedAccounts channels={channels} locale={locale} />}
         </div>
       </main>
-      <Footer />
+      <Footer locale={locale} />
     </div>
   );
 }
