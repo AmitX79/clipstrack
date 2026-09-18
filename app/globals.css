@@ -81,20 +81,6 @@ body {
   line-height: 20px;
 }
 
-/* The hero mesh gradient — the system's only decorative element.
- * Layered soft radial blooms of the brand stops, confined to the hero. */
-.hero-mesh {
-  background: radial-gradient(
-      55% 50% at 18% 28%,
-      rgba(0, 124, 240, 0.13),
-      transparent 62%
-    ),
-    radial-gradient(48% 46% at 82% 12%, rgba(121, 40, 202, 0.1), transparent 62%),
-    radial-gradient(44% 44% at 62% 52%, rgba(235, 54, 127, 0.08), transparent 62%),
-    radial-gradient(38% 38% at 26% 68%, rgba(80, 227, 194, 0.1), transparent 62%),
-    radial-gradient(34% 34% at 88% 62%, rgba(249, 203, 40, 0.09), transparent 62%);
-}
-
 @media (prefers-reduced-motion: reduce) {
   .animate-spin {
     animation-duration: 2s;

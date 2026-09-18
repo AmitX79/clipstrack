@@ -103,7 +103,6 @@ export default function Home() {
           aria-label="Intro"
           className="relative mb-10 overflow-hidden"
         >
-          <div aria-hidden="true" className="hero-mesh pointer-events-none absolute inset-0" />
           <div className="relative mx-auto max-w-6xl px-6 py-16 md:py-28">
             <p className="mono-eyebrow mono-eyebrow-lg text-mute">
               Multi-platform clip tracker
