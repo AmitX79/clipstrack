@@ -396,7 +396,7 @@ function VideoSection({
         <span>{label}</span>
         <span className="text-xs tabular-nums text-faint">{count}</span>
       </h4>
-      <ul className="mt-1 divide-y divide-hairline">
+      <ul className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
         {sorted.map((video) => (
           <VideoRow key={video.id} video={video} platform={platform} />
         ))}
@@ -431,21 +431,21 @@ function VideoRow({
   const updatedAt = latest ? new Date(latest.recordedAt) : new Date(video.updatedAt);
 
   return (
-    <li className="flex gap-3 py-3 text-sm">
+    <li className="flex flex-col gap-2.5 rounded-[4px] border border-hairline bg-elevated p-3 text-sm">
       {video.thumbnailUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={video.thumbnailUrl}
           alt=""
-          className="aspect-video w-28 shrink-0 self-center rounded-[4px] object-cover"
+          className="aspect-video w-full rounded-[4px] object-cover"
         />
       ) : (
         <span
           aria-hidden="true"
-          className="aspect-video w-28 shrink-0 self-center rounded-[4px] bg-hairline-soft"
+          className="aspect-video w-full rounded-[4px] bg-hairline-soft"
         />
       )}
-      <div className="min-w-0 flex-1">
+      <div className="min-w-0 flex-1 flex flex-col">
         <a
           href={video.url}
           target="_blank"
