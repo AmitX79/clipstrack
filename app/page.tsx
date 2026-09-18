@@ -36,6 +36,63 @@ const WEB_APP_SCHEMA = {
     "clip tracker, video tracker, YouTube Shorts tracker, Instagram Reels tracker, TikTok video tracker",
 };
 
+const FAQS = [
+  {
+    q: "What is ClipsTrack?",
+    a: "ClipsTrack is a free clip tracker for short-form content. Add a YouTube, Instagram or TikTok handle and it records how each clip performs — views, likes and comments — every hour, always shown in full numbers. It keeps YouTube Shorts, Instagram Reels and TikTok videos together in one dashboard.",
+  },
+  {
+    q: "How does ClipsTrack track YouTube Shorts, Instagram Reels, and TikTok videos?",
+    a: "ClipsTrack pulls YouTube Shorts straight from the official YouTube Data API and keeps only clips up to 60 seconds — long-form uploads never get mixed in. On Instagram it tracks Reels only, skipping photo posts and carousels. On TikTok, only plain videos are tracked, along with their digg, comment and favorite counts. Each platform's stats are snapshotted hourly into a per-clip time series.",
+  },
+  {
+    q: "Is ClipsTrack free to use?",
+    a: "Yes — ClipsTrack is free. There's no paid plan, no per-channel fee and nothing is hidden behind a paywall.",
+  },
+  {
+    q: "How often does ClipsTrack update video stats?",
+    a: "Stats update every hour. The first snapshot is taken as soon as you add a handle, then a background sync refreshes views, likes and comments hourly from then on.",
+  },
+  {
+    q: "Can I track any public YouTube, Instagram, or TikTok account?",
+    a: "Yes — any public account on the three supported platforms can be tracked. Private or restricted accounts that require approval can't be read without authorization.",
+  },
+  {
+    q: "Do I need to log in to use ClipsTrack?",
+    a: "No login is required — there's no account system. Your tracked accounts are tied to a per-visitor identifier stored in your browser, so you can start adding channels immediately.",
+  },
+  {
+    q: "Can I track old videos, or only new uploads?",
+    a: "Both. When you add a channel, ClipsTrack first backfills recent clips into an \"Old\" bucket, then keeps a \"Latest\" bucket for new uploads going forward. You choose how many clips each bucket holds, per channel.",
+  },
+  {
+    q: "How many accounts can I track at once?",
+    a: "There's no fixed limit — add as many handles as you need, in batches. Each channel keeps its own counts, layout and alert settings.",
+  },
+  {
+    q: "Is my tracked data private to me?",
+    a: "Yes — the dashboard shows only the channels you added. Each visitor sees their own data and account records are isolated per visitor.",
+  },
+  {
+    q: "Can I see hourly growth of a video's views?",
+    a: "Yes. Every hourly sync stores another measurement for each clip, building a time series of exact view counts. Open a clip's history later and you can see its growth hour by hour and day by day.",
+  },
+  {
+    q: "Does ClipsTrack support Twitter/X?",
+    a: "Not yet — ClipsTrack currently tracks YouTube Shorts, Instagram Reels and TikTok videos. Twitter/X isn't supported.",
+  },
+] as const;
+
+const FAQ_PAGE_SCHEMA = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: FAQS.map((f) => ({
+    "@type": "Question",
+    name: f.q,
+    acceptedAnswer: { "@type": "Answer", text: f.a },
+  })),
+};
+
 export default function Home() {
   return (
     <div className="min-h-screen bg-canvas">
@@ -221,6 +278,44 @@ export default function Home() {
                 each one carries its own windows and alerts, so the dashboard
                 scales from a single handle to a whole roster.
               </p>
+            </div>
+          </div>
+        </section>
+
+        {/* FAQ */}
+        <section aria-label="Frequently asked questions" className="pt-16">
+          <div className="border-t border-hairline pt-14">
+            <script
+              type="application/ld+json"
+              dangerouslySetInnerHTML={{
+                __html: JSON.stringify(FAQ_PAGE_SCHEMA),
+              }}
+            />
+            <p className="mono-eyebrow text-mute">FAQ</p>
+            <h2 className="display-lg mt-3 text-ink">
+              Frequently asked questions
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-relaxed text-body">
+              Quick answers about what Clips Track tracks, how often it updates,
+              and how your data is handled.
+            </p>
+            <div className="mt-6 divide-y divide-hairline border-y border-hairline">
+              {FAQS.map((faq) => (
+                <details key={faq.q} className="group">
+                  <summary className="flex cursor-pointer select-none items-center justify-between gap-4 py-4 text-sm font-medium text-ink hover:text-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link [&::-webkit-details-marker]:hidden">
+                    {faq.q}
+                    <span
+                      aria-hidden="true"
+                      className="text-lg leading-none text-mute transition-transform duration-200 group-open:rotate-45"
+                    >
+                      +
+                    </span>
+                  </summary>
+                  <p className="pb-5 pr-8 text-sm leading-relaxed text-body">
+                    {faq.a}
+                  </p>
+                </details>
+              ))}
             </div>
           </div>
         </section>
