@@ -46,6 +46,7 @@ export interface LoadedChannel {
   oldVideoCount: number;
   latestVideoCount: number;
   backfilled: boolean;
+  minLikeRatio: number | null;
   videos: LoadedVideo[];
 }
 
@@ -65,6 +66,7 @@ function serializeChannel(channel: ChannelWithInclude): LoadedChannel {
     oldVideoCount: channel.oldVideoCount,
     latestVideoCount: channel.latestVideoCount,
     backfilled: channel.backfilled,
+    minLikeRatio: channel.minLikeRatio,
     videos: channel.videos.map((video) => {
       const latest = video.snapshots[0];
       const previous = video.snapshots[1];

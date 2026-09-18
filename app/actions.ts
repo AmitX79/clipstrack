@@ -30,6 +30,16 @@ function parseVideoCount(raw: FormDataEntryValue | null, fallback: number): numb
   return Math.min(Math.max(Math.round(n), 0), 200);
 }
 
+// Parse the optional "min like ratio %" alert threshold. Blank/non-numeric ->
+// null (no check); otherwise clamped to [0, 100].
+function parseMinLikeRatio(raw: FormDataEntryValue | null): number | null {
+  const text = String(raw ?? "").trim();
+  if (!text) return null;
+  const n = Number(text);
+  if (!Number.isFinite(n)) return null;
+  return Math.min(Math.max(Math.round(n), 0), 100);
+}
+
 const MAX_HANDLES = 25;
 
 // "mrbeast, @veritasium / mrbeast@tt" -> ["mrbeast", "veritasium"], deduped.
@@ -69,6 +79,7 @@ export async function addChannels(
   // absent — re-adding a handle must not turn tracking off unless it was set
   // to 0 explicitly.
   const latestVideoCount = parseVideoCount(formData.get("latestVideoCount"), 8);
+  const minLikeRatio = parseMinLikeRatio(formData.get("minLikeRatio"));
 
   try {
     await prisma.user.createMany({ data: [{ id: userId }], skipDuplicates: true });
@@ -93,6 +104,7 @@ export async function addChannels(
             profileUrl: profileUrlFor(platform, username),
             oldVideoCount,
             latestVideoCount,
+            minLikeRatio,
           },
         });
       } else {
@@ -109,11 +121,13 @@ export async function addChannels(
             profileUrl: profileUrlFor(platform, username),
             oldVideoCount,
             latestVideoCount,
+            minLikeRatio,
           },
           update: {
             profileUrl: profileUrlFor(platform, username),
             oldVideoCount,
             latestVideoCount,
+            minLikeRatio,
           },
         });
       }
@@ -166,21 +180,30 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
   }
 }
 
-// Update a channel's old/latest video-count config (Edit button on each card).
+// Update a channel's video-config (Edit button on each card): old/latest
+// count windows plus the optional min-like-ratio alert threshold.
 export async function editChannel(
   id: string,
-  counts: { oldVideoCount: number; latestVideoCount: number },
+  counts: {
+    oldVideoCount: number;
+    latestVideoCount: number;
+    minLikeRatio: number | null;
+  },
 ): Promise<EditChannelResult> {
   const oldVideoCount = Math.min(Math.max(Math.round(counts.oldVideoCount || 0), 0), 200);
   const latestVideoCount = Math.min(
     Math.max(Math.round(counts.latestVideoCount || 0), 0),
     200,
   );
+  const minLikeRatio =
+    counts.minLikeRatio == null
+      ? null
+      : Math.min(Math.max(Math.round(counts.minLikeRatio), 0), 100);
 
   try {
     const channel = await prisma.channel.update({
       where: { id },
-      data: { oldVideoCount, latestVideoCount },
+      data: { oldVideoCount, latestVideoCount, minLikeRatio },
     });
     revalidatePath("/tracked");
     return { ok: true, channel: `@${channel.username}` };

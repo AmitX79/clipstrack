@@ -59,10 +59,16 @@ model Channel {
   // recent *existing* videos to backfill once; latestVideoCount = how many of
   // the newest uploads to keep tracking on every sync. `backfilled` flips true
   // after the one-time old-video backfill has run.
-  oldVideoCount   Int     @default(8)
-  latestVideoCount Int    @default(8)
-  backfilled      Boolean @default(false)
-  createdAt   DateTime  @default(now())
+oldVideoCount    Int      @default(8)
+  latestVideoCount Int      @default(8)
+  backfilled       Boolean  @default(false)
+
+  // Optional alert threshold (percent): when set, videos whose like-ratio
+  // (likes/views %) drops below this are flagged in the channel card. NULL =
+  // no threshold check for this channel.
+  minLikeRatio Int?
+
+  createdAt        DateTime @default(now())
   updatedAt   DateTime  @updatedAt
 
   userId    String

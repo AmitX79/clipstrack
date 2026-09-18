@@ -171,6 +171,8 @@ function EditPanel({
     const data = new FormData(event.currentTarget);
     const oldVideoCount = Number(data.get("oldVideoCount") ?? "");
     const latestVideoCount = Number(data.get("latestVideoCount") ?? "");
+    const rawRatio = String(data.get("minLikeRatio") ?? "").trim();
+    const minLikeRatio = rawRatio === "" ? null : Number(rawRatio);
     if (
       !Number.isFinite(oldVideoCount) ||
       !Number.isFinite(latestVideoCount) ||
@@ -180,10 +182,19 @@ function EditPanel({
       setError("Counts must be whole numbers between 0 and 200.");
       return;
     }
+    if (
+      minLikeRatio !== null &&
+      (!Number.isFinite(minLikeRatio) || minLikeRatio < 0 || minLikeRatio > 100)
+    ) {
+      setError("Min like ratio must be between 0 and 100, or left empty.");
+      return;
+    }
     startTransition(async () => {
       const result = await editChannel(channel.id, {
         oldVideoCount: Math.min(Math.round(oldVideoCount), 200),
         latestVideoCount: Math.min(Math.round(latestVideoCount), 200),
+        minLikeRatio:
+          minLikeRatio === null ? null : Math.min(Math.round(minLikeRatio), 100),
       });
       if (!result.ok) {
         setError(result.error);
@@ -210,6 +221,15 @@ function EditPanel({
         label="Latest videos count"
         hint="Newest uploads to track going forward"
         defaultValue={channel.latestVideoCount}
+      />
+      <Field
+        name="minLikeRatio"
+        label="Min ratio %"
+        hint="Optional — flag videos below this like-ratio"
+        defaultValue={channel.minLikeRatio}
+        required={false}
+        min={0}
+        max={100}
       />
       <div className="flex items-center gap-2">
         <button
@@ -238,11 +258,17 @@ function Field({
   label,
   hint,
   defaultValue,
+  required = true,
+  min = 0,
+  max = 200,
 }: {
   name: string;
   label: string;
   hint: string;
-  defaultValue: number;
+  defaultValue: number | null;
+  required?: boolean;
+  min?: number;
+  max?: number;
 }) {
   return (
     <label htmlFor={name} className="flex min-w-[120px] flex-1 flex-col gap-1">
@@ -251,12 +277,12 @@ function Field({
         id={name}
         name={name}
         type="number"
-        min={0}
-        max={200}
+        min={min}
+        max={max}
         step={1}
         inputMode="numeric"
-        defaultValue={defaultValue}
-        required
+        defaultValue={defaultValue ?? ""}
+        required={required}
         aria-describedby={`${name}-hint`}
         className="h-8 w-full rounded-[6px] border border-hairline bg-elevated px-2.5 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated focus-visible:border-link"
       />
@@ -345,6 +371,7 @@ export function ChannelCard({
           sortBy={sortBy}
           layout={layout}
           platform={channel.platform}
+          minLikeRatio={channel.minLikeRatio}
         />
       )}
       {old.length > 0 && (
@@ -355,6 +382,7 @@ export function ChannelCard({
           sortBy={sortBy}
           layout={layout}
           platform={channel.platform}
+          minLikeRatio={channel.minLikeRatio}
         />
       )}
 
@@ -387,6 +415,7 @@ function VideoSection({
   sortBy,
   layout,
   platform,
+  minLikeRatio,
 }: {
   label: string;
   count: number;
@@ -394,6 +423,7 @@ function VideoSection({
   sortBy: SortKey;
   layout: VideoLayout;
   platform: PlatformValue;
+  minLikeRatio: number | null;
 }) {
   const sorted = sortVideos(videos, sortBy);
   return (
@@ -415,6 +445,7 @@ function VideoSection({
             video={video}
             platform={platform}
             layout={layout}
+            minLikeRatio={minLikeRatio}
           />
         ))}
       </ul>
@@ -426,16 +457,23 @@ function VideoRow({
   video,
   platform,
   layout,
+  minLikeRatio,
 }: {
   video: LoadedVideo;
   platform: PlatformValue;
   layout: VideoLayout;
+  minLikeRatio: number | null;
 }) {
   const now = useNow();
   const latest = video.latest;
   const likes = latest?.likes ?? 0;
   const comments = latest?.comments ?? 0;
   const ratio = latest ? formatLikeRatio(likes, latest.views) : null;
+  const views = latest?.views ?? null;
+  const likeRatioPct =
+    views != null && views > 0 ? (likes / views) * 100 : null;
+  const belowMin =
+    minLikeRatio != null && likeRatioPct != null && likeRatioPct < minLikeRatio;
   const growth = latest
     ? formatGrowthPerHour(
         video.previous
@@ -517,7 +555,33 @@ function VideoRow({
                 <dt className="mono-eyebrow text-faint">Likes</dt>
                 <dd className="mt-0.5 whitespace-nowrap tabular-nums text-body">
                   {formatFullNumber(likes)}
-                  {ratio && <span className="ml-1 text-xs text-mute">{ratio}</span>}
+                  {ratio && (
+                    <span
+                      className={`ml-1 text-xs ${
+                        belowMin ? "font-medium text-error" : "text-mute"
+                      }`}
+                    >
+                      {ratio}
+                    </span>
+                  )}
+                  {belowMin && (
+                    <span
+                      title={`Like-ratio ${ratio} below the ${minLikeRatio}% minimum`}
+                      className="ml-1 inline-flex items-center align-[-1px] text-error"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 24 24"
+                        fill="currentColor"
+                        className="h-3.5 w-3.5"
+                      >
+                        <path d="M12 2 1 21h22L12 2Zm1 14.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0Zm-.5-2.5h-1V9h1v5Z" />
+                      </svg>
+                      <span className="sr-only">
+                        Below {minLikeRatio}% min like-ratio
+                      </span>
+                    </span>
+                  )}
                 </dd>
               </span>
               <span>

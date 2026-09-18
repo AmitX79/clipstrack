@@ -113,6 +113,21 @@ export function AddChannelBar() {
             className="w-14 bg-transparent text-sm tabular-nums text-ink focus-visible:outline-none"
           />
         </label>
+        <label className="flex h-11 items-center gap-2 rounded-[6px] border border-hairline bg-elevated px-2.5">
+          <span className="mono-eyebrow text-mute">Ratio%</span>
+          <input
+            name="minLikeRatio"
+            type="number"
+            min={0}
+            max={100}
+            step={1}
+            inputMode="numeric"
+            placeholder="—"
+            aria-label="Min like ratio percent, optional"
+            title="Optional: flag videos whose like-ratio (likes/views %) falls below this"
+            className="w-14 bg-transparent text-sm tabular-nums text-ink placeholder:text-faint focus-visible:outline-none"
+          />
+        </label>
         <button
           type="submit"
           disabled={isPending}
@@ -136,7 +151,8 @@ export function AddChannelBar() {
       <p className="text-xs leading-relaxed text-mute">
         Separate handles with commas — each is added on the platform you pick,
         in one go. The first snapshot starts immediately, then one sits every
-        hour. Re-adding a handle updates it instead of duplicating.
+        hour. Re-adding a handle updates it instead of duplicating. A Ratio% set
+        per handle flags videos with a lower like-ratio as a warning.
       </p>
     </form>
   );
