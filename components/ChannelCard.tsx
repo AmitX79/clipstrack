@@ -286,9 +286,11 @@ function useNow(): number | null {
 export function ChannelCard({
   channel,
   sortBy,
+  layout,
 }: {
   channel: LoadedChannel;
   sortBy: SortKey;
+  layout: VideoLayout;
 }) {
   const [editing, setEditing] = useState(false);
   const now = useNow();
@@ -341,6 +343,7 @@ export function ChannelCard({
           count={latest.length}
           videos={latest}
           sortBy={sortBy}
+          layout={layout}
           platform={channel.platform}
         />
       )}
@@ -350,6 +353,7 @@ export function ChannelCard({
           count={old.length}
           videos={old}
           sortBy={sortBy}
+          layout={layout}
           platform={channel.platform}
         />
       )}
@@ -381,12 +385,14 @@ function VideoSection({
   count,
   videos,
   sortBy,
+  layout,
   platform,
 }: {
   label: string;
   count: number;
   videos: LoadedVideo[];
   sortBy: SortKey;
+  layout: VideoLayout;
   platform: PlatformValue;
 }) {
   const sorted = sortVideos(videos, sortBy);
@@ -396,9 +402,20 @@ function VideoSection({
         <span>{label}</span>
         <span className="text-xs tabular-nums text-faint">{count}</span>
       </h4>
-      <ul className="mt-2 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
+      <ul
+        className={
+          layout === "horizontal"
+            ? "mt-2 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2"
+            : "mt-2 flex flex-col gap-1"
+        }
+      >
         {sorted.map((video) => (
-          <VideoRow key={video.id} video={video} platform={platform} />
+          <VideoRow
+            key={video.id}
+            video={video}
+            platform={platform}
+            layout={layout}
+          />
         ))}
       </ul>
     </section>
@@ -408,9 +425,11 @@ function VideoSection({
 function VideoRow({
   video,
   platform,
+  layout,
 }: {
   video: LoadedVideo;
   platform: PlatformValue;
+  layout: VideoLayout;
 }) {
   const now = useNow();
   const latest = video.latest;
@@ -431,21 +450,41 @@ function VideoRow({
   const updatedAt = latest ? new Date(latest.recordedAt) : new Date(video.updatedAt);
 
   return (
-    <li className="flex w-[280px] shrink-0 snap-start flex-col gap-2.5 text-sm">
+    <li
+      className={
+        layout === "horizontal"
+          ? "flex w-[280px] shrink-0 snap-start flex-col gap-2.5 text-sm"
+          : "flex gap-3 py-3 text-sm"
+      }
+    >
       {video.thumbnailUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={video.thumbnailUrl}
           alt=""
-          className="aspect-video w-full rounded-[4px] object-cover"
+          className={
+            layout === "horizontal"
+              ? "aspect-video w-full rounded-[4px] object-cover"
+              : "aspect-video w-28 shrink-0 self-center rounded-[4px] object-cover"
+          }
         />
       ) : (
         <span
           aria-hidden="true"
-          className="aspect-video w-full rounded-[4px] bg-hairline-soft"
+          className={
+            layout === "horizontal"
+              ? "aspect-video w-full rounded-[4px] bg-hairline-soft"
+              : "aspect-video w-28 shrink-0 self-center rounded-[4px] bg-hairline-soft"
+          }
         />
       )}
-      <div className="min-w-0 flex-1 flex flex-col">
+      <div
+        className={
+          layout === "horizontal"
+            ? "min-w-0 flex-1 flex flex-col"
+            : "min-w-0 flex-1"
+        }
+      >
         <a
           href={video.url}
           target="_blank"
@@ -509,14 +548,18 @@ function VideoRow({
   );
 }
 
+export type VideoLayout = "horizontal" | "vertical";
+
 export function ChannelGroupSection({
   platform,
   channels,
   sortBy,
+  layout,
 }: {
   platform: PlatformValue;
   channels: LoadedChannel[];
   sortBy: SortKey;
+  layout: VideoLayout;
 }) {
   return (
     <section aria-labelledby={`group-${platform}`} className="mt-6">
@@ -529,7 +572,12 @@ export function ChannelGroupSection({
       </h2>
       <div className="mt-4 flex flex-col gap-4">
         {channels.map((channel) => (
-          <ChannelCard key={channel.id} channel={channel} sortBy={sortBy} />
+          <ChannelCard
+            key={channel.id}
+            channel={channel}
+            sortBy={sortBy}
+            layout={layout}
+          />
         ))}
       </div>
     </section>

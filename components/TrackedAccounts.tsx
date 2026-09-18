@@ -1,15 +1,32 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ChannelGroupSection } from "@/components/ChannelCard";
+import type { VideoLayout } from "@/components/ChannelCard";
 import { SORT_OPTIONS } from "@/lib/sort";
 import type { SortKey } from "@/lib/sort";
 import { PLATFORM_VALUES } from "@/lib/types";
 import type { LoadedChannel } from "@/lib/channels";
 
+const VIDEO_LAYOUT_KEY = "clipstrack.videoLayout";
+
+function useVideoLayout(): [VideoLayout, (layout: VideoLayout) => void] {
+  const [layout, setLayout] = useState<VideoLayout>("horizontal");
+  useEffect(() => {
+    const saved = window.localStorage.getItem(VIDEO_LAYOUT_KEY);
+    if (saved === "horizontal" || saved === "vertical") setLayout(saved);
+  }, []);
+  const change = (next: VideoLayout) => {
+    setLayout(next);
+    window.localStorage.setItem(VIDEO_LAYOUT_KEY, next);
+  };
+  return [layout, change];
+}
+
 export function TrackedAccounts({ channels }: { channels: LoadedChannel[] }) {
   const [sortBy, setSortBy] = useState<SortKey>("published");
+  const [layout, setLayout] = useVideoLayout();
 
   const groups = PLATFORM_VALUES.map((platform) => ({
     platform,
@@ -51,6 +68,27 @@ export function TrackedAccounts({ channels }: { channels: LoadedChannel[] }) {
             ))}
           </select>
         </label>
+        <div
+          role="group"
+          aria-label="Video layout"
+          className="flex items-center rounded-[6px] border border-hairline bg-elevated p-0.5"
+        >
+          {(["horizontal", "vertical"] as const).map((option) => (
+            <button
+              key={option}
+              type="button"
+              onClick={() => setLayout(option)}
+              aria-pressed={layout === option}
+              className={`h-7 rounded-[4px] px-3 text-sm transition-colors ${
+                layout === option
+                  ? "bg-ink text-elevated"
+                  : "text-mute hover:text-ink"
+              }`}
+            >
+              {option === "horizontal" ? "Horizontal" : "Vertical"}
+            </button>
+          ))}
+        </div>
       </div>
       {groups.map((group) => (
         <ChannelGroupSection
@@ -58,6 +96,7 @@ export function TrackedAccounts({ channels }: { channels: LoadedChannel[] }) {
           platform={group.platform}
           channels={group.channels}
           sortBy={sortBy}
+          layout={layout}
         />
       ))}
     </>
