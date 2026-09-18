@@ -97,34 +97,36 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-canvas">
       <NavBar />
-      <main className="mx-auto max-w-6xl px-6 pb-16">
-        {/* Hero */}
+      <main className="pb-16">
+        {/* Hero — full-bleed (edge-to-edge), no contained/boxed boundary */}
         <section
           aria-label="Intro"
-          className="relative -mx-6 mb-10 overflow-hidden px-6 py-16 md:py-24"
+          className="relative mb-10 overflow-hidden"
         >
           <div aria-hidden="true" className="hero-mesh pointer-events-none absolute inset-0" />
-          <div className="relative">
-            <p className="mono-eyebrow text-mute">Multi-platform clip tracker</p>
+          <div className="relative mx-auto max-w-6xl px-6 py-16 md:py-28">
+            <p className="mono-eyebrow mono-eyebrow-lg text-mute">
+              Multi-platform clip tracker
+            </p>
             <h1 className="display-2xl mt-4 max-w-3xl text-ink">
               Every clip, tracked in full — with{" "}
               <span className="text-link">Clips Track</span>.
             </h1>
-            <p className="mt-4 max-w-lg text-base leading-relaxed text-body">
+            <p className="mt-5 max-w-xl text-lg leading-relaxed text-body md:text-xl">
               Add a YouTube, Instagram or TikTok handle. Clips Track snapshots
               each clip&apos;s views, likes and comments every hour — shown in
               full, never abbreviated.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
+            <div className="mt-10 flex flex-wrap items-center gap-3">
               <a
                 href="/tracked#add"
-                className="inline-flex h-11 items-center rounded-full bg-ink px-7 text-base font-medium text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+                className="inline-flex h-12 items-center rounded-full bg-ink px-8 text-base font-medium text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 Add a channel
               </a>
               <Link
                 href="/tracked"
-                className="inline-flex h-11 items-center rounded-full border border-hairline bg-elevated px-7 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+                className="inline-flex h-12 items-center rounded-full border border-hairline bg-elevated px-8 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 View my accounts
               </Link>
@@ -135,6 +137,8 @@ export default function Home() {
             </p>
           </div>
         </section>
+
+        <div className="mx-auto max-w-6xl px-6">
 
         {/* What is ClipsTrack */}
         <section id="about" aria-label="What is Clips Track" className="scroll-mt-24">
@@ -328,19 +332,20 @@ export default function Home() {
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
                 href="/tracked#add"
-                className="inline-flex h-11 items-center rounded-full bg-ink px-7 text-base font-medium text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+                className="inline-flex h-12 items-center rounded-full bg-ink px-8 text-base font-medium text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 Add a channel
               </a>
               <Link
                 href="/tracked"
-                className="inline-flex h-11 items-center rounded-full border border-hairline bg-elevated px-7 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+                className="inline-flex h-12 items-center rounded-full border border-hairline bg-elevated px-8 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 View my accounts
               </Link>
             </div>
           </div>
         </section>
+        </div>
       </main>
       <Footer />
     </div>

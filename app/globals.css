@@ -32,16 +32,16 @@ body {
  * display-md  = card heading (20px / -0.4px)
  */
 .display-2xl {
-  font-size: 40px;
-  line-height: 44px;
-  letter-spacing: -2px;
+  font-size: 44px;
+  line-height: 48px;
+  letter-spacing: -2.2px;
   font-weight: 600;
 }
 @media (min-width: 640px) {
   .display-2xl {
-    font-size: 48px;
-    line-height: 52px;
-    letter-spacing: -2.4px;
+    font-size: 64px;
+    line-height: 68px;
+    letter-spacing: -3px;
   }
 }
 .display-lg {
@@ -73,6 +73,12 @@ body {
   line-height: 16px;
   letter-spacing: 0;
   text-transform: uppercase;
+}
+
+/* Hero-scale eyebrow: paired with .mono-eyebrow for a larger hero label */
+.mono-eyebrow-lg {
+  font-size: 14px;
+  line-height: 20px;
 }
 
 /* The hero mesh gradient — the system's only decorative element.
