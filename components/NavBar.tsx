@@ -139,7 +139,7 @@ export function NavBar({
     (active === key ? "text-ink" : "text-body hover:text-ink");
 
   return (
-    <header className="sticky top-0 z-50 border-b border-hairline bg-canvas">
+    <header className="sticky top-0 z-50 border-b border-hairline bg-white dark:bg-elevated">
       <nav
         className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-6"
         aria-label="Primary"
@@ -240,7 +240,7 @@ export function NavBar({
 
       {/* Mobile menu panel */}
       {menuOpen && (
-        <div id="mobile-nav" className="border-t border-hairline bg-canvas sm:hidden">
+        <div id="mobile-nav" className="border-t border-hairline bg-white dark:bg-elevated sm:hidden">
           <div className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-3">
             {LINKS.map((link) => (
               <Link

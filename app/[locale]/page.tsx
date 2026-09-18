@@ -74,9 +74,9 @@ export default function Home({ params }: { params: { locale: string } }) {
         {/* Hero — full-bleed (edge-to-edge), no contained/boxed boundary */}
         <section
           aria-label={dict.hero.eyebrow}
-          className="relative mb-10 overflow-hidden"
+          className="relative mb-6 overflow-hidden"
         >
-          <div className="relative mx-auto max-w-6xl px-6 py-16 md:py-28">
+          <div className="relative mx-auto max-w-6xl px-6 pb-16 pt-10 md:pb-16 md:pt-14">
             <p className="mono-eyebrow mono-eyebrow-lg text-mute">
               {dict.hero.eyebrow}
             </p>
