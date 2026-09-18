@@ -1,16 +1,21 @@
 // Instagram — ScrapeCreators API (https://docs.scrapecreators.com).
 //
-// TikTok/YT style: two live public endpoints, no logins, no fragile HTML:
-//   - GET /v2/instagram/user/posts      recent posts reels (like/comment/play
-//                                        counts, taken_at, shortcode, thumbnails)
+// Reels only — regular photo/carousel posts are never fetched (Instagram
+// exposes no view count for them, and we never fabricate numbers). We walk
+// the posts feed and keep only VIDEO items (media_type 2), which always
+// carry a real `play_count`.
+//   - GET /v2/instagram/user/posts      recent posts (reels filtered in)
+//                                         like/comment/play counts, taken_at,
+//                                         shortcode, thumbnails
 //   - GET /v1/instagram/profile         account identity + follower/following/
-//                                        post counts (data.user)
+//                                         post counts (data.user)
 //
-// Pages of posts are walked with `next_max_id`. A profile call rounds out the
-// follower counts; if it fails the posts payload already carries identity, so
-// the sync still succeeds.
+// Pages of posts are walked with `next_max_id` until enough reels are
+// collected. A profile call rounds out the follower counts; if it fails the
+// posts payload already carries identity, so the sync still succeeds.
 
 import { scrapeGet } from "./scrapecreators";
+import { selectNearest } from "./select";
 import type {
   AccountMeta,
   ChannelStats,
@@ -70,7 +75,8 @@ interface ProfileResponse {
 
 // Instagram has no public view metric for image and image-only carousel
 // posts — only reels report play counts — so return undefined (rendered as
-// "—") instead of a misleading 0.
+// "—") instead of a misleading 0. We filter to reels anyway (media_type 2),
+// so this mostly sees real play counts.
 function snapshotViews(item: PostItem): number | undefined {
   if (typeof item.play_count === "number") return item.play_count;
   if (typeof item.ig_play_count === "number") return item.ig_play_count;
@@ -117,29 +123,38 @@ export const fetchInstagramChannel: PlatformFetcher = async (username, limit) =>
     handle: cleaned,
   });
 
-  // Walk additional pages until the requested item count is met.
-  const items = [...(first.items ?? [])];
+  // Reels only: keep VIDEO items (media_type 2). Walk additional pages until
+  // enough reels are collected — photos/carousels are dropped immediately and
+  // never counted toward the limit.
+  const collected = [...(first.items ?? [])];
   let cursor = first.next_max_id;
+  let more = first.more_available !== false;
   let pages = 0;
   while (
-    items.length < requestLimit &&
+    collected.filter((item) => item.media_type === 2).length < requestLimit &&
     cursor &&
-    first.more_available !== false &&
+    more &&
     pages < 20
   ) {
     const next = await scrapeGet<PostsResponse>("/v2/instagram/user/posts", {
       handle: cleaned,
       next_max_id: cursor,
     });
-    items.push(...(next.items ?? []));
-    cursor = next.next_max_id;
+    collected.push(...(next.items ?? []));
+    cursor = next.next_max_id ?? cursor;
+    more = next.more_available !== false;
     pages += 1;
   }
-  // Pick the N most recent posts by nearest date first — never an even split
-  // per day. Pages arrive newest-first, but an explicit sort makes the pick
+
+  // The N most recent reels by nearest date first — never an even split per
+  // day. Pages arrive newest-first, but the explicit sort makes the pick
   // exact regardless of platform ordering.
-  const ordered = [...items].sort((a, b) => (b.taken_at ?? 0) - (a.taken_at ?? 0));
-  const sliced = ordered.slice(0, requestLimit);
+  const sliced = selectNearest(
+    collected,
+    requestLimit,
+    (item) => item.taken_at,
+    (item) => item.media_type === 2,
+  );
 
   // Profile call rounds out follower/following/post totals. Tolerated if it
   // fails — identity already comes from the posts payload.

@@ -10,6 +10,7 @@
 // `region=US` (the default is GB).
 
 import { scrapeGet } from "./scrapecreators";
+import { selectNearest } from "./select";
 import type {
   AccountMeta,
   ChannelStats,
@@ -31,6 +32,9 @@ interface TtAweme {
   aweme_id?: string | number;
   desc?: string;
   create_time?: number;
+  // TikTok photo-mode posts carry image_post_info; pure videos don't. Channel
+  // subscriptions only track videos, so image posts are always filtered out.
+  image_post_info?: unknown;
   author?: {
     unique_id?: string;
     nickname?: string;
@@ -54,7 +58,18 @@ interface TtAweme {
     cover?: { url_list?: string[] };
     dynamic_cover?: { url_list?: string[] };
     animated_cover?: { url_list?: string[] };
+    play_addr?: { url_list?: string[] };
   };
+}
+
+// A TikTok item counts as a video only if it is not a photo-mode post
+// (image_post_info is set for those) and carries a playable video URL.
+function isVideoPost(item: TtAweme): boolean {
+  return Boolean(
+    !item.image_post_info &&
+      item.video &&
+      item.video.play_addr?.url_list?.length,
+  );
 }
 
 // Browsers can't decode TikTok's .heic images. The CDN hands back several
@@ -133,30 +148,36 @@ export const fetchTikTokChannel: PlatformFetcher = async (username, limit) => {
     });
   }
 
-  const items = [...(first.aweme_list ?? [])];
+  // Videos only: drop photo-mode items (they carry image_post_info and no real
+  // play count). Walk additional pages until enough videos are collected.
+  const collected = [...(first.aweme_list ?? [])];
   let cursor = first.max_cursor;
+  let more = first.has_more !== 0;
   let pages = 0;
   while (
-    items.length < requestLimit &&
+    collected.filter(isVideoPost).length < requestLimit &&
     cursor != null &&
-    first.has_more !== 0 &&
+    more &&
     pages < 20
   ) {
     const next = await scrapeGet<TtVideosResponse>(
       "/v3/tiktok/profile/videos",
       { handle: cleaned, max_cursor: String(cursor) },
     );
-    items.push(...(next.aweme_list ?? []));
-    cursor = next.max_cursor;
+    collected.push(...(next.aweme_list ?? []));
+    cursor = next.max_cursor ?? cursor;
+    more = next.has_more !== 0;
     pages += 1;
   }
 
-  // Pick the N most recent by nearest date first — never an even split per
-  // day. Pages arrive newest-first; sorting makes it exact regardless.
-  const ordered = [...items].sort(
-    (a, b) => (b.create_time ?? 0) - (a.create_time ?? 0),
+  // The N most recent videos by nearest date first — never an even split per
+  // day. Pages arrive newest-first; the explicit sort makes it exact.
+  const sliced = selectNearest(
+    collected,
+    requestLimit,
+    (item) => item.create_time,
+    isVideoPost,
   );
-  const sliced = ordered.slice(0, requestLimit);
   const firstItem = first.aweme_list?.[0] ?? sliced[0];
   const author = firstItem?.author ?? {};
 
