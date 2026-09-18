@@ -58,6 +58,19 @@ interface YtVideoItem {
   };
 }
 
+// Pick the largest thumbnail variant the API returned (default is only
+// 120x90 and looks blurry once the card scales it up).
+function pickThumb(
+  thumbs?: Record<string, { url?: string }>,
+): string | undefined {
+  if (!thumbs) return undefined;
+  for (const key of ["maxres", "standard", "high", "medium", "default"]) {
+    const url = thumbs[key]?.url;
+    if (url) return url;
+  }
+  return undefined;
+}
+
 // ISO 8601 duration ("PT2M45S") -> seconds; undefined when unparsable.
 function parseIsoDuration(iso: string | undefined): number | undefined {
   if (!iso) return undefined;
@@ -99,7 +112,7 @@ export const fetchYouTubeChannel: PlatformFetcher = async (username, limit) => {
     username,
     displayName: item.snippet?.title ?? username,
     externalId: item.id,
-    avatarUrl: item.snippet?.thumbnails?.["default"]?.url,
+    avatarUrl: pickThumb(item.snippet?.thumbnails),
     profileUrl: `https://www.youtube.com/${handle}`,
   };
 
@@ -155,7 +168,7 @@ export const fetchYouTubeChannel: PlatformFetcher = async (username, limit) => {
             externalId: v.id,
             title: v.snippet?.title,
             url: `https://www.youtube.com/watch?v=${v.id}`,
-            thumbnailUrl: v.snippet?.thumbnails?.["default"]?.url,
+            thumbnailUrl: pickThumb(v.snippet?.thumbnails),
             publishedAt: v.snippet?.publishedAt
               ? new Date(v.snippet.publishedAt)
               : undefined,
