@@ -202,6 +202,11 @@ function EditPanel({
         setError(result.error);
         return;
       }
+      // Raise/lower windows are applied in editChannel; the follow-up sync
+      // re-fills any raised bucket and refreshes stats so the dashboard
+      // reflects the new counts immediately instead of after the hourly cron.
+      const syncResult = await refreshChannel(channel.id);
+      if (!syncResult.ok) setError(syncResult.error);
       onSaved();
       router.refresh();
     });

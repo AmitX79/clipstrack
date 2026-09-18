@@ -185,8 +185,29 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
   }
 }
 
+// Trim one tracked bucket (isBackfill=true = Old, false = Latest) down to
+// `keep` videos, retaining the most recent N by publish date (nearest-date
+// first, same as backfill). Videos past the top-N are removed from track+view
+// along with their snapshot history.
+async function trimBucketToCount(
+  channelId: string,
+  isBackfill: boolean,
+  keep: number,
+): Promise<void> {
+  const videos = await prisma.video.findMany({
+    where: { channelId, isBackfill },
+    orderBy: { publishedAt: "desc" },
+    select: { id: true },
+  });
+  if (videos.length <= keep) return;
+  const drop = videos.slice(keep).map((video) => video.id);
+  await prisma.video.deleteMany({ where: { id: { in: drop } } });
+}
+
 // Update a channel's video-config (Edit button on each card): old/latest
-// count windows plus the optional min-like-ratio alert threshold.
+// count windows plus the optional min-like-ratio alert threshold. Lowered
+// windows are trimmed to match right away; a raised Old window re-opens the
+// backfill so the caller's follow-up refresh collects the older videos.
 export async function editChannel(
   id: string,
   counts: {
@@ -208,6 +229,25 @@ export async function editChannel(
       where: { id },
       data: { oldVideoCount, latestVideoCount, minLikeRatio },
     });
+
+    // Lowered window on either bucket? Trim to the most recent N immediately.
+    await trimBucketToCount(channel.id, true, channel.oldVideoCount);
+    await trimBucketToCount(channel.id, false, channel.latestVideoCount);
+
+    // Raised Old window on an already-backfilled channel? Re-open the one-time
+    // backfill so the immediate refresh picks up the additional older videos.
+    if (channel.backfilled && channel.oldVideoCount > 0) {
+      const oldTracked = await prisma.video.count({
+        where: { channelId: channel.id, isBackfill: true },
+      });
+      if (channel.oldVideoCount > oldTracked) {
+        await prisma.channel.update({
+          where: { id: channel.id },
+          data: { backfilled: false },
+        });
+      }
+    }
+
     revalidatePath("/tracked");
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {
