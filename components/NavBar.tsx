@@ -144,7 +144,8 @@ export function NavBar({
         className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-6"
         aria-label="Primary"
       >
-        <Link href={localizedHref(locale, "")} className="text-base font-medium tracking-[-0.4px] text-ink">
+        <Link href={localizedHref(locale, "")} className="flex items-center gap-2 text-base font-medium tracking-[-0.4px] text-ink">
+          <img src="/logo.svg" alt="" width={28} height={28} className="h-7 w-7 shrink-0" />
           ClipsTrack
         </Link>
 
