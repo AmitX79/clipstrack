@@ -1,4 +1,4 @@
-import Link from "next/link";
+import type { Metadata } from "next";
 import { AddChannelBar } from "@/components/AddChannelBar";
 import { Footer } from "@/components/Footer";
 import { NavBar } from "@/components/NavBar";
@@ -8,6 +8,13 @@ import type { LoadedChannel } from "@/lib/channels";
 import { getVisitorId } from "@/lib/visitor";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "My Accounts",
+  description:
+    "Your tracked YouTube Shorts, Instagram Reels and TikTok video channels — private to you, updated hourly.",
+  robots: { index: false, follow: true },
+};
 
 export default async function TrackedPage() {
   const userId = getVisitorId();
@@ -46,12 +53,6 @@ export default async function TrackedPage() {
               hour, always shown in full, never abbreviated.
             </p>
           </div>
-          <Link
-            href="#add"
-            className="inline-flex h-10 items-center rounded-full border border-hairline bg-elevated px-5 text-sm font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
-          >
-            Add another
-          </Link>
         </section>
 
         <div className="pt-6">
