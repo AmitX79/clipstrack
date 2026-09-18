@@ -90,13 +90,13 @@ export default function Home({ params }: { params: { locale: string } }) {
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <a
-                href={localizedHref(locale, "/tracked#add")}
+                href={localizedHref(locale, "/accounts#add")}
                 className="inline-flex h-12 items-center rounded-full bg-ink px-8 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 {dict.hero.add}
               </a>
               <Link
-                href={localizedHref(locale, "/tracked")}
+                href={localizedHref(locale, "/accounts")}
                 className="inline-flex h-12 items-center rounded-full border border-hairline bg-elevated px-8 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 {dict.hero.view}
@@ -220,13 +220,13 @@ export default function Home({ params }: { params: { locale: string } }) {
             <h2 className="display-lg mt-3 text-ink">{dict.cta.title}</h2>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
-                href={localizedHref(locale, "/tracked#add")}
+                href={localizedHref(locale, "/accounts#add")}
                 className="inline-flex h-12 items-center rounded-full bg-ink px-8 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 {dict.hero.add}
               </a>
               <Link
-                href={localizedHref(locale, "/tracked")}
+                href={localizedHref(locale, "/accounts")}
                 className="inline-flex h-12 items-center rounded-full border border-hairline bg-elevated px-8 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 {dict.hero.view}

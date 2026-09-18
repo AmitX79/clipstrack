@@ -99,7 +99,7 @@ function serializeChannel(channel: ChannelWithInclude): LoadedChannel {
   };
 }
 
-// A given visitor's tracked channels (for the /tracked page).
+// A given visitor's tracked channels (for the /accounts page).
 export async function loadChannels(userId: string): Promise<LoadedChannel[]> {
   const channels = await prisma.channel.findMany({
     where: { userId },

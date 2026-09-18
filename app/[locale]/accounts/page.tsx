@@ -24,14 +24,14 @@ export function generateMetadata({
   const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const dict = getDictionary(locale);
   const languages = Object.fromEntries(
-    LOCALES.map((l) => [l, localizedHref(l, "/tracked")]),
+    LOCALES.map((l) => [l, localizedHref(l, "/accounts")]),
   );
   return {
     title: dict.meta.trackedTitle,
     description: dict.meta.trackedDescription,
     robots: { index: false, follow: true },
     alternates: {
-      canonical: localizedHref(locale, "/tracked"),
+      canonical: localizedHref(locale, "/accounts"),
       languages,
     },
   };
@@ -52,14 +52,14 @@ export default async function TrackedPage({
     try {
       channels = await loadChannels(userId);
     } catch (err) {
-      console.error("[tracked] db query failed:", err);
+      console.error("[accounts] db query failed:", err);
       dbError = true;
     }
   }
 
   return (
     <div className="min-h-screen bg-canvas">
-      <NavBar active="tracked" locale={locale} />
+      <NavBar active="accounts" locale={locale} />
       <main className="mx-auto max-w-6xl px-6 pb-12">
         <section
           aria-label={dict.acct.eyebrow}

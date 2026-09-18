@@ -68,7 +68,7 @@ export function NavBar({
   active,
   locale,
 }: {
-  active?: "home" | "tracked";
+  active?: "home" | "accounts";
   locale: Locale;
 }) {
   const router = useRouter();
@@ -81,7 +81,7 @@ export function NavBar({
 
   const LINKS = [
     { href: localizedHref(locale, "/#how"), label: dict.nav.how, key: "how" },
-    { href: localizedHref(locale, "/tracked"), label: dict.nav.accounts, key: "tracked" },
+    { href: localizedHref(locale, "/accounts"), label: dict.nav.accounts, key: "accounts" },
   ] as const;
 
   // Sync local toggle state after hydration (class is already set by inline
@@ -218,7 +218,7 @@ export function NavBar({
 
           {/* Desktop CTA */}
           <Link
-            href={localizedHref(locale, "/tracked#add")}
+            href={localizedHref(locale, "/accounts#add")}
             className="hidden rounded-[6px] bg-ink px-4 py-2.5 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 sm:inline-flex"
           >
             {dict.nav.add}
@@ -254,7 +254,7 @@ export function NavBar({
               </Link>
             ))}
             <Link
-              href={localizedHref(locale, "/tracked#add")}
+href={localizedHref(locale, "/accounts#add")}
               onClick={() => setMenuOpen(false)}
               className="mt-2 rounded-[6px] bg-ink px-4 py-2.5 text-center text-base font-medium text-on-ink hover:bg-ink-press"
             >
