@@ -93,6 +93,7 @@ interface TtItem {
   createTime?: number;
   stats?: {
     playCount?: number;
+    viewCount?: number;
     diggCount?: number;
     commentCount?: number;
     collectCount?: number;
@@ -151,8 +152,14 @@ function parsePosts(items: TtItem[] | undefined): MediaSnapshot[] {
       if (!meta.externalId || !meta.url) continue;
 
       const s = item.stats ?? {};
+      // TikTok posts always carry play counts. An item with neither plays nor
+      // any engagement means the scrape came back malformed (e.g. a bot-wall
+      // or mislabeled cross-platform data) — skip it rather than persisting a
+      // bogus "0" or null view row.
+      const views = s.playCount ?? s.viewCount ?? 0;
+      if (s.diggCount == null && s.commentCount == null && views === 0) continue;
       const stats: MediaStats = {
-        views: s.playCount ?? 0,
+        views,
         likes: s.diggCount ?? 0,
         comments: s.commentCount ?? 0,
         favorites: s.collectCount ?? 0,
