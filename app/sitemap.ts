@@ -1,14 +1,19 @@
 import type { MetadataRoute } from "next";
-import { LOCALES } from "@/lib/i18n";
+import { DEFAULT_LOCALE, LOCALES, localizedHref } from "@/lib/i18n";
 
 const base = "https://clipstrack.vercel.app";
+
+function hrefFor(locale: (typeof LOCALES)[number], path: string): string {
+  const p = localizedHref(locale, path);
+  return p === "/" ? base : `${base}${p}`;
+}
 
 function variants(path: string): Record<string, string> {
   const languages: Record<string, string> = {};
   for (const locale of LOCALES) {
-    languages[locale] = `${base}/${locale}${path}`;
+    languages[locale] = hrefFor(locale, path);
   }
-  languages["x-default"] = `${base}/en${path}`;
+  languages["x-default"] = hrefFor(DEFAULT_LOCALE, path);
   return languages;
 }
 
@@ -17,7 +22,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   for (const locale of LOCALES) {
     entries.push({
-      url: `${base}/${locale}`,
+      url: hrefFor(locale, ""),
       lastModified: new Date(),
       changeFrequency: "weekly",
       priority: 1,
@@ -27,7 +32,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   for (const locale of LOCALES) {
     entries.push({
-      url: `${base}/${locale}/tracked`,
+      url: hrefFor(locale, "/tracked"),
       lastModified: new Date(),
       changeFrequency: "hourly",
       priority: 0.4,

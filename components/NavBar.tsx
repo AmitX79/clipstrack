@@ -4,9 +4,11 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
+  DEFAULT_LOCALE,
   LOCALES,
   LOCALE_LABELS,
   getDictionary,
+  localizedHref,
   type Locale,
 } from "@/lib/i18n";
 
@@ -78,8 +80,8 @@ export function NavBar({
   const langRef = useRef<HTMLDivElement>(null);
 
   const LINKS = [
-    { href: `/${locale}/#how`, label: dict.nav.how, key: "how" },
-    { href: `/${locale}/tracked`, label: dict.nav.accounts, key: "tracked" },
+    { href: localizedHref(locale, "/#how"), label: dict.nav.how, key: "how" },
+    { href: localizedHref(locale, "/tracked"), label: dict.nav.accounts, key: "tracked" },
   ] as const;
 
   // Sync local toggle state after hydration (class is already set by inline
@@ -124,13 +126,16 @@ export function NavBar({
   }
 
   function switchLocale(next: Locale) {
-    const rest = pathname.replace(new RegExp(`^/${locale}`), "") || "/";
+    const rest =
+      locale === DEFAULT_LOCALE
+        ? pathname
+        : pathname.replace(new RegExp(`^/${locale}`), "") || "/";
     setLangOpen(false);
-    router.push(`/${next}${rest === "/" ? "" : rest}`);
+    router.push(localizedHref(next, rest === "/" ? "" : rest));
   }
 
   const linkClass = (key: string) =>
-    "rounded-full px-4 py-2 text-base focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 " +
+    "rounded-full px-3 py-2 text-sm tracking-[-0.02em] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 " +
     (active === key ? "text-ink" : "text-body hover:text-ink");
 
   return (
@@ -139,7 +144,7 @@ export function NavBar({
         className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-6"
         aria-label="Primary"
       >
-        <Link href={`/${locale}`} className="text-lg font-semibold tracking-[-0.4px] text-ink">
+        <Link href={localizedHref(locale, "")} className="text-base font-medium tracking-[-0.4px] text-ink">
           ClipsTrack
         </Link>
 
@@ -213,7 +218,7 @@ export function NavBar({
 
           {/* Desktop CTA */}
           <Link
-            href={`/${locale}/tracked#add`}
+            href={localizedHref(locale, "/tracked#add")}
             className="hidden rounded-[6px] bg-ink px-4 py-2.5 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 sm:inline-flex"
           >
             {dict.nav.add}
@@ -243,13 +248,13 @@ export function NavBar({
                 href={link.href}
                 aria-current={active === link.key ? "page" : undefined}
                 onClick={() => setMenuOpen(false)}
-                className="rounded-[6px] px-3 py-2.5 text-base text-ink hover:bg-hairline-soft"
+                className="rounded-[6px] px-3 py-2.5 text-sm text-ink hover:bg-hairline-soft"
               >
                 {link.label}
               </Link>
             ))}
             <Link
-              href={`/${locale}/tracked#add`}
+              href={localizedHref(locale, "/tracked#add")}
               onClick={() => setMenuOpen(false)}
               className="mt-2 rounded-[6px] bg-ink px-4 py-2.5 text-center text-base font-medium text-on-ink hover:bg-ink-press"
             >

@@ -1,5 +1,12 @@
 import type { Metadata } from "next";
-import { LOCALES, getDictionary, isLocale, type Locale } from "@/lib/i18n";
+import {
+  DEFAULT_LOCALE,
+  LOCALES,
+  getDictionary,
+  isLocale,
+  localizedHref,
+  type Locale,
+} from "@/lib/i18n";
 
 export const dynamicParams = false;
 
@@ -12,23 +19,25 @@ export function generateMetadata({
 }: {
   params: { locale: string };
 }): Metadata {
-  const locale = isLocale(params.locale) ? params.locale : "en";
+  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const dict = getDictionary(locale);
-  const languages = Object.fromEntries(LOCALES.map((l) => [l, `/${l}`]));
+  const languages = Object.fromEntries(
+    LOCALES.map((l) => [l, localizedHref(l, "")]),
+  );
   return {
     title: dict.meta.title,
     description: dict.meta.description,
     alternates: {
-      canonical: `/${locale}`,
+      canonical: localizedHref(locale, ""),
       languages: {
         ...languages,
-        "x-default": "/en",
+        "x-default": localizedHref(DEFAULT_LOCALE, ""),
       },
     },
     openGraph: {
       type: "website",
       siteName: "Clips Track",
-      url: `/${locale}`,
+      url: localizedHref(locale, ""),
       title: dict.meta.ogTitle,
       description: dict.meta.ogDescription,
       images: [
@@ -68,7 +77,7 @@ export default function LocaleLayout({
   children: React.ReactNode;
   params: { locale: string };
 }>) {
-  const locale = isLocale(params.locale) ? params.locale : "en";
+  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   return (
     <>
       <script

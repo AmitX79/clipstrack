@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { NavBar } from "@/components/NavBar";
-import { getDictionary, isLocale } from "@/lib/i18n";
+import { getDictionary, isLocale, localizedHref, type Locale } from "@/lib/i18n";
 import type { Dictionary } from "@/lib/i18n";
 
 function FeatureCard({
@@ -22,13 +22,13 @@ function FeatureCard({
   );
 }
 
-function webAppSchema(locale: string) {
+function webAppSchema(locale: Locale) {
   return {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     name: "Clips Track",
     alternateName: "ClipsTrack",
-    url: `https://clipstrack.vercel.app/${locale}`,
+    url: `https://clipstrack.vercel.app${localizedHref(locale, "")}`,
     description:
       "A clip tracker for YouTube Shorts, Instagram Reels and TikTok videos. Snapshots views, likes and comments every hour, shown in full numbers, so you can track video views over time.",
     applicationCategory: "UtilitiesApplication",
@@ -90,13 +90,13 @@ export default function Home({ params }: { params: { locale: string } }) {
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <a
-                href={`/${locale}/tracked#add`}
+                href={localizedHref(locale, "/tracked#add")}
                 className="inline-flex h-12 items-center rounded-full bg-ink px-8 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 {dict.hero.add}
               </a>
               <Link
-                href={`/${locale}/tracked`}
+                href={localizedHref(locale, "/tracked")}
                 className="inline-flex h-12 items-center rounded-full border border-hairline bg-elevated px-8 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 {dict.hero.view}
@@ -188,14 +188,14 @@ export default function Home({ params }: { params: { locale: string } }) {
               }}
             />
             <p className="mono-eyebrow text-mute">{dict.faq.eyebrow}</p>
-            <h2 className="display-xl mt-3 text-ink">{dict.faq.title}</h2>
+            <h2 className="mt-3 text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink">{dict.faq.title}</h2>
             <p className="mt-3 max-w-2xl text-base leading-relaxed text-body">
               {dict.faq.sub}
             </p>
             <div className="mt-6 divide-y divide-hairline border-y border-hairline">
               {faqs.map((faq) => (
                 <details key={faq.q} className="group">
-                  <summary className="flex cursor-pointer select-none items-center justify-between gap-4 py-5 text-base font-medium text-ink hover:text-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link [&::-webkit-details-marker]:hidden">
+                  <summary className="flex cursor-pointer select-none items-center justify-between gap-4 py-5 text-lg font-medium text-ink hover:text-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link [&::-webkit-details-marker]:hidden">
                     {faq.q}
                     <span
                       aria-hidden="true"
@@ -220,13 +220,13 @@ export default function Home({ params }: { params: { locale: string } }) {
             <h2 className="display-lg mt-3 text-ink">{dict.cta.title}</h2>
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
-                href={`/${locale}/tracked#add`}
+                href={localizedHref(locale, "/tracked#add")}
                 className="inline-flex h-12 items-center rounded-full bg-ink px-8 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 {dict.hero.add}
               </a>
               <Link
-                href={`/${locale}/tracked`}
+                href={localizedHref(locale, "/tracked")}
                 className="inline-flex h-12 items-center rounded-full border border-hairline bg-elevated px-8 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 {dict.hero.view}

@@ -21,3 +21,10 @@ export function tpl(template: string, params: Record<string, string | number>): 
 export function resolveLocale(value: unknown): Locale {
   return isLocale(value) ? value : DEFAULT_LOCALE;
 }
+
+// As-needed locale-prefix strategy: the default locale (English) lives at bare
+// paths ([path]), every other locale keeps its /{locale} prefix.
+export function localizedHref(locale: Locale, path: string): string {
+  if (locale === DEFAULT_LOCALE) return path === "" ? "/" : path;
+  return `/${locale}${path}`;
+}

@@ -5,7 +5,13 @@ import { NavBar } from "@/components/NavBar";
 import { TrackedAccounts } from "@/components/TrackedAccounts";
 import { loadChannels } from "@/lib/channels";
 import type { LoadedChannel } from "@/lib/channels";
-import { LOCALES, getDictionary, isLocale } from "@/lib/i18n";
+import {
+  DEFAULT_LOCALE,
+  LOCALES,
+  getDictionary,
+  isLocale,
+  localizedHref,
+} from "@/lib/i18n";
 import { getVisitorId } from "@/lib/visitor";
 
 export const dynamic = "force-dynamic";
@@ -15,17 +21,17 @@ export function generateMetadata({
 }: {
   params: { locale: string };
 }): Metadata {
-  const locale = isLocale(params.locale) ? params.locale : "en";
+  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const dict = getDictionary(locale);
   const languages = Object.fromEntries(
-    LOCALES.map((l) => [l, `/${l}/tracked`]),
+    LOCALES.map((l) => [l, localizedHref(l, "/tracked")]),
   );
   return {
     title: dict.meta.trackedTitle,
     description: dict.meta.trackedDescription,
     robots: { index: false, follow: true },
     alternates: {
-      canonical: `/${locale}/tracked`,
+      canonical: localizedHref(locale, "/tracked"),
       languages,
     },
   };
@@ -36,7 +42,7 @@ export default async function TrackedPage({
 }: {
   params: { locale: string };
 }) {
-  const locale = isLocale(params.locale) ? params.locale : "en";
+  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
   const dict = getDictionary(locale);
   const userId = getVisitorId();
 
