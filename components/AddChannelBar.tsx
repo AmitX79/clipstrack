@@ -94,7 +94,7 @@ export function AddChannelBar() {
             max={200}
             step={1}
             inputMode="numeric"
-            defaultValue={8}
+            defaultValue={4}
             aria-label="Old videos count"
             className="w-14 bg-transparent text-sm tabular-nums text-ink focus-visible:outline-none"
           />
@@ -108,7 +108,7 @@ export function AddChannelBar() {
             max={200}
             step={1}
             inputMode="numeric"
-            defaultValue={8}
+            defaultValue={4}
             aria-label="Latest videos count"
             className="w-14 bg-transparent text-sm tabular-nums text-ink focus-visible:outline-none"
           />

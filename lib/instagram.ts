@@ -46,9 +46,11 @@ interface PostItem {
   like_count?: number;
   comment_count?: number;
   play_count?: number;
+  ig_play_count?: number;
   caption?: { text?: string };
   image_versions2?: { candidates?: { url?: string }[] };
   video_versions?: { url?: string }[];
+  carousel_media?: { play_count?: number }[];
 }
 
 interface ProfileResponse {
@@ -90,6 +92,17 @@ async function scrapeGet<T>(
   return data as T;
 }
 
+function snapshotViews(item: PostItem): number {
+  if (typeof item.play_count === "number") return item.play_count;
+  if (typeof item.ig_play_count === "number") return item.ig_play_count;
+  const children = item.carousel_media ?? [];
+  if (children.length > 0) {
+    const sum = children.reduce((acc, c) => acc + (c.play_count ?? 0), 0);
+    if (sum > 0) return sum;
+  }
+  return 0;
+}
+
 function toSnapshot(item: PostItem): MediaSnapshot {
   const caption = (item.caption?.text ?? "")
     .replace(/\s+/g, " ")
@@ -110,7 +123,7 @@ function toSnapshot(item: PostItem): MediaSnapshot {
       publishedAt: item.taken_at ? new Date(item.taken_at * 1000) : undefined,
     },
     stats: {
-      views: item.play_count ?? 0,
+      views: snapshotViews(item),
       likes: item.like_count ?? 0,
       comments: item.comment_count ?? 0,
     },
