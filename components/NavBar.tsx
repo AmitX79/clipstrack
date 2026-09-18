@@ -61,6 +61,8 @@ export function NavBar({ active }: { active?: "tracked" }) {
     } catch {
       /* storage unavailable — theme still applies for this page load */
     }
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", next ? "#0a0a0b" : "#fafafa");
     setDark(next);
   }
 
