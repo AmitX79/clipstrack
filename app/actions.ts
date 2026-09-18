@@ -31,13 +31,18 @@ function parseVideoCount(raw: FormDataEntryValue | null, fallback: number): numb
 }
 
 // Parse the optional "min like ratio %" alert threshold. Blank/non-numeric ->
-// null (no check); otherwise clamped to [0, 100].
+// null (no check); otherwise clamped to [0, 100] with fractional values kept.
 function parseMinLikeRatio(raw: FormDataEntryValue | null): number | null {
   const text = String(raw ?? "").trim();
   if (!text) return null;
   const n = Number(text);
   if (!Number.isFinite(n)) return null;
-  return Math.min(Math.max(Math.round(n), 0), 100);
+  return clampRatio(n);
+}
+
+// Clamp to [0, 100] and trim float noise to two decimals (e.g. 3.499 -> 3.5).
+function clampRatio(n: number): number {
+  return Math.round(Math.min(Math.max(n, 0), 100) * 100) / 100;
 }
 
 const MAX_HANDLES = 25;
