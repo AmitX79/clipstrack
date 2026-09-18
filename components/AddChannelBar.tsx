@@ -120,12 +120,12 @@ export function AddChannelBar() {
             type="number"
             min={0}
             max={100}
-            step={1}
-            inputMode="numeric"
+            step={0.1}
+            inputMode="decimal"
             placeholder="—"
             aria-label="Min like ratio percent, optional"
             title="Optional: flag videos whose like-ratio (likes/views %) falls below this"
-            className="w-14 bg-transparent text-sm tabular-nums text-ink placeholder:text-faint focus-visible:outline-none"
+            className="w-16 bg-transparent text-sm tabular-nums text-ink placeholder:text-faint focus-visible:outline-none"
           />
         </label>
         <button

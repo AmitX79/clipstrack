@@ -63,10 +63,10 @@ oldVideoCount    Int      @default(8)
   latestVideoCount Int      @default(8)
   backfilled       Boolean  @default(false)
 
-  // Optional alert threshold (percent): when set, videos whose like-ratio
-  // (likes/views %) drops below this are flagged in the channel card. NULL =
-  // no threshold check for this channel.
-  minLikeRatio Int?
+  // Optional alert threshold (percent, fractional allowed): when set, videos
+  // whose like-ratio (likes/views %) drops below this are flagged in the
+  // channel card. NULL = no threshold check for this channel.
+  minLikeRatio Float?
 
   createdAt        DateTime @default(now())
   updatedAt   DateTime  @updatedAt

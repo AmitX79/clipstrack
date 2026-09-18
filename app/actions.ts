@@ -196,9 +196,7 @@ export async function editChannel(
     200,
   );
   const minLikeRatio =
-    counts.minLikeRatio == null
-      ? null
-      : Math.min(Math.max(Math.round(counts.minLikeRatio), 0), 100);
+    counts.minLikeRatio == null ? null : clampRatio(counts.minLikeRatio);
 
   try {
     const channel = await prisma.channel.update({

@@ -194,7 +194,9 @@ function EditPanel({
         oldVideoCount: Math.min(Math.round(oldVideoCount), 200),
         latestVideoCount: Math.min(Math.round(latestVideoCount), 200),
         minLikeRatio:
-          minLikeRatio === null ? null : Math.min(Math.round(minLikeRatio), 100),
+          minLikeRatio === null
+            ? null
+            : Math.min(Math.max(minLikeRatio, 0), 100),
       });
       if (!result.ok) {
         setError(result.error);
@@ -230,6 +232,7 @@ function EditPanel({
         required={false}
         min={0}
         max={100}
+        step={0.1}
       />
       <div className="flex items-center gap-2">
         <button
@@ -261,6 +264,7 @@ function Field({
   required = true,
   min = 0,
   max = 200,
+  step = 1,
 }: {
   name: string;
   label: string;
@@ -269,6 +273,7 @@ function Field({
   required?: boolean;
   min?: number;
   max?: number;
+  step?: number | string;
 }) {
   return (
     <label htmlFor={name} className="flex min-w-[120px] flex-1 flex-col gap-1">
@@ -279,8 +284,8 @@ function Field({
         type="number"
         min={min}
         max={max}
-        step={1}
-        inputMode="numeric"
+        step={step}
+        inputMode={step === 1 ? "numeric" : "decimal"}
         defaultValue={defaultValue ?? ""}
         required={required}
         aria-describedby={`${name}-hint`}
