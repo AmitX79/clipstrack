@@ -137,5 +137,13 @@ export const fetchYouTubeChannel: PlatformFetcher = async (username, limit) => {
     }
   }
 
-  return { account, stats: channelStats, media };
+  // N most recent by nearest date first — never an even split per day. The
+  // uploads playlist is newest-first; sort anyway so the pick is exact.
+  media.sort(
+    (a, b) =>
+      (b.meta.publishedAt?.getTime() ?? 0) - (a.meta.publishedAt?.getTime() ?? 0),
+  );
+  const trimmed = media.slice(0, wanted);
+
+  return { account, stats: channelStats, media: trimmed };
 }

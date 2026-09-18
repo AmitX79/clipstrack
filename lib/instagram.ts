@@ -135,7 +135,11 @@ export const fetchInstagramChannel: PlatformFetcher = async (username, limit) =>
     cursor = next.next_max_id;
     pages += 1;
   }
-  const sliced = items.slice(0, requestLimit);
+  // Pick the N most recent posts by nearest date first — never an even split
+  // per day. Pages arrive newest-first, but an explicit sort makes the pick
+  // exact regardless of platform ordering.
+  const ordered = [...items].sort((a, b) => (b.taken_at ?? 0) - (a.taken_at ?? 0));
+  const sliced = ordered.slice(0, requestLimit);
 
   // Profile call rounds out follower/following/post totals. Tolerated if it
   // fails — identity already comes from the posts payload.

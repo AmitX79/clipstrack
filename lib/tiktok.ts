@@ -151,7 +151,12 @@ export const fetchTikTokChannel: PlatformFetcher = async (username, limit) => {
     pages += 1;
   }
 
-  const sliced = items.slice(0, requestLimit);
+  // Pick the N most recent by nearest date first — never an even split per
+  // day. Pages arrive newest-first; sorting makes it exact regardless.
+  const ordered = [...items].sort(
+    (a, b) => (b.create_time ?? 0) - (a.create_time ?? 0),
+  );
+  const sliced = ordered.slice(0, requestLimit);
   const firstItem = first.aweme_list?.[0] ?? sliced[0];
   const author = firstItem?.author ?? {};
 

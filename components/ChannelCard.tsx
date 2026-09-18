@@ -336,10 +336,22 @@ export function ChannelCard({
       )}
 
       {latest.length > 0 && (
-        <VideoSection label="Latest" count={latest.length} videos={latest} sortBy={sortBy} />
+        <VideoSection
+          label="Latest"
+          count={latest.length}
+          videos={latest}
+          sortBy={sortBy}
+          platform={channel.platform}
+        />
       )}
       {old.length > 0 && (
-        <VideoSection label="Old" count={old.length} videos={old} sortBy={sortBy} />
+        <VideoSection
+          label="Old"
+          count={old.length}
+          videos={old}
+          sortBy={sortBy}
+          platform={channel.platform}
+        />
       )}
 
       {channel.videos.length === 0 && (
@@ -369,11 +381,13 @@ function VideoSection({
   count,
   videos,
   sortBy,
+  platform,
 }: {
   label: string;
   count: number;
   videos: LoadedVideo[];
   sortBy: SortKey;
+  platform: PlatformValue;
 }) {
   const sorted = sortVideos(videos, sortBy);
   return (
@@ -384,14 +398,20 @@ function VideoSection({
       </h4>
       <ul className="mt-1 divide-y divide-hairline">
         {sorted.map((video) => (
-          <VideoRow key={video.id} video={video} />
+          <VideoRow key={video.id} video={video} platform={platform} />
         ))}
       </ul>
     </section>
   );
 }
 
-function VideoRow({ video }: { video: LoadedVideo }) {
+function VideoRow({
+  video,
+  platform,
+}: {
+  video: LoadedVideo;
+  platform: PlatformValue;
+}) {
   const now = useNow();
   const latest = video.latest;
   const likes = latest?.likes ?? 0;
@@ -439,7 +459,16 @@ function VideoRow({ video }: { video: LoadedVideo }) {
             <dl className="mt-1.5 grid max-w-xs grid-cols-3 gap-2">
               <span>
                 <dt className="mono-eyebrow text-faint">Views</dt>
-                <dd className="mt-0.5 truncate tabular-nums text-body">
+                <dd
+                  className="mt-0.5 truncate tabular-nums text-body"
+                  title={
+                    latest.views == null
+                      ? platform === "INSTAGRAM"
+                        ? "Instagram doesn't expose a view count for photo/carousel posts — only reels"
+                        : "No view count available"
+                      : undefined
+                  }
+                >
                   {latest.views == null
                     ? "—"
                     : formatFullNumber(latest.views)}
