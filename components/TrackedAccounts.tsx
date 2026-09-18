@@ -59,7 +59,7 @@ export function TrackedAccounts({ channels }: { channels: LoadedChannel[] }) {
           <select
             value={sortBy}
             onChange={(event) => setSortBy(event.target.value as SortKey)}
-            className="ml-2 h-8 rounded-[6px] border border-hairline bg-elevated px-2.5 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated"
+            className="ml-2 h-9 rounded-[6px] border border-hairline bg-elevated px-2.5 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated"
           >
             {SORT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -79,7 +79,7 @@ export function TrackedAccounts({ channels }: { channels: LoadedChannel[] }) {
               type="button"
               onClick={() => setLayout(option)}
               aria-pressed={layout === option}
-              className={`h-7 rounded-[4px] px-3 text-sm transition-colors ${
+              className={`h-9 rounded-[4px] px-3 text-sm transition-colors ${
                 layout === option
                   ? "bg-ink text-elevated"
                   : "text-mute hover:text-ink"

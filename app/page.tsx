@@ -119,7 +119,7 @@ export default function Home() {
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <a
                 href="/tracked#add"
-                className="inline-flex h-12 items-center rounded-full bg-ink px-8 text-base font-medium text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+                className="inline-flex h-12 items-center rounded-full bg-ink px-8 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 Add a channel
               </a>
@@ -331,7 +331,7 @@ export default function Home() {
             <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
               <a
                 href="/tracked#add"
-                className="inline-flex h-12 items-center rounded-full bg-ink px-8 text-base font-medium text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+                className="inline-flex h-12 items-center rounded-full bg-ink px-8 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 Add a channel
               </a>

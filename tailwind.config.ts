@@ -2,6 +2,7 @@ import type { Config } from "tailwindcss";
 
 // Design tokens from DESIGN.md (Vercel/Geist system).
 const config: Config = {
+  darkMode: "class",
   content: [
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -10,22 +11,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        canvas: "#fafafa",
-        elevated: "#ffffff",
-        "hairline-soft": "#f2f2f2",
-        hairline: "#ebebeb",
-        ink: "#171717",
-        body: "#4d4d4d",
-        mute: "#8f8f8f",
-        faint: "#a1a1a1",
-        link: "#0070f3",
-        "link-deep": "#0761d1",
-        "link-soft": "#d3e5ff",
-        error: "#ee0000",
-        "error-deep": "#c50000",
-        warning: "#f5a623",
-        "warning-soft": "#ffefcf",
-        "warning-deep": "#ab570a",
+        canvas: "var(--canvas)",
+        elevated: "var(--elevated)",
+        "hairline-soft": "var(--hairline-soft)",
+        hairline: "var(--hairline)",
+        ink: "var(--ink)",
+        // Primary button press/hover (light mode: black, dark mode: dimmer)
+        "ink-press": "var(--ink-press)",
+        // Text on a bg-ink surface (light mode: white, dark mode: near-black)
+        "on-ink": "var(--on-ink)",
+        body: "var(--body)",
+        mute: "var(--mute)",
+        faint: "var(--faint)",
+        link: "var(--link)",
+        "link-deep": "var(--link-deep)",
+        "link-soft": "var(--link-soft)",
+        error: "var(--error)",
+        "error-deep": "var(--error-deep)",
+        warning: "var(--warning)",
+        "warning-soft": "var(--warning-soft)",
+        "warning-deep": "var(--warning-deep)",
       },
       fontFamily: {
         sans: [

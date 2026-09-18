@@ -243,7 +243,7 @@ function EditPanel({
         <button
           type="submit"
           disabled={isPending}
-          className="h-8 rounded-[6px] bg-ink px-3 text-xs font-medium text-white hover:bg-black disabled:opacity-60"
+          className="h-8 rounded-[6px] bg-ink px-3 text-xs font-medium text-on-ink hover:bg-ink-press disabled:opacity-60"
         >
           {isPending ? "Saving…" : "Save"}
         </button>

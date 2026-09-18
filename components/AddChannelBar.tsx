@@ -48,7 +48,7 @@ export function AddChannelBar() {
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link " +
     "focus-visible:ring-offset-2 focus-visible:ring-offset-elevated " +
     (active
-      ? "border-ink bg-ink text-white"
+      ? "border-ink bg-ink text-on-ink"
       : "border-hairline bg-elevated text-body hover:border-ink hover:text-ink");
 
   return (
@@ -131,7 +131,7 @@ export function AddChannelBar() {
         <button
           type="submit"
           disabled={isPending}
-          className="h-11 rounded-[6px] bg-ink px-5 text-sm font-medium text-white hover:bg-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:opacity-60"
+          className="h-11 rounded-[6px] bg-ink px-5 text-sm font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:opacity-60"
         >
           {isPending ? "Adding…" : "+ Add"}
         </button>
