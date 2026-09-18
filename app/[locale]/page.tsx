@@ -86,7 +86,7 @@ export default function Home({ params }: { params: { locale: string } }) {
             </h1>
             <p className="mt-5 max-w-xl text-lg text-body">
               {dict.hero.subtitleBefore}
-              <span className="text-link">{dict.hero.subtitleAccent}</span>
+              <span className="font-semibold text-link">{dict.hero.subtitleAccent}</span>
               {dict.hero.subtitleAfter}
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-3">
