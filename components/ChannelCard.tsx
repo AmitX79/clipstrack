@@ -10,6 +10,7 @@ import {
   formatRelativeCompact,
 } from "@/lib/format";
 import { PLATFORM_LABELS } from "@/lib/types";
+import { PlatformLogoBadge } from "@/components/PlatformLogo";
 import { sortVideos } from "@/lib/sort";
 import type { SortKey } from "@/lib/sort";
 import type { LoadedChannel, LoadedVideo } from "@/lib/channels";
@@ -293,12 +294,7 @@ export function ChannelCard({
             className="h-10 w-10 shrink-0 rounded-full object-cover"
           />
         ) : (
-          <span
-            aria-hidden="true"
-            className="flex h-10 w-10 shrink-0 select-none items-center justify-center rounded-full bg-hairline-soft text-sm font-medium text-mute"
-          >
-            {(name.trim()[0] ?? "?").toUpperCase()}
-          </span>
+          <PlatformLogoBadge platform={channel.platform} className="h-10 w-10" />
         )}
         <div className="min-w-0 flex-1">
           <h3 className="display-md truncate text-ink">{name}</h3>
