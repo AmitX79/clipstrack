@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DocumentLanguage } from "@/components/DocumentLanguage";
 import {
   DEFAULT_LOCALE,
   LOCALES,
@@ -88,6 +89,7 @@ export default function LocaleLayout({
           __html: `(function(){try{document.documentElement.lang=${JSON.stringify(locale)};}catch(e){}})();`,
         }}
       />
+      <DocumentLanguage locale={locale} />
       {children}
     </>
   );
