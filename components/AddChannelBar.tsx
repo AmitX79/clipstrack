@@ -150,7 +150,7 @@ export function AddChannelBar({ locale }: { locale: Locale }) {
           </p>
         )}
       </div>
-      <p className="text-xs leading-relaxed text-mute">{dict.add.helper}</p>
+      <p className="text-base text-mute">{dict.add.helper}</p>
     </form>
   );
 }

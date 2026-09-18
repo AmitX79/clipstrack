@@ -17,7 +17,7 @@ function FeatureCard({
     <div className="rounded-md border border-hairline bg-elevated p-6">
       <p className="mono-eyebrow text-faint">{index}</p>
       <h3 className="display-md mt-3 text-ink">{title}</h3>
-      <p className="mt-2 text-sm leading-relaxed text-body">{children}</p>
+      <p className="mt-2 text-base text-body">{children}</p>
     </div>
   );
 }
@@ -85,7 +85,7 @@ export default function Home({ params }: { params: { locale: string } }) {
               <span className="text-link">Clips Track</span>
               {dict.hero.titleAfter}
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-relaxed text-body md:text-xl">
+            <p className="mt-5 max-w-xl text-lg text-body">
               {dict.hero.subtitle}
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-3">
@@ -118,7 +118,7 @@ export default function Home({ params }: { params: { locale: string } }) {
           />
           <p className="mono-eyebrow text-mute">{dict.about.eyebrow}</p>
           <h2 className="display-lg mt-3 text-ink">{dict.about.title}</h2>
-          <div className="mt-4 max-w-3xl space-y-4 text-sm leading-relaxed text-body">
+          <div className="mt-4 max-w-3xl space-y-4 text-base text-body">
             <p>{dict.about.p1}</p>
             <p>{dict.about.p2}</p>
           </div>
@@ -156,7 +156,7 @@ export default function Home({ params }: { params: { locale: string } }) {
               {dict.why.f3Body}
             </FeatureCard>
           </div>
-          <div className="mt-4 max-w-3xl space-y-4 text-sm leading-relaxed text-body">
+          <div className="mt-4 max-w-3xl space-y-4 text-base text-body">
             <p>{dict.why.p1}</p>
             <p>{dict.why.p2}</p>
           </div>
@@ -167,7 +167,7 @@ export default function Home({ params }: { params: { locale: string } }) {
           <div className="border-t border-hairline pt-14">
             <p className="mono-eyebrow text-mute">{dict.buckets.eyebrow}</p>
             <h2 className="display-lg mt-3 text-ink">{dict.buckets.title}</h2>
-            <div className="mt-4 max-w-3xl space-y-4 text-sm leading-relaxed text-body">
+            <div className="mt-4 max-w-3xl space-y-4 text-base text-body">
               <h3 className="display-md text-ink">{dict.buckets.sub1Title}</h3>
               <p>{dict.buckets.sub1Body}</p>
               <h3 className="display-md text-ink">{dict.buckets.sub2Title}</h3>
@@ -189,7 +189,7 @@ export default function Home({ params }: { params: { locale: string } }) {
             />
             <p className="mono-eyebrow text-mute">{dict.faq.eyebrow}</p>
             <h2 className="mt-3 text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink">{dict.faq.title}</h2>
-            <p className="mt-3 max-w-2xl text-base leading-relaxed text-body">
+            <p className="mt-3 max-w-2xl text-base text-body">
               {dict.faq.sub}
             </p>
             <div className="mt-6 divide-y divide-hairline border-y border-hairline">
@@ -204,7 +204,7 @@ export default function Home({ params }: { params: { locale: string } }) {
                       +
                     </span>
                   </summary>
-                  <p className="pb-5 pr-8 text-base leading-relaxed text-body">
+                  <p className="pb-5 pr-8 text-base text-body">
                     {faq.a}
                   </p>
                 </details>

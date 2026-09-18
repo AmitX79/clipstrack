@@ -46,7 +46,7 @@ export function TrackedAccounts({
       <div className="mt-6 rounded-md border border-hairline bg-elevated px-6 py-14 text-center">
         <p className="mono-eyebrow text-mute">{dict.empty.eyebrow}</p>
         <h2 className="display-md mt-3 text-ink">{dict.empty.title}</h2>
-        <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-body">
+        <p className="mx-auto mt-2 max-w-md text-base text-body">
           {dict.empty.before}
           <Link href="#add" className="text-link hover:text-link-deep">
             {dict.empty.link}

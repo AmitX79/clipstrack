@@ -73,7 +73,7 @@ export default async function TrackedPage({
               )}
             </p>
             <h1 className="display-lg mt-3 text-ink">{dict.acct.title}</h1>
-            <p className="mt-3 max-w-xl text-sm leading-relaxed text-body">
+            <p className="mt-3 max-w-xl text-base text-body">
               {dict.acct.sub}
             </p>
           </div>
