@@ -1,174 +1,153 @@
-// TikTok — custom scraper for the public profile page.
+// TikTok — ScrapeCreators API (https://docs.scrapecreators.com).
 //
-// Method: fetch https://www.tiktok.com/@<username>/ and parse the
-// `<script id="__UNIVERSAL_DATA_FOR_REHYDRATION__">` JSON blob:
-//   {
-//     "__DEFAULT_SCOPE__": {
-//       "webapp.user-detail": {
-//         "userInfo": {
-//           "user":  { "uniqueId", "nickname", "avatarLarger", "id", "signature" },
-//           "stats": { "followerCount", "followingCount", "heartCount",
-//                      "videoCount", ... }
-//           "post":  { "items": [ { "id", "desc", "createTime",
-//                      "stats": { "playCount", "diggCount", "commentCount",
-//                                 "collectCount" } } ] }
-//         }
-//       }
-//     }
-//   }
+// Live public endpoint, no fragile HTML hydration parsing:
+//   - GET /v3/tiktok/profile/videos   profile videos with full statistics
+//                                      (play/digg/comment/collect counts)
 //
-// The exact paths change when TikTok tweaks the hydration payload, so every
-// extraction is guarded with try/catch and degrades to undefined/[] rather
-// than failing the whole sync.
+// Pages are walked with `max_cursor` / `has_more`. Channel totals come from
+// the `author` payload embedded in each item, so no separate profile call is
+// needed. If a profile comes back empty, the API recommends retrying with
+// `region=US` (the default is GB).
 
-import { extractScriptTag, fetchHtml, parseJsonScript } from "./html";
+import { scrapeGet } from "./scrapecreators";
 import type {
   AccountMeta,
   ChannelStats,
-  MediaMeta,
   MediaSnapshot,
-  MediaStats,
   PlatformFetcher,
 } from "./types";
 
 export const PLATFORM = "tiktok" as const;
 
+interface TtVideosResponse {
+  success: boolean;
+  message?: string;
+  aweme_list?: TtAweme[];
+  has_more?: number;
+  max_cursor?: number | string;
+}
+
+interface TtAweme {
+  aweme_id?: string | number;
+  desc?: string;
+  create_time?: number;
+  author?: {
+    unique_id?: string;
+    nickname?: string;
+    uid?: string | number;
+    sec_uid?: string;
+    avatar_larger?: { url_list?: string[] };
+    avatar_thumb?: { url_list?: string[] };
+    follower_count?: number;
+    following_count?: number;
+    aweme_count?: number;
+  };
+  statistics?: {
+    play_count?: number;
+    digg_count?: number;
+    comment_count?: number;
+    collect_count?: number;
+    share_count?: number;
+  };
+  video?: {
+    origin_cover?: { url_list?: string[] };
+    cover?: { url_list?: string[] };
+  };
+}
+
+function extractUrls(video: TtAweme["video"]): string | undefined {
+  return (
+    video?.origin_cover?.url_list?.[0] ??
+    video?.cover?.url_list?.[0]
+  );
+}
+
+function toSnapshot(item: TtAweme): MediaSnapshot {
+  const stats = item.statistics ?? {};
+  return {
+    meta: {
+      externalId: String(item.aweme_id ?? ""),
+      title: item.desc,
+      url: item.aweme_id != null && item.author?.unique_id
+        ? `https://www.tiktok.com/@${item.author.unique_id}/video/${item.aweme_id}`
+        : "",
+      thumbnailUrl: extractUrls(item.video),
+      publishedAt:
+        item.create_time != null
+          ? new Date(item.create_time * 1000)
+          : undefined,
+    },
+    stats: {
+      views: stats.play_count ?? 0,
+      likes: stats.digg_count ?? 0,
+      comments: stats.comment_count ?? 0,
+      favorites: stats.collect_count ?? 0,
+    },
+  };
+}
+
 export const fetchTikTokChannel: PlatformFetcher = async (username, limit) => {
   const cleaned = username.replace(/^@/, "");
-  const profileUrl = `https://www.tiktok.com/@${cleaned}/`;
-  const html = await fetchHtml(profileUrl);
+  const requestLimit = Math.max(1, Math.min(limit ?? 8, 200));
 
-  const script = extractScriptTag(html, { id: "__UNIVERSAL_DATA_FOR_REHYDRATION__" });
-  const payload = script ? parsePayload(script) : null;
+  const params: Record<string, string | number | boolean> = { handle: cleaned };
+
+  let first = await scrapeGet<TtVideosResponse>(
+    "/v3/tiktok/profile/videos",
+    params,
+  );
+
+  // The API serves some profiles empty from the default region (GB); retry
+  // once from the US before giving up.
+  if (!first.aweme_list?.length) {
+    first = await scrapeGet<TtVideosResponse>("/v3/tiktok/profile/videos", {
+      handle: cleaned,
+      region: "US",
+    });
+  }
+
+  const items = [...(first.aweme_list ?? [])];
+  let cursor = first.max_cursor;
+  let pages = 0;
+  while (
+    items.length < requestLimit &&
+    cursor != null &&
+    first.has_more !== 0 &&
+    pages < 20
+  ) {
+    const next = await scrapeGet<TtVideosResponse>(
+      "/v3/tiktok/profile/videos",
+      { handle: cleaned, max_cursor: String(cursor) },
+    );
+    items.push(...(next.aweme_list ?? []));
+    cursor = next.max_cursor;
+    pages += 1;
+  }
+
+  const sliced = items.slice(0, requestLimit);
+  const firstItem = first.aweme_list?.[0] ?? sliced[0];
+  const author = firstItem?.author ?? {};
 
   const account: AccountMeta = {
     platform: PLATFORM,
-    username: payload?.uniqueId ?? cleaned,
-    displayName: payload?.nickname ?? cleaned,
-    externalId: payload?.id ?? cleaned, // TODO(tt-scraper): real uid when payload shape confirmed
-    avatarUrl: payload?.avatarLarger,
-    profileUrl,
+    username: cleaned,
+    displayName: author.nickname ?? cleaned,
+    externalId: String(author.uid ?? author.sec_uid ?? cleaned),
+    avatarUrl:
+      author.avatar_larger?.url_list?.[0] ??
+      author.avatar_thumb?.url_list?.[0],
+    profileUrl: `https://www.tiktok.com/@${cleaned}/`,
   };
 
   const stats: ChannelStats = {
-    followers: payload?.followers ?? 0,
-    following: payload?.following,
-    totalPosts: payload?.videoCount ?? 0,
-    totalViews: payload?.heartCount, // lifetime hearts ≈ total engagement
+    followers: author.follower_count ?? 0,
+    following: author.following_count,
+    totalPosts: author.aweme_count ?? sliced.length,
   };
 
-  // The hydration payload lists posts newest-first; honor the requested cap.
-  const media = parsePosts(payload?.posts);
   return {
     account,
     stats,
-    media: limit != null ? media.slice(0, Math.max(0, limit)) : media,
+    media: sliced.map(toSnapshot).filter((m) => m.meta.externalId),
   };
 };
-
-interface TtUserInfo {
-  __DEFAULT_SCOPE__?: Record<string, unknown>;
-  userInfo?: {
-    user?: {
-      uniqueId?: string;
-      nickname?: string;
-      avatarLarger?: string;
-      id?: string;
-    };
-    stats?: {
-      followerCount?: number;
-      followingCount?: number;
-      heartCount?: number;
-      videoCount?: number;
-    };
-    post?: {
-      items?: TtItem[];
-    };
-  };
-}
-
-interface TtItem {
-  id?: string | number;
-  desc?: string;
-  createTime?: number;
-  stats?: {
-    playCount?: number;
-    viewCount?: number;
-    diggCount?: number;
-    commentCount?: number;
-    collectCount?: number;
-  };
-}
-
-function parsePayload(script: string): {
-  uniqueId?: string;
-  nickname?: string;
-  avatarLarger?: string;
-  id?: string;
-  followers?: number;
-  following?: number;
-  videoCount?: number;
-  heartCount?: number;
-  posts?: TtItem[];
-} {
-  try {
-    const data = parseJsonScript<TtUserInfo>(script);
-    const detail = data.__DEFAULT_SCOPE__?.["webapp.user-detail"] ?? {};
-    const info = (detail as TtUserInfo | undefined)?.userInfo;
-    const user = info?.user;
-    const stats = info?.stats ?? {};
-    return {
-      uniqueId: user?.uniqueId,
-      nickname: user?.nickname,
-      avatarLarger: user?.avatarLarger,
-      id: user?.id,
-      followers: stats.followerCount,
-      following: stats.followingCount,
-      videoCount: stats.videoCount,
-      heartCount: stats.heartCount,
-      posts: info?.post?.items,
-    };
-  } catch {
-    return {};
-  }
-}
-
-function parsePosts(items: TtItem[] | undefined): MediaSnapshot[] {
-  const media: MediaSnapshot[] = [];
-
-  for (const item of items ?? []) {
-    try {
-      const meta: MediaMeta = {
-        externalId: String(item.id ?? ""),
-        title: item.desc,
-        url: item.id != null
-          ? `https://www.tiktok.com/@user/video/${item.id}`
-          : "",
-        publishedAt:
-          item.createTime != null
-            ? new Date(item.createTime * 1000)
-            : undefined,
-      };
-      if (!meta.externalId || !meta.url) continue;
-
-      const s = item.stats ?? {};
-      // TikTok posts always carry play counts. An item with neither plays nor
-      // any engagement means the scrape came back malformed (e.g. a bot-wall
-      // or mislabeled cross-platform data) — skip it rather than persisting a
-      // bogus "0" or null view row.
-      const views = s.playCount ?? s.viewCount ?? 0;
-      if (s.diggCount == null && s.commentCount == null && views === 0) continue;
-      const stats: MediaStats = {
-        views,
-        likes: s.diggCount ?? 0,
-        comments: s.commentCount ?? 0,
-        favorites: s.collectCount ?? 0,
-      };
-      media.push({ meta, stats });
-    } catch {
-      // skip unparseable rows rather than failing the channel
-    }
-  }
-
-  return media;
-}
