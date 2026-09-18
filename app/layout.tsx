@@ -17,6 +17,16 @@ const geistMono = localFont({
 // app/[locale]/layout.tsx; metadataBase resolves the relative OG/canonical URLs.
 export const metadata: Metadata = {
   metadataBase: new URL("https://clipstrack.vercel.app"),
+  manifest: "/site.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon-96x96.png", type: "image/png", sizes: "96x96" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
+  appleWebApp: { title: "ClipsTrack" },
   keywords: [
     "Clips Track",
     "clip tracker",
