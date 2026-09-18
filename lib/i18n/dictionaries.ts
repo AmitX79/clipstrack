@@ -40,10 +40,12 @@ export const dictionaries = {
     },
     hero: {
       eyebrow: "Multi-platform clip tracker",
-      titleBefore: "Every clip, tracked in full — with ",
+      titleBefore: "Real numbers, not rounded guesses",
       titleAfter: ".",
-      subtitle:
-        "Add a YouTube, Instagram or TikTok handle. Clips Track snapshots each clip's views, likes and comments every hour — shown in full, never abbreviated.",
+      subtitleBefore: "Add a YouTube, Instagram or TikTok handle — ",
+      subtitleAccent: "Clips Track",
+      subtitleAfter:
+        " snapshots every clip's views, likes and comments each hour, shown in full.",
       add: "Add a channel",
       view: "View my accounts",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -254,10 +256,12 @@ export const dictionaries = {
     },
     hero: {
       eyebrow: "Rastreador de clips multiplataforma",
-      titleBefore: "Cada clip, rastreado al detalle — con ",
+      titleBefore: "Números reales, no estimaciones redondeadas",
       titleAfter: ".",
-      subtitle:
-        "Añade una cuenta de YouTube, Instagram o TikTok. Clips Track registra cada hora las vistas, los likes y los comentarios de cada clip — siempre en números exactos, nunca abreviados.",
+      subtitleBefore: "Añade una cuenta de YouTube, Instagram o TikTok — ",
+      subtitleAccent: "Clips Track",
+      subtitleAfter:
+        " registra cada hora las vistas, los likes y los comentarios de cada clip, mostrados en números exactos.",
       add: "Añadir un canal",
       view: "Ver mis cuentas",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -463,10 +467,12 @@ export const dictionaries = {
     },
     hero: {
       eyebrow: "マルチプラットフォーム動画追跡ツール",
-      titleBefore: "すべてのクリップを完全追跡 — ",
+      titleBefore: "丸められた推測ではなく、実際の数字",
       titleAfter: "。",
-      subtitle:
-        "YouTube、Instagram、TikTokのアカウントを追加するだけ。各クリップの再生数・いいね・コメントを毎時間スナップショット。省略せず、常に実数で表示します。",
+      subtitleBefore: "YouTube、Instagram、TikTokのアカウントを追加 — ",
+      subtitleAccent: "Clips Track",
+      subtitleAfter:
+        " が各クリップの再生数・いいね・コメントを毎時間、省略せず完全な数字で記録します。",
       add: "チャンネルを追加",
       view: "マイアカウントを見る",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -670,10 +676,12 @@ export const dictionaries = {
     },
     hero: {
       eyebrow: "Suivi de clips multi-plateformes",
-      titleBefore: "Chaque clip, suivi dans le détail — avec ",
+      titleBefore: "Des chiffres réels, pas des approximations arrondies",
       titleAfter: ".",
-      subtitle:
-        "Ajoutez un compte YouTube, Instagram ou TikTok. Clips Track enregistre chaque heure les vues, likes et commentaires de chaque clip — toujours en chiffres exacts, jamais abrégés.",
+      subtitleBefore: "Ajoutez un compte YouTube, Instagram ou TikTok — ",
+      subtitleAccent: "Clips Track",
+      subtitleAfter:
+        " enregistre chaque heure les vues, likes et commentaires de chaque clip, affichés en chiffres exacts.",
       add: "Ajouter une chaîne",
       view: "Voir mes comptes",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -879,10 +887,12 @@ export const dictionaries = {
     },
     hero: {
       eyebrow: "Clip-Tracker für alle Plattformen",
-      titleBefore: "Jeder Clip, vollständig getrackt — mit ",
+      titleBefore: "Echte Zahlen, keine gerundeten Schätzungen",
       titleAfter: ".",
-      subtitle:
-        "Füge einen YouTube-, Instagram- oder TikTok-Account hinzu. Clips Track erfasst stündlich Aufrufe, Likes und Kommentare jedes Clips — in voller Zahl, nie abgekürzt.",
+      subtitleBefore: "Füge einen YouTube-, Instagram- oder TikTok-Account hinzu — ",
+      subtitleAccent: "Clips Track",
+      subtitleAfter:
+        " erfasst stündlich Aufrufe, Likes und Kommentare jedes Clips — in voller Zahl angezeigt.",
       add: "Kanal hinzufügen",
       view: "Meine Konten ansehen",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -1087,10 +1097,12 @@ export const dictionaries = {
     },
     hero: {
       eyebrow: "Rastreador de clipes multiplataforma",
-      titleBefore: "Cada clipe, rastreado em números exatos — com ",
+      titleBefore: "Números reais, não estimativas arredondadas",
       titleAfter: ".",
-      subtitle:
-        "Adicione uma conta do YouTube, Instagram ou TikTok. O Clips Track registra a cada hora as visualizações, curtidas e comentários de cada clipe — sempre em números exatos, nunca abreviados.",
+      subtitleBefore: "Adicione uma conta do YouTube, Instagram ou TikTok — ",
+      subtitleAccent: "Clips Track",
+      subtitleAfter:
+        " registra a cada hora as visualizações, curtidas e comentários de cada clipe, exibidos em números exatos.",
       add: "Adicionar um canal",
       view: "Ver minhas contas",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -1296,10 +1308,12 @@ export const dictionaries = {
     },
     hero: {
       eyebrow: "멀티플랫폼 클립 트래커",
-      titleBefore: "모든 클립을 온전하게 추적 — ",
+      titleBefore: "반올림된 추측이 아닌, 실제 숫자",
       titleAfter: ".",
-      subtitle:
-        "YouTube, Instagram, TikTok 계정을 추가하세요. Clips Track가 각 클립의 조회수·좋아요·댓글을 매시간 기록합니다 — 항상 온전한 숫자로, 줄임말 없이.",
+      subtitleBefore: "YouTube, Instagram, TikTok 계정을 추가하세요 — ",
+      subtitleAccent: "Clips Track",
+      subtitleAfter:
+        " 가 매시간 각 클립의 조회수·좋아요·댓글을 온전한 숫자로 기록합니다.",
       add: "채널 추가",
       view: "내 계정 보기",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -1503,10 +1517,12 @@ export const dictionaries = {
     },
     hero: {
       eyebrow: "Tracker di clip multi-piattaforma",
-      titleBefore: "Ogni clip tracciato al completo — con ",
+      titleBefore: "Numeri reali, non stime arrotondate",
       titleAfter: ".",
-      subtitle:
-        "Aggiungi un account YouTube, Instagram o TikTok. Clips Track cattura ogni ora visualizzazioni, like e commenti di ogni clip — sempre in numeri esatti, mai abbreviati.",
+      subtitleBefore: "Aggiungi un account YouTube, Instagram o TikTok — ",
+      subtitleAccent: "Clips Track",
+      subtitleAfter:
+        " registra ogni ora visualizzazioni, like e commenti di ogni clip, mostrati in numeri esatti.",
       add: "Aggiungi un canale",
       view: "Vedi i miei account",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",

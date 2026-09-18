@@ -82,11 +82,12 @@ export default function Home({ params }: { params: { locale: string } }) {
             </p>
             <h1 className="display-2xl mt-4 max-w-3xl text-ink">
               {dict.hero.titleBefore}
-              <span className="text-link">Clips Track</span>
               {dict.hero.titleAfter}
             </h1>
             <p className="mt-5 max-w-xl text-lg text-body">
-              {dict.hero.subtitle}
+              {dict.hero.subtitleBefore}
+              <span className="text-link">{dict.hero.subtitleAccent}</span>
+              {dict.hero.subtitleAfter}
             </p>
             <div className="mt-10 flex flex-wrap items-center gap-3">
               <a
