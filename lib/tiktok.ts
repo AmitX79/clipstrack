@@ -35,6 +35,9 @@ interface TtAweme {
   // TikTok photo-mode posts carry image_post_info; pure videos don't. Channel
   // subscriptions only track videos, so image posts are always filtered out.
   image_post_info?: unknown;
+  // Active livestreams/rooms carry this flag — the profile grid normally
+  // serves only posted videos, but live items are never tracked.
+  is_live?: boolean;
   author?: {
     unique_id?: string;
     nickname?: string;
@@ -63,10 +66,14 @@ interface TtAweme {
 }
 
 // A TikTok item counts as a video only if it is not a photo-mode post
-// (image_post_info is set for those) and carries a playable video URL.
+// (image_post_info is set for those), not an active livestream, and carries a
+// playable video URL. Stories are ephemeral and are not served by the
+// profile/videos endpoint at all — the play_addr requirement plus these flags
+// keep every other non-video form out.
 function isVideoPost(item: TtAweme): boolean {
   return Boolean(
-    !item.image_post_info &&
+    item.is_live !== true &&
+      !item.image_post_info &&
       item.video &&
       item.video.play_addr?.url_list?.length,
   );

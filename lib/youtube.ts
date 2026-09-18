@@ -1,11 +1,17 @@
 // YouTube — official YouTube Data API v3 (no scraping).
 // Requires a Google Cloud Console API key in YOUTUBE_API_KEY.
 //
+// Shorts only: the uploads playlist mixes long-form videos with Shorts, but the
+// API exposes no "isShort" flag, so videos over 60s are filtered out via
+// contentDetails.duration and playlist pages are walked until enough Shorts are
+// collected.
+//
 // Flow:
-//   1. channels?forHandle=@<username>  -> account meta + channel-level stats
+//   1. channels?forHandle=@<username>    -> account meta + channel-level stats
 //   2. channels?part=contentDetails      -> uploads playlist id
-//   3. playlistItems?playlistId=<uploads> -> recent video ids
-//   4. videos?part=snippet,statistics&id=<ids> -> per-video meta + stats
+//   3. playlistItems?playlistId=<uploads> -> recent video ids (paginated)
+//   4. videos?part=snippet,statistics,contentDetails -> per-video meta+stats,
+//      keeping only duration <= 60s (Shorts)
 
 import type {
   AccountMeta,
@@ -44,11 +50,22 @@ interface YtVideoItem {
     thumbnails?: Record<string, { url?: string }>;
     publishedAt?: string;
   };
+  contentDetails?: { duration?: string };
   statistics?: {
     viewCount?: string;
     likeCount?: string;
     commentCount?: string;
   };
+}
+
+// ISO 8601 duration ("PT2M45S") -> seconds; undefined when unparsable.
+function parseIsoDuration(iso: string | undefined): number | undefined {
+  if (!iso) return undefined;
+  const m = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/.exec(iso);
+  if (!m) return undefined;
+  return (
+    (Number(m[1] ?? 0) * 3600) + (Number(m[2] ?? 0) * 60) + Number(m[3] ?? 0)
+  );
 }
 
 async function get<T>(path: string): Promise<T> {
@@ -103,37 +120,56 @@ export const fetchYouTubeChannel: PlatformFetcher = async (username, limit) => {
         : Math.min(limit, MAX_LIMIT);
 
   if (uploadsPlaylistId && wanted > 0) {
-    const playlistResult = await get<{ items?: YtPlaylistItem[] }>(
-      `/playlistItems?part=contentDetails&playlistId=${uploadsPlaylistId}` +
-        `&maxResults=${wanted}`,
-    );
-    const videoIds = (playlistResult.items ?? [])
-      .map((i) => i.contentDetails?.videoId)
-      .filter((id): id is string => Boolean(id));
-
-    for (let i = 0; i < videoIds.length; i += 50) {
-      const chunk = videoIds.slice(i, i + 50);
-      const videosResult = await get<{ items?: YtVideoItem[] }>(
-        `/videos?part=snippet,statistics&id=${chunk.join(",")}`,
+    // Shorts only: the uploads playlist mixes long-form videos with Shorts and
+    // the API exposes no "isShort" flag, so we keep only videos whose duration
+    // is at most 60s (the Shorts rule) and walk playlist pages until enough
+    // Shorts are collected or the channel's playlist is exhausted.
+    let pageToken: string | undefined;
+    let pages = 0;
+    while (media.length < wanted && pages < 6) {
+      const playlistResult = await get<{
+        items?: YtPlaylistItem[];
+        nextPageToken?: string;
+      }>(
+        `/playlistItems?part=contentDetails&playlistId=${uploadsPlaylistId}` +
+          `&maxResults=50${pageToken ? `&pageToken=${pageToken}` : ""}`,
       );
-      for (const v of videosResult.items ?? []) {
-        const meta: MediaMeta = {
-          externalId: v.id,
-          title: v.snippet?.title,
-          url: `https://www.youtube.com/watch?v=${v.id}`,
-          thumbnailUrl: v.snippet?.thumbnails?.["default"]?.url,
-          publishedAt: v.snippet?.publishedAt
-            ? new Date(v.snippet.publishedAt)
-            : undefined,
-        };
-        const s = v.statistics ?? {};
-        const ms: MediaStats = {
-          views: Number(s.viewCount ?? 0),
-          likes: Number(s.likeCount ?? 0),
-          comments: Number(s.commentCount ?? 0),
-        };
-        media.push({ meta, stats: ms });
+      pageToken = playlistResult.nextPageToken;
+      pages += 1;
+
+      const videoIds = (playlistResult.items ?? [])
+        .map((i) => i.contentDetails?.videoId)
+        .filter((id): id is string => Boolean(id));
+      if (videoIds.length === 0 && !pageToken) break;
+
+      for (let i = 0; i < videoIds.length; i += 50) {
+        const chunk = videoIds.slice(i, i + 50);
+        const videosResult = await get<{ items?: YtVideoItem[] }>(
+          `/videos?part=snippet,statistics,contentDetails&id=${chunk.join(",")}`,
+        );
+        for (const v of videosResult.items ?? []) {
+          const seconds = parseIsoDuration(v.contentDetails?.duration);
+          // Long-form videos (>60s) are never stored.
+          if (seconds == null || seconds > 60) continue;
+          const meta: MediaMeta = {
+            externalId: v.id,
+            title: v.snippet?.title,
+            url: `https://www.youtube.com/watch?v=${v.id}`,
+            thumbnailUrl: v.snippet?.thumbnails?.["default"]?.url,
+            publishedAt: v.snippet?.publishedAt
+              ? new Date(v.snippet.publishedAt)
+              : undefined,
+          };
+          const s = v.statistics ?? {};
+          const ms: MediaStats = {
+            views: Number(s.viewCount ?? 0),
+            likes: Number(s.likeCount ?? 0),
+            comments: Number(s.commentCount ?? 0),
+          };
+          media.push({ meta, stats: ms });
+        }
       }
+      if (!pageToken) break;
     }
   }
 
