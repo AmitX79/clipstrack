@@ -396,7 +396,7 @@ function VideoSection({
         <span>{label}</span>
         <span className="text-xs tabular-nums text-faint">{count}</span>
       </h4>
-      <ul className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      <ul className="mt-2 flex snap-x snap-mandatory gap-3 overflow-x-auto pb-2">
         {sorted.map((video) => (
           <VideoRow key={video.id} video={video} platform={platform} />
         ))}
@@ -431,7 +431,7 @@ function VideoRow({
   const updatedAt = latest ? new Date(latest.recordedAt) : new Date(video.updatedAt);
 
   return (
-    <li className="flex flex-col gap-2.5 rounded-[4px] border border-hairline bg-elevated p-3 text-sm">
+    <li className="flex w-[280px] shrink-0 snap-start flex-col gap-2.5 text-sm">
       {video.thumbnailUrl ? (
         // eslint-disable-next-line @next/next/no-img-element
         <img
@@ -456,11 +456,11 @@ function VideoRow({
         </a>
         {latest ? (
           <>
-            <dl className="mt-1.5 grid max-w-xs grid-cols-3 gap-2">
-              <span>
+            <dl className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1">
+              <span className="col-span-2">
                 <dt className="mono-eyebrow text-faint">Views</dt>
                 <dd
-                  className="mt-0.5 truncate tabular-nums text-body"
+                  className="mt-0.5 whitespace-nowrap tabular-nums text-body"
                   title={
                     latest.views == null
                       ? platform === "INSTAGRAM"
@@ -476,14 +476,14 @@ function VideoRow({
               </span>
               <span>
                 <dt className="mono-eyebrow text-faint">Likes</dt>
-                <dd className="mt-0.5 truncate tabular-nums text-body">
+                <dd className="mt-0.5 whitespace-nowrap tabular-nums text-body">
                   {formatFullNumber(likes)}
                   {ratio && <span className="ml-1 text-xs text-mute">{ratio}</span>}
                 </dd>
               </span>
               <span>
                 <dt className="mono-eyebrow text-faint">Comments</dt>
-                <dd className="mt-0.5 truncate tabular-nums text-body">
+                <dd className="mt-0.5 whitespace-nowrap tabular-nums text-body">
                   {formatFullNumber(comments)}
                 </dd>
               </span>
@@ -527,7 +527,7 @@ export function ChannelGroupSection({
         <span className="mono-eyebrow text-mute">{PLATFORM_LABELS[platform]}</span>
         <span className="text-xs tabular-nums text-faint">{channels.length}</span>
       </h2>
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
+      <div className="mt-4 flex flex-col gap-4">
         {channels.map((channel) => (
           <ChannelCard key={channel.id} channel={channel} sortBy={sortBy} />
         ))}
