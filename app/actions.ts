@@ -77,8 +77,12 @@ export async function addChannels(
     let syncedCount = 0;
 
     for (const username of handles) {
-      // Re-adding must update the same row, even when the platform changed.
-      const existing = await prisma.channel.findFirst({ where: { userId, username } });
+      // Re-adding the same handle on the SAME platform updates that row. A
+      // different platform gets its own channel so both can be tracked (e.g.
+      // @mrbeast on Instagram and TikTok separately).
+      const existing = await prisma.channel.findFirst({
+        where: { userId, username, platform },
+      });
 
       let channel;
       if (existing) {

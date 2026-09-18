@@ -52,13 +52,25 @@ interface TtAweme {
   video?: {
     origin_cover?: { url_list?: string[] };
     cover?: { url_list?: string[] };
+    dynamic_cover?: { url_list?: string[] };
+    animated_cover?: { url_list?: string[] };
   };
+}
+
+// Browsers can't decode TikTok's .heic images. The CDN hands back several
+// URL variants per image (heic first, then a .jpeg with a valid signature),
+// so prefer the first browser-friendly entry and bail out (URL is unusable)
+// when only .heic variants exist.
+function pickUrl(urls: string[] | undefined): string | undefined {
+  return urls?.find((u) => /\.(jpe?g|png|webp|avif)(\?|$)/i.test(u));
 }
 
 function extractUrls(video: TtAweme["video"]): string | undefined {
   return (
-    video?.origin_cover?.url_list?.[0] ??
-    video?.cover?.url_list?.[0]
+    pickUrl(video?.origin_cover?.url_list) ??
+    pickUrl(video?.cover?.url_list) ??
+    pickUrl(video?.dynamic_cover?.url_list) ??
+    pickUrl(video?.animated_cover?.url_list)
   );
 }
 
@@ -133,9 +145,10 @@ export const fetchTikTokChannel: PlatformFetcher = async (username, limit) => {
     username: cleaned,
     displayName: author.nickname ?? cleaned,
     externalId: String(author.uid ?? author.sec_uid ?? cleaned),
-    avatarUrl:
-      author.avatar_larger?.url_list?.[0] ??
-      author.avatar_thumb?.url_list?.[0],
+    // Only store a browser-friendly avatar; TikTok's CDN serves avatars as
+    // .heic, which no browser decodes — missing avatar falls back to the
+    // channel's initial in the UI.
+    avatarUrl: pickUrl(author.avatar_larger?.url_list),
     profileUrl: `https://www.tiktok.com/@${cleaned}/`,
   };
 
