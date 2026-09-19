@@ -27,10 +27,14 @@ export const dictionaries = {
       trackedTitle: "My Accounts",
       trackedDescription:
         "Your tracked YouTube Shorts, Instagram Reels and TikTok video channels — private to you, updated hourly.",
+      faqTitle: "FAQ — Frequently Asked Questions",
+      faqDescription:
+        "Quick answers about what Clips Track tracks, how often it updates, and how your data is handled.",
     },
     nav: {
       how: "How it works",
       accounts: "My Accounts",
+      faq: "FAQ",
       add: "Add channel",
       themeDark: "Switch to dark mode",
       themeLight: "Switch to light mode",
@@ -243,10 +247,14 @@ export const dictionaries = {
       trackedTitle: "Mis cuentas",
       trackedDescription:
         "Tus canales de YouTube Shorts, Reels de Instagram y TikTok rastreados: privados para ti y actualizados cada hora.",
+      faqTitle: "Preguntas frecuentes",
+      faqDescription:
+        "Respuestas breves sobre qué rastrea Clips Track, con qué frecuencia actualiza los datos y cómo se tratan.",
     },
     nav: {
       how: "Cómo funciona",
       accounts: "Mis cuentas",
+      faq: "FAQ",
       add: "Añadir canal",
       themeDark: "Activar modo oscuro",
       themeLight: "Activar modo claro",
@@ -454,10 +462,14 @@ export const dictionaries = {
       trackedTitle: "マイアカウント",
       trackedDescription:
         "追跡中のYouTubeショート、Instagramリール、TikTok動画のチャンネル。あなた専用、毎時間更新。",
+      faqTitle: "よくある質問",
+      faqDescription:
+        "Clips Trackが何を追跡するか、更新頻度、データの取り扱いについての簡単な回答です。",
     },
     nav: {
       how: "使い方",
       accounts: "マイアカウント",
+      faq: "FAQ",
       add: "チャンネルを追加",
       themeDark: "ダークモードに切り替え",
       themeLight: "ライトモードに切り替え",
@@ -663,10 +675,14 @@ export const dictionaries = {
       trackedTitle: "Mes comptes",
       trackedDescription:
         "Vos chaînes YouTube Shorts, Reels Instagram et TikTok suivies — privées et mises à jour toutes les heures.",
+      faqTitle: "Questions fréquentes",
+      faqDescription:
+        "Réponses rapides sur ce que suit Clips Track, à quelle fréquence il se met à jour et comment vos données sont traitées.",
     },
     nav: {
       how: "Comment ça marche",
       accounts: "Mes comptes",
+      faq: "FAQ",
       add: "Ajouter une chaîne",
       themeDark: "Activer le mode sombre",
       themeLight: "Activer le mode clair",
@@ -874,10 +890,14 @@ export const dictionaries = {
       trackedTitle: "Meine Konten",
       trackedDescription:
         "Deine verfolgten YouTube-Shorts-, Instagram-Reels- und TikTok-Kanäle — privat und stündlich aktualisiert.",
+      faqTitle: "Häufige Fragen",
+      faqDescription:
+        "Kurze Antworten dazu, was Clips Track verfolgt, wie oft es aktualisiert wird und wie deine Daten behandelt werden.",
     },
     nav: {
       how: "So funktioniert's",
       accounts: "Meine Konten",
+      faq: "FAQ",
       add: "Kanal hinzufügen",
       themeDark: "Zum dunklen Modus wechseln",
       themeLight: "Zum hellen Modus wechseln",
@@ -1084,10 +1104,14 @@ export const dictionaries = {
       trackedTitle: "Minhas contas",
       trackedDescription:
         "Seus canais rastreados de YouTube Shorts, Reels do Instagram e TikTok — privados para você e atualizados a cada hora.",
+      faqTitle: "Perguntas frequentes",
+      faqDescription:
+        "Respostas rápidas sobre o que o Clips Track rastreia, com que frequência ele atualiza e como seus dados são tratados.",
     },
     nav: {
       how: "Como funciona",
       accounts: "Minhas contas",
+      faq: "FAQ",
       add: "Adicionar canal",
       themeDark: "Ativar modo escuro",
       themeLight: "Ativar modo claro",
@@ -1295,10 +1319,14 @@ export const dictionaries = {
       trackedTitle: "내 계정",
       trackedDescription:
         "추적 중인 YouTube Shorts, Instagram Reels, TikTok 채널 — 나만 볼 수 있고 매시간 업데이트됩니다.",
+      faqTitle: "자주 묻는 질문",
+      faqDescription:
+        "Clips Track가 무엇을 추적하는지, 얼마나 자주 업데이트되는지, 데이터가 어떻게 처리되는지에 대한 간단한 답변입니다.",
     },
     nav: {
       how: "사용 방법",
       accounts: "내 계정",
+      faq: "FAQ",
       add: "채널 추가",
       themeDark: "다크 모드로 전환",
       themeLight: "라이트 모드로 전환",
@@ -1504,10 +1532,14 @@ export const dictionaries = {
       trackedTitle: "I miei account",
       trackedDescription:
         "I tuoi canali YouTube Shorts, Instagram Reels e TikTok tracciati — privati e aggiornati ogni ora.",
+      faqTitle: "Domande frequenti",
+      faqDescription:
+        "Risposte brevi su cosa traccia Clips Track, con quale frequenza si aggiorna e come vengono gestiti i tuoi dati.",
     },
     nav: {
       how: "Come funziona",
       accounts: "I miei account",
+      faq: "FAQ",
       add: "Aggiungi canale",
       themeDark: "Passa alla modalità scura",
       themeLight: "Passa alla modalità chiara",

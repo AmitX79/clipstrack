@@ -68,7 +68,7 @@ export function NavBar({
   active,
   locale,
 }: {
-  active?: "home" | "accounts";
+  active?: "home" | "accounts" | "faq";
   locale: Locale;
 }) {
   const router = useRouter();
@@ -82,6 +82,7 @@ export function NavBar({
   const LINKS = [
     { href: localizedHref(locale, "/#how"), label: dict.nav.how, key: "how" },
     { href: localizedHref(locale, "/accounts"), label: dict.nav.accounts, key: "accounts" },
+    { href: localizedHref(locale, "/faq"), label: dict.nav.faq, key: "faq" },
   ] as const;
 
   // Sync local toggle state after hydration (class is already set by inline

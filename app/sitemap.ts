@@ -40,5 +40,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
+  for (const locale of LOCALES) {
+    entries.push({
+      url: hrefFor(locale, "/faq"),
+      lastModified: new Date(),
+      changeFrequency: "monthly",
+      priority: 0.6,
+      alternates: { languages: variants("/faq") },
+    });
+  }
+
   return entries;
 }

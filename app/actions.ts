@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
+import { LOCALES } from "@/lib/i18n";
 import { syncChannel } from "@/lib/sync";
 import { normalizeUsername, PLATFORM_VALUES } from "@/lib/types";
 import type { PlatformValue } from "@/lib/types";
@@ -10,6 +11,22 @@ import { ensureVisitorId } from "@/lib/visitor";
 export type AddChannelsResult =
   | { ok: true; added: string[]; message: string }
   | { ok: false; error: string };
+
+// revalidatePath matches the actual rendered route path, and every page renders
+// at one URL per locale (the default locale also at its bare path via the
+// middleware rewrite). "/[locale]/accounts" never matches a real URL, so hit
+// each concrete variant.
+function revalidateAccountPages(): void {
+  for (const locale of ["", ...LOCALES]) {
+    revalidatePath(`${locale ? `/${locale}` : ""}/accounts`, "page");
+  }
+}
+
+function revalidateHomePages(): void {
+  for (const locale of ["", ...LOCALES]) {
+    revalidatePath(`${locale ? `/${locale}` : ""}`, "page");
+  }
+}
 
 function profileUrlFor(platform: PlatformValue, username: string): string {
   const handle = username.replace(/^@/, "");
@@ -153,8 +170,8 @@ export async function addChannels(
       }
     }
 
-    revalidatePath("/[locale]", "page");
-    revalidatePath("/[locale]/accounts", "page");
+    revalidateHomePages();
+    revalidateAccountPages();
 
     const label = added.map((handle) => `@${handle}`).join(", ");
     const suffix =
@@ -177,7 +194,7 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
     const channel = await prisma.channel.findUnique({ where: { id } });
     if (!channel) return { ok: false, error: "Channel not found." };
     await syncChannel(channel);
-    revalidatePath("/[locale]/accounts", "page");
+    revalidateAccountPages();
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {
     console.error("[refreshChannel]", err);
@@ -267,7 +284,7 @@ export async function editChannel(
       }
     }
 
-    revalidatePath("/[locale]/accounts", "page");
+    revalidateAccountPages();
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {
     console.error("[editChannel]", err);
@@ -279,7 +296,7 @@ export async function editChannel(
 export async function removeChannel(id: string): Promise<EditChannelResult> {
   try {
     const channel = await prisma.channel.delete({ where: { id } });
-    revalidatePath("/[locale]/accounts", "page");
+    revalidateAccountPages();
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {
     console.error("[removeChannel]", err);

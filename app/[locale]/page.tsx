@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { NavBar } from "@/components/NavBar";
 import { getDictionary, isLocale, localizedHref, type Locale } from "@/lib/i18n";
-import type { Dictionary } from "@/lib/i18n";
 
 function FeatureCard({
   index,
@@ -40,32 +39,9 @@ function webAppSchema(locale: Locale) {
   };
 }
 
-const FAQ_COUNT = 11;
-
-function buildFaqs(dict: Dictionary): { q: string; a: string }[] {
-  return Array.from({ length: FAQ_COUNT }, (_, i) => {
-    const n = i + 1;
-    return {
-      q: dict.faq[`q${n}` as "q1" | "q2" | "q3" | "q4" | "q5" | "q6" | "q7" | "q8" | "q9" | "q10" | "q11"],
-      a: dict.faq[`a${n}` as "a1" | "a2" | "a3" | "a4" | "a5" | "a6" | "a7" | "a8" | "a9" | "a10" | "a11"],
-    };
-  });
-}
-
 export default function Home({ params }: { params: { locale: string } }) {
   const locale = isLocale(params.locale) ? params.locale : "en";
   const dict = getDictionary(locale);
-  const faqs = buildFaqs(dict);
-
-  const faqPageSchema = {
-    "@context": "https://schema.org",
-    "@type": "FAQPage",
-    mainEntity: faqs.map((f) => ({
-      "@type": "Question",
-      name: f.q,
-      acceptedAnswer: { "@type": "Answer", text: f.a },
-    })),
-  };
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -175,41 +151,6 @@ export default function Home({ params }: { params: { locale: string } }) {
               <p>{dict.buckets.sub2Body}</p>
               <h3 className="display-md text-ink">{dict.buckets.sub3Title}</h3>
               <p>{dict.buckets.sub3Body}</p>
-            </div>
-          </div>
-        </section>
-
-        {/* FAQ */}
-        <section aria-label={dict.faq.title} className="pt-16">
-          <div className="border-t border-hairline pt-14">
-            <script
-              type="application/ld+json"
-              dangerouslySetInnerHTML={{
-                __html: JSON.stringify(faqPageSchema),
-              }}
-            />
-            <p className="mono-eyebrow text-mute">{dict.faq.eyebrow}</p>
-            <h2 className="mt-3 text-[32px] font-semibold leading-10 tracking-[-1.28px] text-ink">{dict.faq.title}</h2>
-            <p className="mt-3 max-w-2xl text-base text-body">
-              {dict.faq.sub}
-            </p>
-            <div className="mt-6 divide-y divide-hairline border-y border-hairline">
-              {faqs.map((faq) => (
-                <details key={faq.q} className="group">
-                  <summary className="flex cursor-pointer select-none items-center justify-between gap-4 py-5 text-lg font-medium text-ink hover:text-link focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link [&::-webkit-details-marker]:hidden">
-                    {faq.q}
-                    <span
-                      aria-hidden="true"
-                      className="text-lg leading-none text-mute transition-transform duration-200 group-open:rotate-45"
-                    >
-                      +
-                    </span>
-                  </summary>
-                  <p className="pb-5 pr-8 text-base text-body">
-                    {faq.a}
-                  </p>
-                </details>
-              ))}
             </div>
           </div>
         </section>

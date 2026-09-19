@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { AddChannelBar } from "@/components/AddChannelBar";
 import { Footer } from "@/components/Footer";
 import { NavBar } from "@/components/NavBar";
+import { PageRefresh } from "@/components/PageRefresh";
 import { TrackedAccounts } from "@/components/TrackedAccounts";
 import { loadChannels } from "@/lib/channels";
 import type { LoadedChannel } from "@/lib/channels";
@@ -60,6 +61,7 @@ export default async function TrackedPage({
   return (
     <div className="min-h-screen bg-canvas">
       <NavBar active="accounts" locale={locale} />
+      <PageRefresh />
       <main className="mx-auto max-w-6xl px-6 pb-12">
         <section
           aria-label={dict.acct.eyebrow}
