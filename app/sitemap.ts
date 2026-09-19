@@ -32,16 +32,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   for (const locale of LOCALES) {
     entries.push({
-      url: hrefFor(locale, "/accounts"),
-      lastModified: new Date(),
-      changeFrequency: "hourly",
-      priority: 0.4,
-      alternates: { languages: variants("/accounts") },
-    });
-  }
-
-  for (const locale of LOCALES) {
-    entries.push({
       url: hrefFor(locale, "/faq"),
       lastModified: new Date(),
       changeFrequency: "monthly",

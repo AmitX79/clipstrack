@@ -1,0 +1,22 @@
+import type { MetadataRoute } from "next";
+import { DEFAULT_LOCALE, LOCALES } from "@/lib/i18n";
+
+const base = "https://clipstrack.vercel.app";
+
+export default function robots(): MetadataRoute.Robots {
+  const accountsPaths = [
+    "/accounts",
+    ...LOCALES.filter((l) => l !== DEFAULT_LOCALE).map((l) => `/${l}/accounts`),
+  ];
+
+  return {
+    rules: [
+      {
+        userAgent: "*",
+        allow: "/",
+        disallow: [...accountsPaths, "/api/"],
+      },
+    ],
+    sitemap: `${base}/sitemap.xml`,
+  };
+}
