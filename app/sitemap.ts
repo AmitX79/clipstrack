@@ -50,5 +50,17 @@ export default function sitemap(): MetadataRoute.Sitemap {
     });
   }
 
+  for (const path of ["/about", "/privacy", "/terms", "/contact"] as const) {
+    for (const locale of LOCALES) {
+      entries.push({
+        url: hrefFor(locale, path),
+        lastModified: new Date(),
+        changeFrequency: "monthly",
+        priority: 0.5,
+        alternates: { languages: variants(path) },
+      });
+    }
+  }
+
   return entries;
 }

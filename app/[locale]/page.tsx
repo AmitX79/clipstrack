@@ -101,7 +101,7 @@ export default function Home({ params }: { params: { locale: string } }) {
         </section>
 
         {/* Per-platform rules */}
-        <section aria-label={dict.rules.title} className="pt-16">
+        <section id="rules" aria-label={dict.rules.title} className="scroll-mt-24 pt-16">
           <p className="mono-eyebrow text-mute">{dict.rules.eyebrow}</p>
           <h2 className="display-lg mt-3 text-ink">{dict.rules.title}</h2>
           <div className="mt-4 space-y-4">

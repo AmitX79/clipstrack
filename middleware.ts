@@ -4,12 +4,21 @@ import { DEFAULT_LOCALE } from "@/lib/i18n";
 // Routes that live at bare paths in the default locale (English). Every other
 // locale keeps its /{locale} prefix and resolves through the dynamic [locale]
 // route, so no /{locale} variant belongs here.
-const BARE_PATHS = ["/", "/accounts", "/faq"] as const;
+const BARE_PATHS = [
+  "/",
+  "/accounts",
+  "/faq",
+  "/about",
+  "/privacy",
+  "/terms",
+  "/contact",
+] as const;
 
 // As-needed locale strategy: the default locale (English) lives at bare paths
-// (`/`, `/accounts`, `/faq`); every other locale keeps its /{locale} prefix.
-// Bare paths are rewritten onto the English route so one route tree serves
-// both, and any `/en`-prefixed URL is canonicalized onto the bare path.
+// (`/`, `/accounts`, `/faq`, `/about`, ...); every other locale keeps its
+// /{locale} prefix. Bare paths are rewritten onto the English route so one
+// route tree serves both, and any `/en`-prefixed URL is canonicalized onto the
+// bare path.
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
@@ -49,9 +58,17 @@ export const config = {
     "/",
     "/accounts",
     "/faq",
+    "/about",
+    "/privacy",
+    "/terms",
+    "/contact",
     "/en",
     "/en/accounts",
     "/en/faq",
+    "/en/about",
+    "/en/privacy",
+    "/en/terms",
+    "/en/contact",
     "/:path*/tracked",
   ],
 };
