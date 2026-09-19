@@ -4,15 +4,12 @@ import { prisma } from "@/lib/db";
 import { getDailyLimit, istDateKey } from "@/lib/credits";
 import { isAdmin } from "@/lib/admin";
 import { adminScrapeKeys, refreshKeyBalances } from "@/lib/scrapekeys";
-import {
-  addScrapeKey,
-  adminLogout,
-  refreshBalancesNow,
-  removeScrapeKey,
-  toggleScrapeKey,
-  updateDailyLimit,
-} from "./actions";
+import { adminLogout } from "./actions";
 import { AdminLoginForm } from "./AdminLoginForm";
+import { AddKeyForm } from "./AddKeyForm";
+import { KeyRow } from "./KeyRow";
+import { LimitForm } from "./LimitForm";
+import { RefreshAllButton } from "./RefreshAllButton";
 
 export const dynamic = "force-dynamic";
 
@@ -125,27 +122,7 @@ export default async function AdminPage() {
 
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <Card title="Daily per-visitor credit limit">
-            <form action={updateDailyLimit} className="flex items-end gap-2">
-              <label htmlFor="limit" className="flex flex-1 flex-col gap-1">
-                <span className="mono-eyebrow text-mute">Credits per day</span>
-                <input
-                  id="limit"
-                  name="limit"
-                  type="number"
-                  min={1}
-                  max={1000000}
-                  step={1}
-                  defaultValue={limit}
-                  className={`${inputClass} w-full`}
-                />
-              </label>
-              <button
-                type="submit"
-                className={`${buttonClass} bg-ink text-on-ink hover:bg-ink-press`}
-              >
-                Save
-              </button>
-            </form>
+            <LimitForm initialLimit={limit} />
             <p className="mt-3 text-xs text-faint">
               Read by the hourly sync and the request-time syncs; resets at
               midnight IST.
@@ -162,98 +139,32 @@ export default async function AdminPage() {
               ) : (
                 <ul className="flex flex-col divide-y divide-hairline">
                   {keys.map((key) => (
-                    <li
+                    <KeyRow
                       key={key.id}
-                      className="flex flex-wrap items-center gap-2 py-2 text-sm"
-                    >
-                      <span className="min-w-0 flex-1">
-                        <span className="font-medium text-ink">{key.label}</span>
-                        <span className="ml-2 font-mono text-xs text-faint">
-                          {key.keyMasked}
-                        </span>
-                      </span>
-                      <span
-                        className={`mono-eyebrow text-xs tabular-nums ${
-                          key.remainingCredits == null
-                            ? "text-faint"
-                            : key.quotaExhausted
-                              ? "text-error"
-                              : "text-body"
-                        }`}
-                      >
-                        {key.remainingCredits == null
-                          ? "balance unknown"
-                          : `${key.remainingCredits} credits`}
-                      </span>
-                      <form action={toggleScrapeKey} className="inline">
-                        <input type="hidden" name="id" value={key.id} />
-                        <button
-                          type="submit"
-                          className="text-xs font-medium text-link hover:text-link-deep"
-                        >
-                          {key.active ? "Disable" : "Enable"}
-                        </button>
-                      </form>
-                      <form action={removeScrapeKey} className="inline">
-                        <input type="hidden" name="id" value={key.id} />
-                        <button
-                          type="submit"
-                          className="text-xs font-medium text-error hover:text-error-deep"
-                        >
-                          Remove
-                        </button>
-                      </form>
-                    </li>
+                      item={{
+                        id: key.id,
+                        label: key.label,
+                        keyMasked: key.keyMasked,
+                        active: key.active,
+                        quotaExhausted: key.quotaExhausted,
+                        remainingCredits: key.remainingCredits,
+                        lastCheckedAt: key.lastCheckedAt
+                          ? key.lastCheckedAt.toISOString()
+                          : null,
+                        createdAt: key.createdAt.toISOString(),
+                      }}
+                    />
                   ))}
                 </ul>
               )}
-              <form action={refreshBalancesNow}>
-                <button
-                  type="submit"
-                  className={`${buttonClass} border border-hairline text-body hover:text-ink`}
-                >
-                  Refresh balances
-                </button>
-              </form>
+              <RefreshAllButton />
             </div>
           </Card>
         </div>
 
         <div className="mt-4">
           <Card title="Add ScrapeCreators API key">
-            <form action={addScrapeKey} className="flex flex-wrap items-end gap-3">
-              <label htmlFor="label" className="flex flex-1 flex-col gap-1">
-                <span className="mono-eyebrow text-mute">Label</span>
-                <input
-                  id="label"
-                  name="label"
-                  type="text"
-                  placeholder="e.g. work, backup"
-                  maxLength={60}
-                  required
-                  className={`${inputClass} w-full`}
-                />
-              </label>
-              <label htmlFor="key" className="flex flex-[2] flex-col gap-1">
-                <span className="mono-eyebrow text-mute">API key</span>
-                <input
-                  id="key"
-                  name="key"
-                  type="password"
-                  autoComplete="off"
-                  placeholder="x-api-key from ScrapeCreators"
-                  minLength={8}
-                  required
-                  className={`${inputClass} w-full`}
-                />
-              </label>
-              <button
-                type="submit"
-                className={`${buttonClass} bg-ink text-on-ink hover:bg-ink-press`}
-              >
-                Add key
-              </button>
-            </form>
+            <AddKeyForm />
             <p className="mt-3 text-xs text-faint">
               Keys are stored server-side and rotate automatically when one
               runs out of credits.

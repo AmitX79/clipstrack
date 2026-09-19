@@ -9,17 +9,29 @@ import {
   enabledScrapeKeys,
   markScrapeKeyExhausted,
   markScrapeKeyOk,
+  maskKey,
   SCRAPECREATORS_API,
 } from "./scrapekeys";
 
 export { SCRAPECREATORS_API };
 
-// Quota failures are surfaced honouring the scraped-platform semantics: HTTP
-// 402 (machine-payments pattern), 429 (rate/quota), plus body messages that
-// mention credits/quota/limit running out.
-export function isScrapeQuotaError(status: number, message: string): boolean {
-  if (status === 402 || status === 413 || status === 429) return true;
-  return /credit|quota|insufficient|limit/i.test(message);
+// Errors worth rotating away from the current key: quota failures (HTTP 402
+// machine-payments, 413 payload, 429 rate/credits) plus auth failures (401,
+// 403) meaning the key itself was rejected — both signal that the key is no
+// longer usable, so the next enabled key should take over.
+export function isScrapeRetryableError(status: number, message: string): boolean {
+  if (
+    status === 401 ||
+    status === 403 ||
+    status === 402 ||
+    status === 413 ||
+    status === 429
+  ) {
+    return true;
+  }
+  return /credit|quota|insufficient|limit|unauthor|invalid key|authentication/i.test(
+    message,
+  );
 }
 
 async function request<T>(
@@ -34,15 +46,15 @@ async function request<T>(
   const data = (await res.json()) as { success?: boolean; message?: string };
   if (!res.ok || data.success === false) {
     const message = data.message ?? `HTTP ${res.status}`;
-    if (isScrapeQuotaError(res.status, message)) {
-      throw new QuotaError(`ScrapeCreators ${path}: ${message}`);
+    if (isScrapeRetryableError(res.status, message)) {
+      throw new ApiKeyError(`ScrapeCreators ${path}: ${message}`);
     }
     throw new Error(`ScrapeCreators ${path}: ${message}`);
   }
   return data as T;
 }
 
-class QuotaError extends Error {}
+class ApiKeyError extends Error {}
 
 export async function scrapeGet<T>(
   path: string,
@@ -60,14 +72,20 @@ export async function scrapeGet<T>(
 
   let lastError: Error | null = null;
   for (const key of keys) {
+    console.log(
+      `[scrape] ${path} -> key "${key.label}" (${maskKey(key.key)})`,
+    );
     try {
       const data = await request<T>(url, key.key, path);
       await markScrapeKeyOk(key.id);
       return data;
     } catch (err) {
-      if (err instanceof QuotaError) {
+      if (err instanceof ApiKeyError) {
         await markScrapeKeyExhausted(key.id);
         lastError = err;
+        console.log(
+          `[scrape] key "${key.label}" unavailable - rotating (${err.message})`,
+        );
         continue; // rotate to the next enabled key
       }
       throw err;
