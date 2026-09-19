@@ -43,10 +43,12 @@ function ChannelActions({
   channel,
   onEditToggle,
   locale,
+  refreshDisabled = false,
 }: {
   channel: LoadedChannel;
   onEditToggle: () => void;
   locale: Locale;
+  refreshDisabled?: boolean;
 }) {
   const dict = getDictionary(locale);
   const router = useRouter();
@@ -90,8 +92,13 @@ function ChannelActions({
         <button
           type="button"
           onClick={() => run("refresh", () => refreshChannel(channel.id))}
-          disabled={disabled}
-          aria-label={tpl(dict.card.ariaRefresh, { user })}
+          disabled={disabled || refreshDisabled}
+          title={refreshDisabled ? dict.credits.limitReached : undefined}
+          aria-label={
+            refreshDisabled
+              ? dict.credits.limitReached
+              : tpl(dict.card.ariaRefresh, { user })
+          }
           className={
             "inline-flex h-7 items-center gap-1.5 rounded-[6px] border border-hairline px-2.5 text-xs font-medium text-body " +
             "hover:border-ink hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated disabled:opacity-50"
@@ -304,11 +311,13 @@ export function ChannelCard({
   sortBy,
   layout,
   locale,
+  refreshDisabled = false,
 }: {
   channel: LoadedChannel;
   sortBy: SortKey;
   layout: VideoLayout;
   locale: Locale;
+  refreshDisabled?: boolean;
 }) {
   const dict = getDictionary(locale);
   const [editing, setEditing] = useState(false);
@@ -348,6 +357,7 @@ export function ChannelCard({
             channel={channel}
             onEditToggle={() => setEditing((value) => !value)}
             locale={locale}
+            refreshDisabled={refreshDisabled}
           />
         </div>
       </div>
@@ -656,12 +666,14 @@ export function ChannelGroupSection({
   sortBy,
   layout,
   locale,
+  refreshDisabled = false,
 }: {
   platform: PlatformValue;
   channels: LoadedChannel[];
   sortBy: SortKey;
   layout: VideoLayout;
   locale: Locale;
+  refreshDisabled?: boolean;
 }) {
   return (
     <section aria-labelledby={`group-${platform}`} className="mt-6">
@@ -680,6 +692,7 @@ export function ChannelGroupSection({
             sortBy={sortBy}
             layout={layout}
             locale={locale}
+            refreshDisabled={refreshDisabled}
           />
         ))}
       </div>

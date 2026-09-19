@@ -259,6 +259,11 @@ export const dictionaries = {
       runtimeSub: "Your tracked data is safe.",
       tryAgain: "Try again",
     },
+    credits: {
+      used: "Used today: {used}/{limit} credits",
+      left: "{left} credits left today",
+      limitReached: "Daily limit reached - resumes at midnight IST.",
+    },
     fmt: {
       ago: "ago",
       growthUnit: "/hr",
@@ -506,6 +511,11 @@ export const dictionaries = {
       runtimeSub: "Tus datos guardados están a salvo.",
       tryAgain: "Reintentar",
     },
+    credits: {
+      used: "Usados hoy: {used}/{limit} créditos",
+      left: "Quedan {left} créditos hoy",
+      limitReached: "Límite diario alcanzado - se reanuda a medianoche (IST).",
+    },
     fmt: { ago: "atrás", growthUnit: "/h" },
   },
   ja: {
@@ -746,6 +756,11 @@ export const dictionaries = {
       runtimeTitle: "システム側で問題が発生しました。",
       runtimeSub: "トラッキング中のデータは安全です。",
       tryAgain: "もう一度試す",
+    },
+    credits: {
+      used: "今日の使用: {used}/{limit} クレジット",
+      left: "今日はあと {left} クレジット",
+      limitReached: "1日の使用上限に達しました - 深夜0時(IST)にリセットされます。",
     },
     fmt: { ago: "前", growthUnit: "/h" },
   },
@@ -991,6 +1006,11 @@ export const dictionaries = {
       runtimeSub: "Vos données suivies sont en sécurité.",
       tryAgain: "Réessayer",
     },
+    credits: {
+      used: "Utilisés aujourd'hui : {used}/{limit} crédits",
+      left: "Encore {left} crédits aujourd'hui",
+      limitReached: "Limite quotidienne atteinte - reprend à minuit (IST).",
+    },
     fmt: { ago: "il y a", growthUnit: "/h" },
   },
   de: {
@@ -1233,6 +1253,11 @@ export const dictionaries = {
       runtimeTitle: "Bei uns ist etwas schiefgegangen.",
       runtimeSub: "Deine getrackten Daten sind sicher.",
       tryAgain: "Erneut versuchen",
+    },
+    credits: {
+      used: "Heute verbraucht: {used}/{limit} Credits",
+      left: "Noch {left} Credits heute",
+      limitReached: "Tageslimit erreicht - läuft um Mitternacht (IST) weiter.",
     },
     fmt: { ago: "vor", growthUnit: "/Std." },
   },
@@ -1478,6 +1503,11 @@ export const dictionaries = {
       runtimeSub: "Seus dados rastreados estão seguros.",
       tryAgain: "Tentar novamente",
     },
+    credits: {
+      used: "Usado hoje: {used}/{limit} créditos",
+      left: "Restam {left} créditos hoje",
+      limitReached: "Limite diário atingido - retoma à meia-noite (IST).",
+    },
     fmt: { ago: "há", growthUnit: "/h" },
   },
   ko: {
@@ -1718,6 +1748,11 @@ export const dictionaries = {
       runtimeTitle: "저희 쪽에서 문제가 발생했습니다.",
       runtimeSub: "추적 중인 데이터는 안전합니다.",
       tryAgain: "다시 시도",
+    },
+    credits: {
+      used: "오늘 사용: {used}/{limit} 크레딧",
+      left: "오늘 남은 크레딧 {left}",
+      limitReached: "일일 한도에 도달 - 인도 표준시(IST) 자정에 재개됩니다.",
     },
     fmt: { ago: "전", growthUnit: "/h" },
   },
@@ -1962,6 +1997,11 @@ export const dictionaries = {
       runtimeTitle: "Qualcosa è andato storto dal nostro lato.",
       runtimeSub: "I tuoi dati tracciati sono al sicuro.",
       tryAgain: "Riprova",
+    },
+    credits: {
+      used: "Usati oggi: {used}/{limit} crediti",
+      left: "Rimangono {left} crediti oggi",
+      limitReached: "Limite giornaliero raggiunto - riprende a mezzanotte (IST).",
     },
     fmt: { ago: "fa", growthUnit: "/h" },
   },

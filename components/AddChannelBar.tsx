@@ -18,7 +18,13 @@ import { Spinner } from "@/components/Spinner";
 // picked platform; pasted profile URLs are detected per-token and always land
 // on their own platform, regardless of the selected tab. When a batch of URLs
 // all point at the same platform, the tab auto-switches to match.
-export function AddChannelBar({ locale }: { locale: Locale }) {
+export function AddChannelBar({
+  locale,
+  exhausted = false,
+}: {
+  locale: Locale;
+  exhausted?: boolean;
+}) {
   const dict = getDictionary(locale);
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +96,20 @@ export function AddChannelBar({ locale }: { locale: Locale }) {
     (active
       ? "border-ink bg-ink text-on-ink"
       : "border-hairline bg-elevated text-body hover:border-ink hover:text-ink");
+
+  if (exhausted) {
+    return (
+      <div className="flex flex-col gap-2">
+        <div
+          role="status"
+          className="rounded-md border border-error bg-elevated p-4 text-sm font-medium text-error"
+        >
+          {dict.credits.limitReached}
+        </div>
+        <p className="text-base text-mute">{dict.add.helper}</p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-2">

@@ -5,6 +5,12 @@ import { prisma } from "@/lib/db";
 import { LOCALES } from "@/lib/i18n";
 import { syncChannel } from "@/lib/sync";
 import {
+  DAILY_LIMIT_MESSAGE,
+  getCreditsStatus,
+  recordAttribution,
+  requestComboHash,
+} from "@/lib/credits";
+import {
   detectProfileUrl,
   isUrlLike,
   normalizeUsername,
@@ -144,6 +150,18 @@ export async function addChannels(
   try {
     await prisma.user.createMany({ data: [{ id: userId }], skipDuplicates: true });
 
+    // Daily-credit check: a combo at 0 credits can't add (backfills cost
+    // credits), so reject up front with the resume-at-midnight message. The
+    // batch shares one budget — later handles are saved but left queued for
+    // the cron when the budget runs out mid-batch.
+    const combo = requestComboHash(userId);
+    await recordAttribution(userId, combo);
+    const credits = await getCreditsStatus(combo);
+    if (credits.remaining <= 0) {
+      return { ok: false, error: DAILY_LIMIT_MESSAGE };
+    }
+    let remaining = credits.remaining;
+
     const added: string[] = [];
     let syncedCount = 0;
 
@@ -196,8 +214,16 @@ export async function addChannels(
 
       // Attempt an immediate first sync. Failures (e.g. missing YouTube key)
       // leave the channel queued for the hourly cron — adding must not error.
+      // When the daily budget runs dry mid-batch, remaining handles are saved
+      // for the cron instead of synced.
       try {
-        await syncChannel(channel);
+        if (remaining > 0) {
+          const consumed = await syncChannel(channel, {
+            comboHash: combo,
+            remaining,
+          });
+          remaining -= consumed;
+        }
         const fresh = await prisma.channel.findUnique({
           where: { id: channel.id },
           select: { lastSyncedAt: true },
@@ -245,7 +271,19 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
   try {
     const channel = await prisma.channel.findUnique({ where: { id } });
     if (!channel) return { ok: false, error: "Channel not found." };
-    await syncChannel(channel);
+
+    // A manual refresh costs credits against the visitor's daily budget.
+    const combo = requestComboHash(channel.userId);
+    await recordAttribution(channel.userId, combo);
+    const credits = await getCreditsStatus(combo);
+    if (credits.remaining <= 0) {
+      return { ok: false, error: DAILY_LIMIT_MESSAGE };
+    }
+
+    await syncChannel(channel, {
+      comboHash: combo,
+      remaining: credits.remaining,
+    });
     revalidateAccountPages();
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {

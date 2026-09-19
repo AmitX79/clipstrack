@@ -36,6 +36,10 @@ enum Platform {
 // as the User id.
 model User {
   id        String    @id @default(cuid(2))
+  // Daily-credit attribution for the hourly cron, which has no request IP:
+  // the ip+ct_uid combo hash is captured at request time (add/edit/refresh)
+  // and re-used by the cron so background syncs share the visitor's budget.
+  comboHash String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   channels  Channel[]
@@ -148,4 +152,53 @@ model VideoSnapshot {
 
   @@index([videoId, recordedAt])
   @@map("video_snapshots")
+}
+
+// ---- Daily credits ---------------------------------------------------------
+
+// Per-IP+ct_uid daily credit accounting (anti-abuse rate limiting). One row
+// per combo hash per IST day; each fetched video costs 1 credit. The date is
+// the Asia/Kolkata YYYY-MM-DD string so midnight-IST resets are exact.
+model CreditUsage {
+  id          String   @id @default(cuid(2))
+  comboHash   String // sha256(`${ip}|${ct_uid}`); cron reuses User.comboHash
+  date        String // IST date, YYYY-MM-DD
+  creditsUsed Int      @default(0)
+  updatedAt   DateTime @updatedAt
+  createdAt   DateTime @default(now())
+
+  @@unique([comboHash, date])
+  @@index([date])
+  @@map("credit_usage")
+}
+
+// Simple key/value app settings (e.g. the daily per-IP credit limit, editable
+// from /admin). Reading with a default on miss keeps values self-seeding.
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@map("settings")
+}
+
+// ScrapeCreators API keys, managed from /admin. `active` removes a key from
+// rotation without deleting it; `quotaExhausted` is set when the key runs out
+// of credits so the client rotates to the next one. Remaining credits can be
+// refreshed from GET /v1/account/credit-balance and shown in the admin panel.
+model ScrapeKey {
+  id               String    @id @default(cuid(2))
+  label            String
+  key              String
+  active           Boolean   @default(true)
+  quotaExhausted   Boolean   @default(false)
+  remainingCredits Int?
+  lastCheckedAt    DateTime?
+  lastUsedAt       DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([key])
+  @@map("scrape_keys")
 }

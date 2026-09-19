@@ -11,8 +11,15 @@ import {
   getDictionary,
   isLocale,
   localizedHref,
+  tpl,
 } from "@/lib/i18n";
 import { getVisitorId } from "@/lib/visitor";
+import {
+  comboHash,
+  getClientIp,
+  getCreditsStatus,
+  type CreditsStatus,
+} from "@/lib/credits";
 
 export const dynamic = "force-dynamic";
 
@@ -48,14 +55,23 @@ export default async function TrackedPage({
 
   let channels: LoadedChannel[] = [];
   let dbError = false;
+  let credits: CreditsStatus | null = null;
   if (userId) {
     try {
       channels = await loadChannels(userId);
+      credits = await getCreditsStatus(comboHash(getClientIp(), userId));
     } catch (err) {
       console.error("[accounts] db query failed:", err);
       dbError = true;
     }
   }
+  const exhausted = credits?.remaining != null && credits.remaining <= 0;
+  const creditsRemaining = credits?.remaining ?? 0;
+  const warnSoon =
+    credits != null &&
+    !exhausted &&
+    credits.limit > 0 &&
+    credits.used / credits.limit >= 0.8;
 
   return (
     <div className="min-h-screen bg-canvas">
@@ -70,6 +86,15 @@ export default async function TrackedPage({
               {dict.acct.eyebrow}
               {channels.length > 0 && (
                 <span className="text-faint"> · {channels.length}</span>
+              )}
+              {credits && (
+                <span className="text-faint">
+                  {" · "}
+                  {tpl(dict.credits.used, {
+                    used: credits.used,
+                    limit: credits.limit,
+                  })}
+                </span>
               )}
             </p>
             <h1 className="display-lg mt-3 text-ink">{dict.acct.title}</h1>
@@ -91,15 +116,38 @@ export default async function TrackedPage({
             </div>
           )}
 
+          {exhausted && (
+            <div
+              role="status"
+              className="mb-4 rounded-md border border-error bg-elevated p-4 text-sm font-medium text-error"
+            >
+              {dict.credits.limitReached}
+            </div>
+          )}
+          {warnSoon && (
+            <div
+              role="status"
+              className="mb-4 rounded-md border border-warning bg-warning-soft p-4 text-sm text-warning-deep"
+            >
+              {tpl(dict.credits.left, { left: creditsRemaining })}
+            </div>
+          )}
+
           <section
             id="add"
             aria-label="Track an account"
             className="scroll-mt-24 rounded-md border border-hairline bg-elevated p-5"
           >
-            <AddChannelBar locale={locale} />
+            <AddChannelBar locale={locale} exhausted={exhausted} />
           </section>
 
-          {!dbError && <TrackedAccounts channels={channels} locale={locale} />}
+          {!dbError && (
+            <TrackedAccounts
+              channels={channels}
+              locale={locale}
+              refreshDisabled={exhausted}
+            />
+          )}
         </div>
       </main>
       <Footer locale={locale} />

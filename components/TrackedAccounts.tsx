@@ -27,9 +27,11 @@ function useVideoLayout(): [VideoLayout, (layout: VideoLayout) => void] {
 export function TrackedAccounts({
   channels,
   locale,
+  refreshDisabled = false,
 }: {
   channels: LoadedChannel[];
   locale: Locale;
+  refreshDisabled?: boolean;
 }) {
   const dict = getDictionary(locale);
   const [sortBy, setSortBy] = useState<SortKey>("published");
@@ -103,6 +105,7 @@ export function TrackedAccounts({
           sortBy={sortBy}
           layout={layout}
           locale={locale}
+          refreshDisabled={refreshDisabled}
         />
       ))}
     </>
