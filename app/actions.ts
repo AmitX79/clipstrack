@@ -4,7 +4,12 @@ import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/db";
 import { LOCALES } from "@/lib/i18n";
 import { syncChannel } from "@/lib/sync";
-import { normalizeUsername, PLATFORM_VALUES } from "@/lib/types";
+import {
+  detectProfileUrl,
+  normalizeUsername,
+  PLATFORM_LABELS,
+  PLATFORM_VALUES,
+} from "@/lib/types";
 import type { PlatformValue } from "@/lib/types";
 import { ensureVisitorId } from "@/lib/visitor";
 
@@ -64,15 +69,31 @@ function clampRatio(n: number): number {
 
 const MAX_HANDLES = 25;
 
-// "mrbeast, @veritasium / mrbeast@tt" -> ["mrbeast", "veritasium"], deduped.
-function parseHandles(raw: string): string[] {
+// One entry = one handle on the platform it will actually be added to. A full
+// profile URL is detected per-token (detected=true) and overrides the selected
+// tab; a plain handle keeps the selected platform. Dedup is per platform, so
+// the same handle can coexist on different platforms (e.g. @mrbeast on
+// Instagram and TikTok).
+interface ParsedHandle {
+  username: string;
+  platform: PlatformValue;
+  detected: boolean;
+}
+
+// "mrbeast, @veritasium / mrbeast@tt, instagram.com/joe" -> entries. Handles
+// and URLs can be mixed freely; each token is classified on its own.
+function parseHandles(raw: string, selected: PlatformValue): ParsedHandle[] {
   const seen = new Set<string>();
-  const handles: string[] = [];
+  const handles: ParsedHandle[] = [];
   for (const token of raw.split(/[\s,;]+/)) {
-    const username = normalizeUsername(token);
-    if (!username || seen.has(username)) continue;
-    seen.add(username);
-    handles.push(username);
+    const url = detectProfileUrl(token);
+    const username = url ? url.username : normalizeUsername(token);
+    if (!username) continue;
+    const platform = url ? url.platform : selected;
+    const key = `${platform}:${username}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    handles.push({ username, platform, detected: url != null });
     if (handles.length >= MAX_HANDLES) break;
   }
   return handles;
@@ -84,16 +105,19 @@ function parseHandles(raw: string): string[] {
 export async function addChannels(
   formData: FormData,
 ): Promise<AddChannelsResult> {
-  const handles = parseHandles(String(formData.get("usernames") ?? ""));
-  if (handles.length === 0) {
-    return { ok: false, error: "Enter at least one handle, e.g. @mrbeast, @veritasium." };
-  }
-
   const rawPlatform = String(formData.get("platform") ?? "").toUpperCase();
   if (!PLATFORM_VALUES.includes(rawPlatform as PlatformValue)) {
     return { ok: false, error: "Pick a platform first." };
   }
-  const platform = rawPlatform as PlatformValue;
+  const selected = rawPlatform as PlatformValue;
+
+  const handles = parseHandles(
+    String(formData.get("usernames") ?? ""),
+    selected,
+  );
+  if (handles.length === 0) {
+    return { ok: false, error: "Enter at least one handle, e.g. @mrbeast, @veritasium." };
+  }
 
   const userId = ensureVisitorId();
   const oldVideoCount = parseVideoCount(formData.get("oldVideoCount"), 8);
@@ -109,7 +133,7 @@ export async function addChannels(
     const added: string[] = [];
     let syncedCount = 0;
 
-    for (const username of handles) {
+    for (const { username, platform } of handles) {
       // Re-adding the same handle on the SAME platform updates that row. A
       // different platform gets its own channel so both can be tracked (e.g.
       // @mrbeast on Instagram and TikTok separately).
@@ -173,10 +197,24 @@ export async function addChannels(
     revalidateHomePages();
     revalidateAccountPages();
 
-    const label = added.map((handle) => `@${handle}`).join(", ");
+    // Snapshot the user-visible result, including when a pasted URL resolved
+    // to a platform other than the selected tab ("Detected as Instagram - ...").
+    const plain = handles.filter((h) => !h.detected);
+    const detected = handles.filter((h) => h.detected);
     const suffix =
       syncedCount === added.length ? " added and synced." : " added - syncing shortly.";
-    return { ok: true, added, message: label + suffix };
+
+    const parts: string[] = [];
+    if (plain.length > 0) {
+      parts.push(`${plain.map((h) => `@${h.username}`).join(", ")}${suffix}`);
+    }
+    parts.push(
+      ...detected.map(
+        (h) => `Detected as ${PLATFORM_LABELS[h.platform]} - added @${h.username}`,
+      ),
+    );
+    const message = parts.join(" ");
+    return { ok: true, added, message };
   } catch (err) {
     console.error("[addChannels]", err);
     const detail = err instanceof Error ? err.message : String(err);

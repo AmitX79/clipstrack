@@ -78,3 +78,75 @@ export function normalizeUsername(input: string): string {
     .split("/")[0]
     .toLowerCase();
 }
+
+// Parse a pasted profile URL (with or without scheme) into host + path.
+function splitUrl(input: string): { host: string; path: string } | null {
+  const t = input.trim();
+  if (!t) return null;
+  const m = t.replace(/^[a-z][a-z0-9+.-]*:\/\//i, "").match(
+    /^([^\s/?#]+(?:\.[a-z]{2,})?)(?:\/(.*))?$/i,
+  );
+  if (!m) return null;
+  const host = m[1].toLowerCase();
+  // Require a real host (contains a dot) and reject anything with an @ in the
+  // host portion (handles/emails like "john@x.com" should fall back to plain).
+  if (!host.includes(".") || host.includes("@")) return null;
+  return { host, path: m[2] ?? "" };
+}
+
+// Detect the platform directly from a pasted profile URL. Recognizes:
+//   youtube.com/@handle | youtube.com/channel/ID | youtu.be/ID   -> YouTube
+//   instagram.com/username                                            -> Instagram
+//   tiktok.com/@username                                              -> TikTok
+// Returns the cleaned username and its platform, or null when the input is
+// not (or can't be read as) a supported profile URL - callers then fall back
+// to the platform tab currently selected in the UI.
+export function detectProfileUrl(
+  input: string,
+): { platform: PlatformValue; username: string } | null {
+  const url = splitUrl(input);
+  if (!url) return null;
+
+  let platform: PlatformValue | null = null;
+  if (url.host.includes("youtube.com") || url.host === "youtu.be") {
+    platform = "YOUTUBE";
+  } else if (url.host.includes("instagram.com")) {
+    platform = "INSTAGRAM";
+  } else if (url.host.includes("tiktok.com")) {
+    platform = "TIKTOK";
+  }
+  if (!platform) return null;
+
+  // Strip query string / fragment, then drop leading path segments that are
+  // URL furniture (youtube.com/channel/ID, /user/ID, /shorts/ID, TikTok
+  // /video/ID, Instagram /reel/ID, etc.) so the remaining token is the handle.
+  const path = url.path.split(/[?#]/)[0].replace(/^\/+|\/+$/g, "");
+  const segments = path.split("/").filter(Boolean);
+  if (segments.length === 0) return null;
+
+  const FURNITURE = new Set([
+    "channel",
+    "user",
+    "c",
+    "shorts",
+    "live",
+    "playlist",
+    "watch",
+    "reel",
+    "reels",
+    "p",
+    "posts",
+    "tv",
+    "embed",
+    "clip",
+    "video",
+  ]);
+  const first = segments[0];
+  const username = FURNITURE.has(first)
+    ? segments[1] ?? null
+    : first;
+  if (!username) return null;
+
+  const clean = normalizeUsername(username);
+  return clean ? { platform, username: clean } : null;
+}

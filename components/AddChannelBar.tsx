@@ -3,13 +3,19 @@
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { addChannels } from "@/app/actions";
-import { PLATFORM_LABELS, PLATFORM_VALUES } from "@/lib/types";
+import {
+  detectProfileUrl,
+  PLATFORM_LABELS,
+  PLATFORM_VALUES,
+} from "@/lib/types";
 import type { PlatformValue } from "@/lib/types";
 import { getDictionary, type Locale } from "@/lib/i18n";
 
 // The My Accounts add bar: a comma-separated handles input, a platform picker,
-// old/latest count inputs and an Add button. Every handle in a batch is added
-// on the picked platform, matching the original ClipsTrack visual tokens.
+// old/latest count inputs and an Add button. Plain handles are added on the
+// picked platform; pasted profile URLs are detected per-token and always land
+// on their own platform, regardless of the selected tab. When a batch of URLs
+// all point at the same platform, the tab auto-switches to match.
 export function AddChannelBar({ locale }: { locale: Locale }) {
   const dict = getDictionary(locale);
   const router = useRouter();
@@ -17,6 +23,22 @@ export function AddChannelBar({ locale }: { locale: Locale }) {
   const [message, setMessage] = useState<string | null>(null);
   const [platform, setPlatform] = useState<PlatformValue>("YOUTUBE");
   const [isPending, startTransition] = useTransition();
+
+  function onUsernamesChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const tokens = event.target.value.split(/[\s,;]+/).filter(Boolean);
+    if (tokens.length === 0) return;
+
+    // Every token must be a detectable URL for the tab to switch; a mix of
+    // handles and URLs (or several platforms) stays on the current tab, with
+    // the server resolving each URL to its own platform.
+    const detected = tokens.map(detectProfileUrl);
+    if (detected.some((d) => d === null)) return;
+    const distinct = new Set(detected.map((d) => d!.platform));
+    if (distinct.size === 1) {
+      const target = detected[0]!.platform;
+      if (target !== platform) setPlatform(target);
+    }
+  }
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -84,6 +106,7 @@ export function AddChannelBar({ locale }: { locale: Locale }) {
           autoComplete="off"
           autoCapitalize="off"
           spellCheck={false}
+          onChange={onUsernamesChange}
           aria-label={dict.add.ariaHandles}
           className={`${fieldClass} min-w-[220px] flex-1`}
         />
