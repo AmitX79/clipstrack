@@ -11,9 +11,11 @@ export function GET(request: NextRequest) {
     secret != null &&
     adminSecretHash(given) === adminSecretHash(secret);
   const res = NextResponse.redirect(new URL("/admin", request.url));
+  res.headers.set("Referrer-Policy", "no-referrer");
   if (ok && secret) {
     res.cookies.set(ADMIN_COOKIE, adminSecretHash(secret), {
       httpOnly: true,
+      secure: true,
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7,
       path: "/",

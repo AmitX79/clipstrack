@@ -27,6 +27,7 @@ export async function adminLogin(
   }
   cookies().set(ADMIN_COOKIE, adminSecretHash(secret), {
     httpOnly: true,
+    secure: true,
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 7,
     path: "/",
