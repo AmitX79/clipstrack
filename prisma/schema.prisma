@@ -54,6 +54,7 @@ model Channel {
   avatarUrl   String?
   profileUrl  String
   lastSyncedAt DateTime?
+  lastSyncError String? // message from the most recent failed sync; null = last sync ok
 
   // Video-window config (per channel): oldVideoCount = how many of the most
   // recent *existing* videos to backfill once; latestVideoCount = how many of

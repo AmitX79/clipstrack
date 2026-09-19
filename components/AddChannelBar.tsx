@@ -5,11 +5,13 @@ import { useState, useTransition } from "react";
 import { addChannels } from "@/app/actions";
 import {
   detectProfileUrl,
+  isUrlLike,
   PLATFORM_LABELS,
   PLATFORM_VALUES,
 } from "@/lib/types";
 import type { PlatformValue } from "@/lib/types";
 import { getDictionary, type Locale } from "@/lib/i18n";
+import { Spinner } from "@/components/Spinner";
 
 // The My Accounts add bar: a comma-separated handles input, a platform picker,
 // old/latest count inputs and an Add button. Plain handles are added on the
@@ -44,6 +46,20 @@ export function AddChannelBar({ locale }: { locale: Locale }) {
     event.preventDefault();
     setError(null);
     setMessage(null);
+
+    // Reject before hitting the server: a token that looks like a URL but
+    // isn't a channel/profile link (video URL, unknown host, malformed input)
+    // is an error, never a handle.
+    const tokens = new FormData(event.currentTarget)
+      .get("usernames")
+      ?.toString()
+      .split(/[\s,;]+/)
+      .filter(Boolean);
+    const bad = tokens?.find((token) => isUrlLike(token) && !detectProfileUrl(token));
+    if (bad) {
+      setError("Please paste a channel/profile link or handle, not a video link.");
+      return;
+    }
 
     // Capture the form before awaiting — React nulls `event.currentTarget`
     // once the synchronous handler returns.
@@ -158,7 +174,11 @@ export function AddChannelBar({ locale }: { locale: Locale }) {
           disabled={isPending}
           className="h-11 rounded-[6px] bg-ink px-5 text-sm font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-canvas disabled:opacity-60"
         >
-          {isPending ? dict.add.adding : dict.add.submit}
+          {isPending ? (
+            <Spinner label={dict.add.adding} />
+          ) : (
+            dict.add.submit
+          )}
         </button>
       </div>
       <div aria-live="polite">

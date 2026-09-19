@@ -94,59 +94,69 @@ function splitUrl(input: string): { host: string; path: string } | null {
   return { host, path: m[2] ?? "" };
 }
 
-// Detect the platform directly from a pasted profile URL. Recognizes:
-//   youtube.com/@handle | youtube.com/channel/ID | youtu.be/ID   -> YouTube
-//   instagram.com/username                                            -> Instagram
-//   tiktok.com/@username                                              -> TikTok
-// Returns the cleaned username and its platform, or null when the input is
-// not (or can't be read as) a supported profile URL - callers then fall back
-// to the platform tab currently selected in the UI.
+// Detect the platform directly from a pasted profile URL. Recognizes only
+// channel-level forms:
+//   youtube.com/@handle | youtube.com/channel/ID | youtube.com/c/name
+//   instagram.com/username
+//   tiktok.com/@username
+// Content links (watch, shorts, reels, youtu.be shortlinks, TikTok /video/...)
+// and malformed URLs return null - callers then reject the input (a URL-shaped
+// token that can't be read as a profile link is not a handle).
 export function detectProfileUrl(
   input: string,
 ): { platform: PlatformValue; username: string } | null {
   const url = splitUrl(input);
   if (!url) return null;
 
-  let platform: PlatformValue | null = null;
-  if (url.host.includes("youtube.com") || url.host === "youtu.be") {
-    platform = "YOUTUBE";
-  } else if (url.host.includes("instagram.com")) {
-    platform = "INSTAGRAM";
-  } else if (url.host.includes("tiktok.com")) {
-    platform = "TIKTOK";
-  }
-  if (!platform) return null;
-
-  // Strip query string / fragment, then drop leading path segments that are
-  // URL furniture (youtube.com/channel/ID, /user/ID, /shorts/ID, TikTok
-  // /video/ID, Instagram /reel/ID, etc.) so the remaining token is the handle.
   const path = url.path.split(/[?#]/)[0].replace(/^\/+|\/+$/g, "");
   const segments = path.split("/").filter(Boolean);
   if (segments.length === 0) return null;
 
-  const FURNITURE = new Set([
-    "channel",
-    "user",
-    "c",
-    "shorts",
-    "live",
-    "playlist",
-    "watch",
-    "reel",
-    "reels",
-    "p",
-    "posts",
-    "tv",
-    "embed",
-    "clip",
-    "video",
-  ]);
-  const first = segments[0];
-  const username = FURNITURE.has(first)
-    ? segments[1] ?? null
-    : first;
-  if (!username) return null;
+  // YouTube: only @handle, channel/ID, c/custom-name (channel IDs are
+  // case-sensitive and kept as-is). Everything else - watch, shorts, live,
+  // playlist, embed, clip, ... - is a content link, not a profile.
+  if (url.host.includes("youtube.com")) {
+    const first = segments[0];
+    if (first.startsWith("@")) {
+      const username = normalizeUsername(first);
+      return username ? { platform: "YOUTUBE", username } : null;
+    }
+    if (first === "channel" || first === "c") {
+      const next = segments[1]?.replace(/^\/+|\/+$/g, "");
+      if (!next) return null;
+      const username = first === "channel" ? next : normalizeUsername(next);
+      return username ? { platform: "YOUTUBE", username } : null;
+    }
+    return null;
+  }
 
-  const clean = normalizeUsername(username);
-  return clean ? { platform, username: clean } : null;
+  // Instagram: a bare username (a single path segment). reel/p/reels/tv/...
+  // are content links, reject them.
+  if (url.host.includes("instagram.com")) {
+    if (segments.length !== 1) return null;
+    const username = normalizeUsername(segments[0]);
+    return username ? { platform: "INSTAGRAM", username } : null;
+  }
+
+  // TikTok: @username only.
+  if (url.host.includes("tiktok.com")) {
+    if (segments.length !== 1 || !segments[0].startsWith("@")) return null;
+    const username = normalizeUsername(segments[0]);
+    return username ? { platform: "TIKTOK", username } : null;
+  }
+
+  return null;
+}
+
+// A URL-shaped token: has a scheme, starts with "www.", carries a query string
+// ("?"), or looks like a host + optional path. Used to reject pasted links that
+// failed profile detection (video URLs, unknown hosts, malformed input)
+// instead of guessing a handle from them.
+export function isUrlLike(input: string): boolean {
+  const t = input.trim();
+  if (!t) return false;
+  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(t)) return true;
+  if (/^www\./i.test(t)) return true;
+  if (t.includes("?")) return true;
+  return /^([a-z0-9-]+\.)+[a-z]{2,4}([/?#]|$)/i.test(t);
 }

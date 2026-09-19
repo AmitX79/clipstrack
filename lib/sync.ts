@@ -38,8 +38,17 @@ export async function syncChannel(channel: Channel): Promise<void> {
   try {
     result = await fetchChannel(channel, trackVideos > 0 ? trackVideos : 0);
   } catch (err) {
-    // Bot-wall, quota, or network error — report and keep the rest alive.
+    // Bot-wall, quota, network or not-found error. Record it on the channel so
+    // the UI can show why a sync failed instead of silently showing no videos;
+    // the next successful sync clears it. The rest of the batch keeps going.
+    const detail = err instanceof Error ? err.message : String(err);
     console.error(`[sync] ${channel.platform} @${channel.username}:`, err);
+    await prisma.channel.update({
+      where: { id: channel.id },
+      data: {
+        lastSyncError: detail.slice(0, 500),
+      },
+    }).catch((e) => console.error("[sync] failed to store error:", e));
     return;
   }
 
@@ -51,6 +60,7 @@ export async function syncChannel(channel: Channel): Promise<void> {
       avatarUrl: result.account.avatarUrl,
       profileUrl: result.account.profileUrl,
       lastSyncedAt: new Date(),
+      lastSyncError: null,
     },
   });
 

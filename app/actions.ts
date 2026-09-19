@@ -6,6 +6,7 @@ import { LOCALES } from "@/lib/i18n";
 import { syncChannel } from "@/lib/sync";
 import {
   detectProfileUrl,
+  isUrlLike,
   normalizeUsername,
   PLATFORM_LABELS,
   PLATFORM_VALUES,
@@ -81,12 +82,18 @@ interface ParsedHandle {
 }
 
 // "mrbeast, @veritasium / mrbeast@tt, instagram.com/joe" -> entries. Handles
-// and URLs can be mixed freely; each token is classified on its own.
-function parseHandles(raw: string, selected: PlatformValue): ParsedHandle[] {
+// and URLs can be mixed freely; each token is classified on its own. A URL
+// that fails profile detection (video link, unknown host, malformed input) is
+// rejected as a whole batch, not guessed at as a handle.
+function parseHandles(
+  raw: string,
+  selected: PlatformValue,
+): ParsedHandle[] | null {
   const seen = new Set<string>();
   const handles: ParsedHandle[] = [];
   for (const token of raw.split(/[\s,;]+/)) {
     const url = detectProfileUrl(token);
+    if (!url && isUrlLike(token)) return null;
     const username = url ? url.username : normalizeUsername(token);
     if (!username) continue;
     const platform = url ? url.platform : selected;
@@ -115,6 +122,13 @@ export async function addChannels(
     String(formData.get("usernames") ?? ""),
     selected,
   );
+  if (handles === null) {
+    return {
+      ok: false,
+      error:
+        "Please paste a channel/profile link or handle, not a video link.",
+    };
+  }
   if (handles.length === 0) {
     return { ok: false, error: "Enter at least one handle, e.g. @mrbeast, @veritasium." };
   }

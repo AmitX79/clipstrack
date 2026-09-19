@@ -11,6 +11,7 @@ import {
 } from "@/lib/format";
 import { PLATFORM_LABELS } from "@/lib/types";
 import { PlatformLogoBadge } from "@/components/PlatformLogo";
+import { Spinner } from "@/components/Spinner";
 import { getDictionary, tpl, type Dictionary, type Locale } from "@/lib/i18n";
 
 // Channel avatar with a graceful fallback: when the profile image is missing
@@ -126,35 +127,6 @@ function ChannelActions({
       </div>
       {error && <p className="text-xs text-error">{error}</p>}
     </div>
-  );
-}
-
-function Spinner({ label }: { label: string }) {
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <svg
-        aria-hidden="true"
-        className="h-3.5 w-3.5 animate-spin motion-reduce:animate-none"
-        viewBox="0 0 24 24"
-        fill="none"
-      >
-        <circle
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          strokeWidth="4"
-          className="opacity-30"
-        />
-        <path
-          d="M22 12a10 10 0 0 0-10-10"
-          stroke="currentColor"
-          strokeWidth="4"
-          strokeLinecap="round"
-        />
-      </svg>
-      {label}
-    </span>
   );
 }
 
@@ -428,16 +400,24 @@ export function ChannelCard({
       )}
 
       <p className="mt-auto flex items-center gap-2 pt-5 text-xs text-mute">
-        {fresh && (
-          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-link" />
+        {channel.lastSyncError ? (
+          <span className="font-medium text-error">
+            {tpl(dict.card.syncFailed, { error: channel.lastSyncError })}
+          </span>
+        ) : (
+          <>
+            {fresh && (
+              <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-link" />
+            )}
+            {synced
+              ? now != null
+                ? tpl(dict.card.synced, {
+                    t: formatRelativeCompact(new Date(synced), now),
+                  })
+                : null
+              : dict.card.notSynced}
+          </>
         )}
-        {synced
-          ? now != null
-            ? tpl(dict.card.synced, {
-                t: formatRelativeCompact(new Date(synced), now),
-              })
-            : null
-          : dict.card.notSynced}
       </p>
     </article>
   );

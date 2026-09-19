@@ -43,6 +43,7 @@ export interface LoadedChannel {
   avatarUrl: string | null;
   profileUrl: string;
   lastSyncedAt: string | null;
+  lastSyncError: string | null;
   oldVideoCount: number;
   latestVideoCount: number;
   backfilled: boolean;
@@ -63,6 +64,7 @@ function serializeChannel(channel: ChannelWithInclude): LoadedChannel {
     avatarUrl: channel.avatarUrl,
     profileUrl: channel.profileUrl,
     lastSyncedAt: channel.lastSyncedAt ? channel.lastSyncedAt.toISOString() : null,
+    lastSyncError: channel.lastSyncError,
     oldVideoCount: channel.oldVideoCount,
     latestVideoCount: channel.latestVideoCount,
     backfilled: channel.backfilled,
