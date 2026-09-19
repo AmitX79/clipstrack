@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { Footer } from "@/components/Footer";
 import { NavBar } from "@/components/NavBar";
 import { getDictionary, isLocale, localizedHref, type Locale } from "@/lib/i18n";
@@ -72,12 +71,12 @@ export default function Home({ params }: { params: { locale: string } }) {
               >
                 {dict.hero.add}
               </a>
-              <Link
+              <a
                 href={localizedHref(locale, "/accounts")}
                 className="inline-flex h-12 items-center rounded-full border border-hairline bg-elevated px-8 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 {dict.hero.view}
-              </Link>
+              </a>
             </div>
             <p className="mono-eyebrow mt-10 text-mute">
               {dict.hero.platforms}
@@ -167,12 +166,12 @@ export default function Home({ params }: { params: { locale: string } }) {
               >
                 {dict.hero.add}
               </a>
-              <Link
+              <a
                 href={localizedHref(locale, "/accounts")}
                 className="inline-flex h-12 items-center rounded-full border border-hairline bg-elevated px-8 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
               >
                 {dict.hero.view}
-              </Link>
+              </a>
             </div>
           </div>
         </section>

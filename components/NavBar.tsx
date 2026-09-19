@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import {
   DEFAULT_LOCALE,
@@ -71,7 +70,6 @@ export function NavBar({
   active?: "home" | "accounts" | "faq";
   locale: Locale;
 }) {
-  const router = useRouter();
   const pathname = usePathname();
   const dict = getDictionary(locale);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -132,7 +130,7 @@ export function NavBar({
         ? pathname
         : pathname.replace(new RegExp(`^/${locale}`), "") || "/";
     setLangOpen(false);
-    router.push(localizedHref(next, rest === "/" ? "" : rest));
+    window.location.href = localizedHref(next, rest === "/" ? "" : rest);
   }
 
   const linkClass = (key: string) =>
@@ -145,23 +143,23 @@ export function NavBar({
         className="mx-auto flex h-16 max-w-6xl items-center gap-4 px-6"
         aria-label="Primary"
       >
-        <Link href={localizedHref(locale, "")} className="flex items-center gap-2 text-base font-medium tracking-[-0.4px] text-ink">
+        <a href={localizedHref(locale, "")} className="flex items-center gap-2 text-base font-medium tracking-[-0.4px] text-ink">
           <img src="/logo.svg" alt="" width={28} height={28} className="h-7 w-7 shrink-0" />
           ClipsTrack
-        </Link>
+        </a>
 
         <div className="ml-auto flex items-center gap-2">
           {/* Desktop links */}
           <div className="hidden items-center gap-1 sm:flex">
             {LINKS.map((link) => (
-              <Link
+              <a
                 key={link.key}
                 href={link.href}
                 aria-current={active === link.key ? "page" : undefined}
                 className={linkClass(link.key)}
               >
                 {link.label}
-              </Link>
+              </a>
             ))}
           </div>
 
@@ -219,12 +217,12 @@ export function NavBar({
           </button>
 
           {/* Desktop CTA */}
-          <Link
+          <a
             href={localizedHref(locale, "/accounts#add")}
             className="hidden rounded-[6px] bg-ink px-4 py-2.5 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 sm:inline-flex"
           >
             {dict.nav.add}
-          </Link>
+          </a>
 
           {/* Mobile menu toggle */}
           <button
@@ -245,7 +243,7 @@ export function NavBar({
         <div id="mobile-nav" className="border-t border-hairline bg-white dark:bg-elevated sm:hidden">
           <div className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-3">
             {LINKS.map((link) => (
-              <Link
+              <a
                 key={link.key}
                 href={link.href}
                 aria-current={active === link.key ? "page" : undefined}
@@ -253,15 +251,15 @@ export function NavBar({
                 className="rounded-[6px] px-3 py-2.5 text-sm text-ink hover:bg-hairline-soft"
               >
                 {link.label}
-              </Link>
+              </a>
             ))}
-            <Link
-href={localizedHref(locale, "/accounts#add")}
+            <a
+              href={localizedHref(locale, "/accounts#add")}
               onClick={() => setMenuOpen(false)}
               className="mt-2 rounded-[6px] bg-ink px-4 py-2.5 text-center text-base font-medium text-on-ink hover:bg-ink-press"
             >
               {dict.nav.add}
-            </Link>
+            </a>
           </div>
         </div>
       )}

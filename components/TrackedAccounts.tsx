@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
 import { ChannelGroupSection } from "@/components/ChannelCard";
 import type { VideoLayout } from "@/components/ChannelCard";
@@ -48,9 +47,9 @@ export function TrackedAccounts({
         <h2 className="display-md mt-3 text-ink">{dict.empty.title}</h2>
         <p className="mx-auto mt-2 max-w-md text-base text-body">
           {dict.empty.before}
-          <Link href="#add" className="text-link hover:text-link-deep">
+          <a href="#add" className="text-link hover:text-link-deep">
             {dict.empty.link}
-          </Link>
+          </a>
           {dict.empty.after}
         </p>
       </div>
