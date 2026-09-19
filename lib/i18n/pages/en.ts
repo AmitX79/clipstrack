@@ -5,7 +5,7 @@ export const en: PageContent = {
     about: {
       title: "About Us",
       description:
-        "What ClipsTrack is and why it exists — exact, hourly clip numbers for YouTube Shorts, Instagram Reels and TikTok, without spreadsheets.",
+        "What ClipsTrack is and why it exists - exact, hourly clip numbers for YouTube Shorts, Instagram Reels and TikTok, without spreadsheets.",
     },
     privacy: {
       title: "Privacy Policy",
@@ -15,12 +15,12 @@ export const en: PageContent = {
     terms: {
       title: "Terms & Conditions",
       description:
-        "The terms for using ClipsTrack — acceptable use, data accuracy and liability, service availability, and how tracked accounts can be removed.",
+        "The terms for using ClipsTrack - acceptable use, data accuracy and liability, service availability, and how tracked accounts can be removed.",
     },
     contact: {
       title: "Contact Us",
       description:
-        "Questions, deletion requests or broken trackers — reach the ClipsTrack team via the contact form or by email.",
+        "Questions, deletion requests or broken trackers - reach the ClipsTrack team via the contact form or by email.",
     },
   },
   about: {
@@ -31,11 +31,11 @@ export const en: PageContent = {
     sections: [
       {
         h: "Exact numbers, every hour",
-        p: "ClipsTrack snapshots views, likes, comments and favorites for every clip you add — on the hour, every hour, kept at their exact value. No rounding, no “1.2M”. The number you see is the number the platform published at that moment.",
+        p: "ClipsTrack snapshots views, likes, comments and favorites for every clip you add - on the hour, every hour, kept at their exact value. No rounding, no “1.2M”. The number you see is the number the platform published at that moment.",
       },
       {
         h: "One page for all three platforms",
-        p: "It tracks YouTube Shorts, Instagram Reels and TikTok from a single list of handles. Add a channel, and every video that matches the platform's short-form rules is measured automatically — no spreadsheets, no manual exports.",
+        p: "It tracks YouTube Shorts, Instagram Reels and TikTok from a single list of handles. Add a channel, and every video that matches the platform's short-form rules is measured automatically - no spreadsheets, no manual exports.",
       },
       {
         h: "Who it's for",
@@ -43,7 +43,7 @@ export const en: PageContent = {
       },
       {
         h: "What it isn't",
-        p: "ClipsTrack isn't an ads dashboard, a scheduler or a full analytics suite. No feature bloat, no newsletters. It does one thing — exact, hourly clip tracking — and does it quietly.",
+        p: "ClipsTrack isn't an ads dashboard, a scheduler or a full analytics suite. No feature bloat, no newsletters. It does one thing - exact, hourly clip tracking - and does it quietly.",
       },
     ],
     closing:
@@ -61,11 +61,11 @@ export const en: PageContent = {
       },
       {
         h: "The ct_uid cookie",
-        p: "On your first visit we set a cookie named ct_uid — a random identifier with no personal information in it. It exists so the channels you add stay tied to you and not to other visitors. It doesn't track you across other sites, and there's no third-party tracking or advertising anywhere on ClipsTrack.",
+        p: "On your first visit we set a cookie named ct_uid - a random identifier with no personal information in it. It exists so the channels you add stay tied to you and not to other visitors. It doesn't track you across other sites, and there's no third-party tracking or advertising anywhere on ClipsTrack.",
       },
       {
         h: "Public data only",
-        p: "The statistics we record are public platform data — the same numbers anyone can see by opening the profile. We never capture private information, direct messages, or anything that isn't already publicly visible. What we add is the organization: hourly snapshots, in one place.",
+        p: "The statistics we record are public platform data - the same numbers anyone can see by opening the profile. We never capture private information, direct messages, or anything that isn't already publicly visible. What we add is the organization: hourly snapshots, in one place.",
       },
       {
         h: "What we don't do",
@@ -73,7 +73,7 @@ export const en: PageContent = {
       },
       {
         h: "Requesting deletion",
-        p: "To erase everything, send us a note from the contact page and mark it as a deletion request — or email support@clipstrack.com — and we'll remove all channels and history tied to your visitor ID. Because each visitor's data is isolated, deleting yours never touches anyone else's.",
+        p: "To erase everything, send us a note from the contact page and mark it as a deletion request - or email support@clipstrack.com - and we'll remove all channels and history tied to your visitor ID. Because each visitor's data is isolated, deleting yours never touches anyone else's.",
       },
       {
         h: "Automatic cleanup",
@@ -89,7 +89,7 @@ export const en: PageContent = {
     eyebrow: "Legal",
     title: "Terms & Conditions",
     intro:
-      "These terms cover your use of ClipsTrack — the website you're using right now and anything it offers. By adding channels or using the service, you accept them.",
+      "These terms cover your use of ClipsTrack - the website you're using right now and anything it offers. By adding channels or using the service, you accept them.",
     sections: [
       {
         h: "Acceptable use",
@@ -97,7 +97,7 @@ export const en: PageContent = {
       },
       {
         h: "Where data comes from",
-        p: "Statistics are sourced from third-party platforms: the YouTube Data API, Instagram and TikTok. Those platforms control what is published and can change, throttle or remove it at any time. ClipsTrack records what they publish — it doesn't generate or correct the numbers.",
+        p: "Statistics are sourced from third-party platforms: the YouTube Data API, Instagram and TikTok. Those platforms control what is published and can change, throttle or remove it at any time. ClipsTrack records what they publish - it doesn't generate or correct the numbers.",
       },
       {
         h: "No guarantee of accuracy",
@@ -105,11 +105,11 @@ export const en: PageContent = {
       },
       {
         h: "Service availability",
-        p: "ClipsTrack is provided 'as is' and 'as available'. It may be slow, change or stop working without notice — including for maintenance, platform API changes or cost reasons. We're not liable for any downtime.",
+        p: "ClipsTrack is provided 'as is' and 'as available'. It may be slow, change or stop working without notice - including for maintenance, platform API changes or cost reasons. We're not liable for any downtime.",
       },
       {
         h: "Removal and suspension",
-        p: "We may remove accounts, data or access to the service at our discretion and without notice — for example to protect the service, or where required by law.",
+        p: "We may remove accounts, data or access to the service at our discretion and without notice - for example to protect the service, or where required by law.",
       },
       {
         h: "Liability limits",
@@ -124,7 +124,7 @@ export const en: PageContent = {
   contact: {
     eyebrow: "Contact",
     title: "Contact Us",
-    sub: "A question, a deletion request, a broken tracker — send us a note and we'll get back to you.",
+    sub: "A question, a deletion request, a broken tracker - send us a note and we'll get back to you.",
     email: "support@clipstrack.com",
     form: {
       name: "Name",

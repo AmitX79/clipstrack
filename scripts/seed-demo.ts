@@ -37,7 +37,7 @@ export async function seedDemo(): Promise<void> {
     },
   });
   const demos = [
-    { title: "Beast Games — $5,000,000 Episode", url: "https://www.youtube.com/watch?v=demo1" },
+    { title: "Beast Games - $5,000,000 Episode", url: "https://www.youtube.com/watch?v=demo1" },
     { title: "I Gave Away $1,000,000", url: "https://www.youtube.com/watch?v=demo2" },
     { title: "Last To Leave Circle Wins $500,000", url: "https://www.youtube.com/watch?v=demo3" },
   ];

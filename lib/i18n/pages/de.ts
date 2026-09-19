@@ -5,7 +5,7 @@ export const de: PageContent = {
     about: {
       title: "Über uns",
       description:
-        "Was ClipsTrack ist und warum es existiert — exakte, stündliche Clip-Zahlen für YouTube Shorts, Instagram Reels und TikTok, ohne Tabellenkalkulation.",
+        "Was ClipsTrack ist und warum es existiert - exakte, stündliche Clip-Zahlen für YouTube Shorts, Instagram Reels und TikTok, ohne Tabellenkalkulation.",
     },
     privacy: {
       title: "Datenschutzerklärung",
@@ -15,12 +15,12 @@ export const de: PageContent = {
     terms: {
       title: "AGB",
       description:
-        "Die Nutzungsbedingungen von ClipsTrack — zulässige Nutzung, Daten-Genauigkeit und Haftung, Verfügbarkeit des Dienstes und Entfernung getrackter Konten.",
+        "Die Nutzungsbedingungen von ClipsTrack - zulässige Nutzung, Daten-Genauigkeit und Haftung, Verfügbarkeit des Dienstes und Entfernung getrackter Konten.",
     },
     contact: {
       title: "Kontakt",
       description:
-        "Fragen, Löschanträge oder kaputte Tracker — erreichst du das ClipsTrack-Team über das Formular oder per E-Mail.",
+        "Fragen, Löschanträge oder kaputte Tracker - erreichst du das ClipsTrack-Team über das Formular oder per E-Mail.",
     },
   },
   about: {
@@ -31,19 +31,19 @@ export const de: PageContent = {
     sections: [
       {
         h: "Exakte Zahlen, jede Stunde",
-        p: "ClipsTrack erfasst Aufrufe, Likes, Kommentare und Favoriten für jeden Clip, den du hinzufügst — stündlich, in jedem Fall in exakter Höhe. Kein Runden, kein „1,2 Mio.“. Die Zahl, die du siehst, ist die Zahl, die die Plattform in diesem Moment veröffentlicht hat.",
+        p: "ClipsTrack erfasst Aufrufe, Likes, Kommentare und Favoriten für jeden Clip, den du hinzufügst - stündlich, in jedem Fall in exakter Höhe. Kein Runden, kein „1,2 Mio.“. Die Zahl, die du siehst, ist die Zahl, die die Plattform in diesem Moment veröffentlicht hat.",
       },
       {
         h: "Eine Seite für alle drei Plattformen",
-        p: "Es verfolgt YouTube Shorts, Instagram Reels und TikTok über eine einzige Liste von Handles. Füge einen Kanal hinzu, und jedes Video, das den Kurzvideo-Regeln der Plattform entspricht, wird automatisch gemessen — keine Tabellen, keine manuellen Exports.",
+        p: "Es verfolgt YouTube Shorts, Instagram Reels und TikTok über eine einzige Liste von Handles. Füge einen Kanal hinzu, und jedes Video, das den Kurzvideo-Regeln der Plattform entspricht, wird automatisch gemessen - keine Tabellen, keine manuellen Exports.",
       },
       {
         h: "Für wen es gedacht ist",
-        p: "Für Creator und Agenturen, die denselben Clip auf mehreren Plattformen ausspielen und ihn ordentlich vergleichen wollen — und für alle, die es leid sind, Videostatistiken per Hand in einer Tabelle zu pflegen.",
+        p: "Für Creator und Agenturen, die denselben Clip auf mehreren Plattformen ausspielen und ihn ordentlich vergleichen wollen - und für alle, die es leid sind, Videostatistiken per Hand in einer Tabelle zu pflegen.",
       },
       {
         h: "Was es nicht ist",
-        p: "ClipsTrack ist kein Ads-Dashboard, kein Scheduler und keine vollwertige Analyse-Suite. Kein Feature-Ballast, keine Newsletter. Es macht eine Sache — exaktes, stündliches Clip-Tracking — und das leise.",
+        p: "ClipsTrack ist kein Ads-Dashboard, kein Scheduler und keine vollwertige Analyse-Suite. Kein Feature-Ballast, keine Newsletter. Es macht eine Sache - exaktes, stündliches Clip-Tracking - und das leise.",
       },
     ],
     closing:
@@ -61,11 +61,11 @@ export const de: PageContent = {
       },
       {
         h: "Das ct_uid-Cookie",
-        p: "Bei deinem ersten Besuch setzen wir ein Cookie namens ct_uid — eine zufällige Kennung ohne personenbezogene Informationen. Es sorgt dafür, dass die von dir hinzugefügten Kanäle mit dir und nicht mit anderen Besuchern verknüpft bleiben. Es verfolgt dich nicht auf anderen Websites, und es gibt keinerlei Third-Party-Tracking oder Werbung auf ClipsTrack.",
+        p: "Bei deinem ersten Besuch setzen wir ein Cookie namens ct_uid - eine zufällige Kennung ohne personenbezogene Informationen. Es sorgt dafür, dass die von dir hinzugefügten Kanäle mit dir und nicht mit anderen Besuchern verknüpft bleiben. Es verfolgt dich nicht auf anderen Websites, und es gibt keinerlei Third-Party-Tracking oder Werbung auf ClipsTrack.",
       },
       {
         h: "Nur öffentliche Daten",
-        p: "Die von uns erfassten Statistiken sind öffentliche Plattform-Daten — dieselben Zahlen, die jeder beim Öffnen des Profils sehen kann. Wir erfassen niemals private Informationen, Direktnachrichten oder etwas, das nicht ohnehin öffentlich sichtbar ist. Was wir hinzufügen, ist die Organisation: stündliche Snapshots an einem Ort.",
+        p: "Die von uns erfassten Statistiken sind öffentliche Plattform-Daten - dieselben Zahlen, die jeder beim Öffnen des Profils sehen kann. Wir erfassen niemals private Informationen, Direktnachrichten oder etwas, das nicht ohnehin öffentlich sichtbar ist. Was wir hinzufügen, ist die Organisation: stündliche Snapshots an einem Ort.",
       },
       {
         h: "Was wir nicht tun",
@@ -73,7 +73,7 @@ export const de: PageContent = {
       },
       {
         h: "Löschung beantragen",
-        p: "Um alles zu löschen, sende uns über die Kontaktseite eine Nachricht und kennzeichne sie als Löschantrag — oder schreibe an support@clipstrack.com — und wir entfernen alle Kanäle und den Verlauf, die mit deiner Besucher-ID verknüpft sind. Da die Daten jedes Besuchers isoliert sind, berührt das Löschen deiner Daten niemals die anderer.",
+        p: "Um alles zu löschen, sende uns über die Kontaktseite eine Nachricht und kennzeichne sie als Löschantrag - oder schreibe an support@clipstrack.com - und wir entfernen alle Kanäle und den Verlauf, die mit deiner Besucher-ID verknüpft sind. Da die Daten jedes Besuchers isoliert sind, berührt das Löschen deiner Daten niemals die anderer.",
       },
       {
         h: "Automatische Bereinigung",
@@ -89,7 +89,7 @@ export const de: PageContent = {
     eyebrow: "Rechtliches",
     title: "AGB",
     intro:
-      "Diese Bedingungen regeln deine Nutzung von ClipsTrack — der Website, die du gerade benutzt, und allem, was sie anbietet. Durch das Hinzufügen von Kanälen oder die Nutzung des Dienstes stimmst du ihnen zu.",
+      "Diese Bedingungen regeln deine Nutzung von ClipsTrack - der Website, die du gerade benutzt, und allem, was sie anbietet. Durch das Hinzufügen von Kanälen oder die Nutzung des Dienstes stimmst du ihnen zu.",
     sections: [
       {
         h: "Zulässige Nutzung",
@@ -97,19 +97,19 @@ export const de: PageContent = {
       },
       {
         h: "Woher die Daten kommen",
-        p: "Die Statistiken stammen von Dritt-Plattformen: der YouTube Data API, Instagram und TikTok. Diese Plattformen kontrollieren, was veröffentlicht wird, und können es jederzeit ändern, begrenzen oder entfernen. ClipsTrack zeichnet auf, was sie veröffentlichen — es erzeugt oder korrigiert die Zahlen nicht.",
+        p: "Die Statistiken stammen von Dritt-Plattformen: der YouTube Data API, Instagram und TikTok. Diese Plattformen kontrollieren, was veröffentlicht wird, und können es jederzeit ändern, begrenzen oder entfernen. ClipsTrack zeichnet auf, was sie veröffentlichen - es erzeugt oder korrigiert die Zahlen nicht.",
       },
       {
         h: "Keine Garantie für Genauigkeit",
-        p: "Wir bemühen uns, gewissenhaft zu erfassen, garantieren aber nicht, dass die Daten genau, vollständig oder aktuell sind. Zähler können nachhinken, vorübergehend nicht verfügbar sein oder von der Anzeige der Plattform abweichen — und wir haften nicht für Entscheidungen, die auf Basis der Zahlen getroffen werden.",
+        p: "Wir bemühen uns, gewissenhaft zu erfassen, garantieren aber nicht, dass die Daten genau, vollständig oder aktuell sind. Zähler können nachhinken, vorübergehend nicht verfügbar sein oder von der Anzeige der Plattform abweichen - und wir haften nicht für Entscheidungen, die auf Basis der Zahlen getroffen werden.",
       },
       {
         h: "Verfügbarkeit des Dienstes",
-        p: "ClipsTrack wird „wie besehen“ und „je nach Verfügbarkeit“ bereitgestellt. Der Dienst kann ohne Vorankündigung langsam sein, sich ändern oder ausfallen — etwa wegen Wartung, API-Änderungen der Plattformen oder Kosten. Für Ausfallzeiten haften wir nicht.",
+        p: "ClipsTrack wird „wie besehen“ und „je nach Verfügbarkeit“ bereitgestellt. Der Dienst kann ohne Vorankündigung langsam sein, sich ändern oder ausfallen - etwa wegen Wartung, API-Änderungen der Plattformen oder Kosten. Für Ausfallzeiten haften wir nicht.",
       },
       {
         h: "Entfernung und Sperrung",
-        p: "Wir können Konten, Daten oder den Zugang zum Dienst nach eigenem Ermessen und ohne Vorankündigung entfernen — etwa zum Schutz des Dienstes oder wenn das Gesetz es verlangt.",
+        p: "Wir können Konten, Daten oder den Zugang zum Dienst nach eigenem Ermessen und ohne Vorankündigung entfernen - etwa zum Schutz des Dienstes oder wenn das Gesetz es verlangt.",
       },
       {
         h: "Haftungsgrenzen",
@@ -124,7 +124,7 @@ export const de: PageContent = {
   contact: {
     eyebrow: "Kontakt",
     title: "Kontakt",
-    sub: "Eine Frage, ein Löschantrag, ein defekter Tracker — schicke uns eine Nachricht und wir melden uns bei dir.",
+    sub: "Eine Frage, ein Löschantrag, ein defekter Tracker - schicke uns eine Nachricht und wir melden uns bei dir.",
     email: "support@clipstrack.com",
     form: {
       name: "Name",

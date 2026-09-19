@@ -124,7 +124,7 @@ export function AddChannelBar({ locale }: { locale: Locale }) {
             max={100}
             step={0.1}
             inputMode="decimal"
-            placeholder="—"
+            placeholder="-"
             aria-label={dict.add.ariaRatio}
             title={dict.add.ratioTitle}
             className="w-16 bg-transparent text-sm tabular-nums text-ink placeholder:text-faint focus-visible:outline-none"

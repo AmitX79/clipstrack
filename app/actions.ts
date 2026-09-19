@@ -175,7 +175,7 @@ export async function addChannels(
 
     const label = added.map((handle) => `@${handle}`).join(", ");
     const suffix =
-      syncedCount === added.length ? " added and synced." : " added — syncing shortly.";
+      syncedCount === added.length ? " added and synced." : " added - syncing shortly.";
     return { ok: true, added, message: label + suffix };
   } catch (err) {
     console.error("[addChannels]", err);
@@ -198,7 +198,7 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {
     console.error("[refreshChannel]", err);
-    return { ok: false, error: "Refresh failed — is the database reachable?" };
+    return { ok: false, error: "Refresh failed - is the database reachable?" };
   }
 }
 
@@ -300,6 +300,6 @@ export async function removeChannel(id: string): Promise<EditChannelResult> {
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {
     console.error("[removeChannel]", err);
-    return { ok: false, error: "Could not remove the channel — is it still there?" };
+    return { ok: false, error: "Could not remove the channel - is it still there?" };
   }
 }

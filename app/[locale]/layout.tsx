@@ -46,7 +46,7 @@ export function generateMetadata({
           url: "/og.png",
           width: 1200,
           height: 630,
-          alt: "Clips Track — every view, tracked in full numbers",
+          alt: "Clips Track - every view, tracked in full numbers",
         },
       ],
       locale: OG_LOCALES[locale],

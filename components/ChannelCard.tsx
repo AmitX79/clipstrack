@@ -594,7 +594,7 @@ function VideoRow({
                   }
                 >
                   {latest.views == null
-                    ? "—"
+                    ? "-"
                     : formatFullNumber(latest.views, locale)}
                 </dd>
               </span>

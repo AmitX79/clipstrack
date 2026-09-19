@@ -5,7 +5,7 @@ export const es: PageContent = {
     about: {
       title: "Sobre nosotros",
       description:
-        "Qué es ClipsTrack y por qué existe — números exactos y por horas de clips de YouTube Shorts, Reels de Instagram y TikTok, sin hojas de cálculo.",
+        "Qué es ClipsTrack y por qué existe - números exactos y por horas de clips de YouTube Shorts, Reels de Instagram y TikTok, sin hojas de cálculo.",
     },
     privacy: {
       title: "Política de privacidad",
@@ -15,12 +15,12 @@ export const es: PageContent = {
     terms: {
       title: "Términos y condiciones",
       description:
-        "Los términos de uso de ClipsTrack — uso aceptable, precisión de los datos y responsabilidad, disponibilidad del servicio y cómo se pueden eliminar cuentas rastreadas.",
+        "Los términos de uso de ClipsTrack - uso aceptable, precisión de los datos y responsabilidad, disponibilidad del servicio y cómo se pueden eliminar cuentas rastreadas.",
     },
     contact: {
       title: "Contacto",
       description:
-        "Preguntas, solicitudes de borrado o rastreadores averiados — ponte en contacto con el equipo de ClipsTrack mediante el formulario o el correo.",
+        "Preguntas, solicitudes de borrado o rastreadores averiados - ponte en contacto con el equipo de ClipsTrack mediante el formulario o el correo.",
     },
   },
   about: {
@@ -31,11 +31,11 @@ export const es: PageContent = {
     sections: [
       {
         h: "Números exactos, cada hora",
-        p: "ClipsTrack guarda visitas, likes, comentarios y favoritos de cada clip que añades — a la hora en punto, cada hora, con su valor exacto. Sin redondeos, sin «1,2M». El número que ves es el que la plataforma publicó en ese momento.",
+        p: "ClipsTrack guarda visitas, likes, comentarios y favoritos de cada clip que añades - a la hora en punto, cada hora, con su valor exacto. Sin redondeos, sin «1,2M». El número que ves es el que la plataforma publicó en ese momento.",
       },
       {
         h: "Una sola página para las tres plataformas",
-        p: "Rastrea YouTube Shorts, Reels de Instagram y TikTok desde una única lista de cuentas. Añade un canal y cada vídeo que cumpla las reglas de formato corto de la plataforma se mide automáticamente — sin hojas de cálculo ni exportaciones manuales.",
+        p: "Rastrea YouTube Shorts, Reels de Instagram y TikTok desde una única lista de cuentas. Añade un canal y cada vídeo que cumpla las reglas de formato corto de la plataforma se mide automáticamente - sin hojas de cálculo ni exportaciones manuales.",
       },
       {
         h: "Para quién es",
@@ -43,7 +43,7 @@ export const es: PageContent = {
       },
       {
         h: "Lo que no es",
-        p: "ClipsTrack no es un panel de anuncios, un programador ni una suite completa de análisis. Sin funciones de relleno, sin boletines. Hace una sola cosa — rastreo exacto y por horas de clips — y lo hace en silencio.",
+        p: "ClipsTrack no es un panel de anuncios, un programador ni una suite completa de análisis. Sin funciones de relleno, sin boletines. Hace una sola cosa - rastreo exacto y por horas de clips - y lo hace en silencio.",
       },
     ],
     closing:
@@ -61,11 +61,11 @@ export const es: PageContent = {
       },
       {
         h: "La cookie ct_uid",
-        p: "En tu primera visita establecemos una cookie llamada ct_uid — un identificador aleatorio sin información personal. Existe para que los canales que añades queden vinculados a ti y no a otros visitantes. No te rastrea por otros sitios y no hay seguimiento de terceros ni anuncios en ClipsTrack.",
+        p: "En tu primera visita establecemos una cookie llamada ct_uid - un identificador aleatorio sin información personal. Existe para que los canales que añades queden vinculados a ti y no a otros visitantes. No te rastrea por otros sitios y no hay seguimiento de terceros ni anuncios en ClipsTrack.",
       },
       {
         h: "Solo datos públicos",
-        p: "Las estadísticas que registramos son datos públicos de las plataformas — los mismos números que cualquiera puede ver abriendo el perfil. Nunca captamos información privada, mensajes directos ni nada que no sea ya visible públicamente. Lo que aportamos es la organización: capturas cada hora, en un solo lugar.",
+        p: "Las estadísticas que registramos son datos públicos de las plataformas - los mismos números que cualquiera puede ver abriendo el perfil. Nunca captamos información privada, mensajes directos ni nada que no sea ya visible públicamente. Lo que aportamos es la organización: capturas cada hora, en un solo lugar.",
       },
       {
         h: "Lo que no hacemos",
@@ -73,7 +73,7 @@ export const es: PageContent = {
       },
       {
         h: "Solicitud de borrado",
-        p: "Para borrarlo todo, envíanos un mensaje desde la página de contacto indicando que es una solicitud de borrado — o escribe a support@clipstrack.com — y eliminaremos todos los canales e historial vinculados a tu ID de visitante. Como los datos de cada visitante están aislados, borrar los tuyos nunca afecta a los de nadie.",
+        p: "Para borrarlo todo, envíanos un mensaje desde la página de contacto indicando que es una solicitud de borrado - o escribe a support@clipstrack.com - y eliminaremos todos los canales e historial vinculados a tu ID de visitante. Como los datos de cada visitante están aislados, borrar los tuyos nunca afecta a los de nadie.",
       },
       {
         h: "Limpieza automática",
@@ -89,7 +89,7 @@ export const es: PageContent = {
     eyebrow: "Legal",
     title: "Términos y condiciones",
     intro:
-      "Estos términos cubren tu uso de ClipsTrack — el sitio web que estás usando ahora mismo y todo lo que ofrece. Al añadir canales o usar el servicio, los aceptas.",
+      "Estos términos cubren tu uso de ClipsTrack - el sitio web que estás usando ahora mismo y todo lo que ofrece. Al añadir canales o usar el servicio, los aceptas.",
     sections: [
       {
         h: "Uso aceptable",
@@ -97,7 +97,7 @@ export const es: PageContent = {
       },
       {
         h: "De dónde vienen los datos",
-        p: "Las estadísticas provienen de plataformas de terceros: la YouTube Data API, Instagram y TikTok. Esas plataformas controlan lo publicado y pueden cambiarlo, limitarlo o retirarlo en cualquier momento. ClipsTrack registra lo que publican — no genera ni corrige los números.",
+        p: "Las estadísticas provienen de plataformas de terceros: la YouTube Data API, Instagram y TikTok. Esas plataformas controlan lo publicado y pueden cambiarlo, limitarlo o retirarlo en cualquier momento. ClipsTrack registra lo que publican - no genera ni corrige los números.",
       },
       {
         h: "Sin garantía de precisión",
@@ -105,11 +105,11 @@ export const es: PageContent = {
       },
       {
         h: "Disponibilidad del servicio",
-        p: "ClipsTrack se ofrece «tal cual» y «según disponibilidad». Puede ir lento, cambiar o dejar de funcionar sin previo aviso — incluso por mantenimiento, cambios en las APIs de las plataformas o motivos de coste. No somos responsables de ningún corte.",
+        p: "ClipsTrack se ofrece «tal cual» y «según disponibilidad». Puede ir lento, cambiar o dejar de funcionar sin previo aviso - incluso por mantenimiento, cambios en las APIs de las plataformas o motivos de coste. No somos responsables de ningún corte.",
       },
       {
         h: "Eliminación y suspensión",
-        p: "Podemos eliminar cuentas, datos o el acceso al servicio a nuestro criterio y sin previo aviso — por ejemplo para proteger el servicio o cuando la ley lo exija.",
+        p: "Podemos eliminar cuentas, datos o el acceso al servicio a nuestro criterio y sin previo aviso - por ejemplo para proteger el servicio o cuando la ley lo exija.",
       },
       {
         h: "Límites de responsabilidad",
@@ -124,7 +124,7 @@ export const es: PageContent = {
   contact: {
     eyebrow: "Contacto",
     title: "Contacta con nosotros",
-    sub: "Una duda, una solicitud de borrado, un rastreador averiado — envíanos un mensaje y te responderemos.",
+    sub: "Una duda, una solicitud de borrado, un rastreador averiado - envíanos un mensaje y te responderemos.",
     email: "support@clipstrack.com",
     form: {
       name: "Nombre",

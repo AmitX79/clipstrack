@@ -5,7 +5,7 @@ export const fr: PageContent = {
     about: {
       title: "À propos",
       description:
-        "Ce qu'est ClipsTrack et pourquoi il existe — des chiffres exacts et horaires pour YouTube Shorts, Instagram Reels et TikTok, sans feuilles de calcul.",
+        "Ce qu'est ClipsTrack et pourquoi il existe - des chiffres exacts et horaires pour YouTube Shorts, Instagram Reels et TikTok, sans feuilles de calcul.",
     },
     privacy: {
       title: "Politique de confidentialité",
@@ -15,12 +15,12 @@ export const fr: PageContent = {
     terms: {
       title: "Conditions d'utilisation",
       description:
-        "Les conditions d'utilisation de ClipsTrack — usage acceptable, exactitude des données et responsabilité, disponibilité du service et suppression des comptes suivis.",
+        "Les conditions d'utilisation de ClipsTrack - usage acceptable, exactitude des données et responsabilité, disponibilité du service et suppression des comptes suivis.",
     },
     contact: {
       title: "Contact",
       description:
-        "Questions, demandes de suppression ou suivi en panne — contactez l'équipe ClipsTrack via le formulaire ou par e-mail.",
+        "Questions, demandes de suppression ou suivi en panne - contactez l'équipe ClipsTrack via le formulaire ou par e-mail.",
     },
   },
   about: {
@@ -31,11 +31,11 @@ export const fr: PageContent = {
     sections: [
       {
         h: "Des chiffres exacts, chaque heure",
-        p: "ClipsTrack enregistre les vues, j'aime, commentaires et favoris de chaque clip que vous ajoutez — à chaque heure, à la valeur exacte. Pas d'arrondi, pas de « 1,2 M ». Le nombre que vous voyez est celui publié par la plateforme à cet instant.",
+        p: "ClipsTrack enregistre les vues, j'aime, commentaires et favoris de chaque clip que vous ajoutez - à chaque heure, à la valeur exacte. Pas d'arrondi, pas de « 1,2 M ». Le nombre que vous voyez est celui publié par la plateforme à cet instant.",
       },
       {
         h: "Une seule page pour les trois plateformes",
-        p: "Il suit YouTube Shorts, Instagram Reels et TikTok depuis une unique liste de comptes. Ajoutez un canal et chaque vidéo qui répond aux règles de format court de la plateforme est mesurée automatiquement — sans feuilles de calcul ni exports manuels.",
+        p: "Il suit YouTube Shorts, Instagram Reels et TikTok depuis une unique liste de comptes. Ajoutez un canal et chaque vidéo qui répond aux règles de format court de la plateforme est mesurée automatiquement - sans feuilles de calcul ni exports manuels.",
       },
       {
         h: "Pour qui c'est fait",
@@ -43,7 +43,7 @@ export const fr: PageContent = {
       },
       {
         h: "Ce que ce n'est pas",
-        p: "ClipsTrack n'est ni un tableau de bord publicitaire, ni un planificateur, ni une suite d'analyse complète. Pas de superflu, pas de newsletter. Il fait une seule chose — le suivi exact et horaire de clips — et le fait en silence.",
+        p: "ClipsTrack n'est ni un tableau de bord publicitaire, ni un planificateur, ni une suite d'analyse complète. Pas de superflu, pas de newsletter. Il fait une seule chose - le suivi exact et horaire de clips - et le fait en silence.",
       },
     ],
     closing:
@@ -61,11 +61,11 @@ export const fr: PageContent = {
       },
       {
         h: "Le cookie ct_uid",
-        p: "Lors de votre première visite, nous posons un cookie nommé ct_uid — un identifiant aléatoire sans aucune information personnelle. Il existe pour que les chaînes que vous ajoutez restent liées à vous et non à d'autres visiteurs. Il ne vous suit pas sur d'autres sites, et il n'y a ni suivi tiers ni publicité sur ClipsTrack.",
+        p: "Lors de votre première visite, nous posons un cookie nommé ct_uid - un identifiant aléatoire sans aucune information personnelle. Il existe pour que les chaînes que vous ajoutez restent liées à vous et non à d'autres visiteurs. Il ne vous suit pas sur d'autres sites, et il n'y a ni suivi tiers ni publicité sur ClipsTrack.",
       },
       {
         h: "Des données publiques uniquement",
-        p: "Les statistiques que nous enregistrons sont des données publiques de plateformes — les mêmes chiffres que n'importe qui peut voir en ouvrant le profil. Nous ne capturons jamais d'informations privées, de messages directs, ni quoi que ce soit qui ne soit pas déjà visible publiquement. Ce que nous apportons, c'est l'organisation : des instantanés horaires, au même endroit.",
+        p: "Les statistiques que nous enregistrons sont des données publiques de plateformes - les mêmes chiffres que n'importe qui peut voir en ouvrant le profil. Nous ne capturons jamais d'informations privées, de messages directs, ni quoi que ce soit qui ne soit pas déjà visible publiquement. Ce que nous apportons, c'est l'organisation : des instantanés horaires, au même endroit.",
       },
       {
         h: "Ce que nous ne faisons pas",
@@ -73,7 +73,7 @@ export const fr: PageContent = {
       },
       {
         h: "Demander la suppression",
-        p: "Pour tout effacer, envoyez-nous un message depuis la page de contact en le marquant comme demande de suppression — ou écrivez à support@clipstrack.com — et nous supprimerons toutes les chaînes et l'historique liés à votre ID de visiteur. Comme les données de chaque visiteur sont isolées, supprimer les vôtres ne touche jamais celles des autres.",
+        p: "Pour tout effacer, envoyez-nous un message depuis la page de contact en le marquant comme demande de suppression - ou écrivez à support@clipstrack.com - et nous supprimerons toutes les chaînes et l'historique liés à votre ID de visiteur. Comme les données de chaque visiteur sont isolées, supprimer les vôtres ne touche jamais celles des autres.",
       },
       {
         h: "Nettoyage automatique",
@@ -89,7 +89,7 @@ export const fr: PageContent = {
     eyebrow: "Mentions légales",
     title: "Conditions d'utilisation",
     intro:
-      "Ces conditions couvrent votre utilisation de ClipsTrack — le site web que vous utilisez en ce moment et tout ce qu'il propose. En ajoutant des chaînes ou en utilisant le service, vous les acceptez.",
+      "Ces conditions couvrent votre utilisation de ClipsTrack - le site web que vous utilisez en ce moment et tout ce qu'il propose. En ajoutant des chaînes ou en utilisant le service, vous les acceptez.",
     sections: [
       {
         h: "Usage acceptable",
@@ -97,7 +97,7 @@ export const fr: PageContent = {
       },
       {
         h: "D'où viennent les données",
-        p: "Les statistiques proviennent de plateformes tierces : la YouTube Data API, Instagram et TikTok. Ces plateformes contrôlent ce qui est publié et peuvent le modifier, le limiter ou le retirer à tout moment. ClipsTrack enregistre ce qu'elles publient — il ne génère ni ne corrige les chiffres.",
+        p: "Les statistiques proviennent de plateformes tierces : la YouTube Data API, Instagram et TikTok. Ces plateformes contrôlent ce qui est publié et peuvent le modifier, le limiter ou le retirer à tout moment. ClipsTrack enregistre ce qu'elles publient - il ne génère ni ne corrige les chiffres.",
       },
       {
         h: "Pas de garantie d'exactitude",
@@ -105,11 +105,11 @@ export const fr: PageContent = {
       },
       {
         h: "Disponibilité du service",
-        p: "ClipsTrack est fourni « en l'état » et « selon disponibilité ». Il peut être lent, changer ou cesser de fonctionner sans préavis — notamment pour maintenance, modifications d'API des plateformes ou raisons de coût. Nous ne sommes pas responsables des interruptions.",
+        p: "ClipsTrack est fourni « en l'état » et « selon disponibilité ». Il peut être lent, changer ou cesser de fonctionner sans préavis - notamment pour maintenance, modifications d'API des plateformes ou raisons de coût. Nous ne sommes pas responsables des interruptions.",
       },
       {
         h: "Suppression et suspension",
-        p: "Nous pouvons supprimer des comptes, des données ou l'accès au service à notre discrétion et sans préavis — par exemple pour protéger le service ou lorsque la loi l'exige.",
+        p: "Nous pouvons supprimer des comptes, des données ou l'accès au service à notre discrétion et sans préavis - par exemple pour protéger le service ou lorsque la loi l'exige.",
       },
       {
         h: "Limites de responsabilité",
@@ -124,7 +124,7 @@ export const fr: PageContent = {
   contact: {
     eyebrow: "Contact",
     title: "Contactez-nous",
-    sub: "Une question, une demande de suppression, un suivi en panne — envoyez-nous un message et nous vous répondrons.",
+    sub: "Une question, une demande de suppression, un suivi en panne - envoyez-nous un message et nous vous répondrons.",
     email: "support@clipstrack.com",
     form: {
       name: "Nom",
