@@ -10,6 +10,7 @@ import { AdminLoginForm } from "./AdminLoginForm";
 import { AddKeyForm } from "./AddKeyForm";
 import { KeyRow } from "./KeyRow";
 import { LimitForm } from "./LimitForm";
+import { GrantCredits } from "./GrantCredits";
 import { RefreshAllButton } from "./RefreshAllButton";
 
 export const dynamic = "force-dynamic";
@@ -192,6 +193,20 @@ export default async function AdminPage() {
             <p className="mt-3 text-xs text-faint">
               Keys are stored server-side and rotate automatically when one
               runs out of credits.
+            </p>
+          </Card>
+        </div>
+
+        <div className="mt-4 grid gap-4">
+          <Card title="Grant credits to a visitor">
+            <GrantCredits />
+            <p className="mt-3 text-xs text-faint">
+              Search by the short User ID shown on a visitor&apos;s /accounts
+              page (&quot;Your ID: CT-X7K9P2&quot;). A bonus top-up is one-time
+              - it only kicks in after their daily allowance is used (and
+              resets with the daily allowance). An override replaces the global
+              daily credit limit for just that visitor; leave it blank to clear
+              it.
             </p>
           </Card>
         </div>

@@ -154,6 +154,28 @@ model VideoSnapshot {
   @@map("video_snapshots")
 }
 
+// ---- Visitor user ID / admin grants ----------------------------------------
+
+// One row per visitor (ct_uid). `code` is the short shareable User ID shown on
+// /accounts (e.g. "CT-X7K9P2") so users can hand it to an admin. The admin
+// "Grant credits" panel uses it to find the visitor: `limitOverride` replaces
+// the global daily credit limit for this visitor, and `bonusCredits` is a
+// one-time top-up pool that is only drained after the daily allowance is
+// exhausted (so it does NOT renew each day). `comboHash` tracks the visitor's
+// current identity so the admin panel can read their daily usage.
+model UserCode {
+  id            String   @id @default(cuid(2))
+  code          String   @unique
+  userId        String   @unique
+  comboHash     String?
+  limitOverride Int?
+  bonusCredits  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@map("user_codes")
+}
+
 // ---- Daily credits ---------------------------------------------------------
 
 // Per-IP+ct_uid daily credit accounting (anti-abuse rate limiting). One row

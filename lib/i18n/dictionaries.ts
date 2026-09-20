@@ -172,6 +172,7 @@ export const dictionaries = {
     acct: {
       eyebrow: "My Accounts",
       title: "The handles you track.",
+      yourId: "Your ID: {id}",
       sub:
         "Your tracked accounts - private to you. Video stats update on the hour, always shown in full, never abbreviated.",
       dbError1: "Can't reach the database - check that ",
@@ -427,6 +428,7 @@ export const dictionaries = {
     acct: {
       eyebrow: "Mis cuentas",
       title: "Las cuentas que rastreas.",
+      yourId: "Tu ID: {id}",
       sub:
         "Tus cuentas rastreadas - privadas para ti. Las estadísticas se actualizan a la hora en punto, siempre en números exactos, nunca abreviados.",
       dbError1: "No se puede acceder a la base de datos - comprueba que ",
@@ -679,6 +681,7 @@ export const dictionaries = {
     acct: {
       eyebrow: "マイアカウント",
       title: "追跡中のハンドル。",
+      yourId: "あなたのID: {id}",
       sub:
         "追跡中のアカウント - あなた専用です。動画の統計は正時に更新され、常に実数で、省略されることはありません。",
       dbError1: "データベースに接続できません - ",
@@ -930,6 +933,7 @@ export const dictionaries = {
     acct: {
       eyebrow: "Mes comptes",
       title: "Les comptes que vous suivez.",
+      yourId: "Votre ID : {id}",
       sub:
         "Vos comptes suivis - privés. Les statistiques se mettent à jour à l'heure pile, toujours en chiffres exacts, jamais abrégés.",
       dbError1: "Impossible d'atteindre la base de données - vérifiez que ",
@@ -1183,6 +1187,7 @@ export const dictionaries = {
     acct: {
       eyebrow: "Meine Konten",
       title: "Die Accounts, die du verfolgst.",
+      yourId: "Deine ID: {id}",
       sub:
         "Deine verfolgten Konten - privat. Die Statistiken aktualisieren sich zur vollen Stunde, immer in voller Zahl, nie abgekürzt.",
       dbError1: "Datenbank nicht erreichbar - prüfe, ob ",
@@ -1435,6 +1440,7 @@ export const dictionaries = {
     acct: {
       eyebrow: "Minhas contas",
       title: "As contas que você rastreia.",
+      yourId: "Seu ID: {id}",
       sub:
         "Suas contas rastreadas - privadas para você. As estatísticas são atualizadas na hora certa, sempre em números exatos, nunca abreviados.",
       dbError1: "Não foi possível acessar o banco de dados - verifique se ",
@@ -1687,6 +1693,7 @@ export const dictionaries = {
     acct: {
       eyebrow: "내 계정",
       title: "추적 중인 계정들.",
+      yourId: "내 ID: {id}",
       sub:
         "추적 중인 계정 - 나만 볼 수 있습니다. 동영상 통계는 정시에 업데이트되며, 항상 온전한 숫자로, 줄임말 없이 표시됩니다.",
       dbError1: "데이터베이스에 연결할 수 없습니다 - ",
@@ -1938,6 +1945,7 @@ export const dictionaries = {
     acct: {
       eyebrow: "I miei account",
       title: "Gli account che tracci.",
+      yourId: "Il tuo ID: {id}",
       sub:
         "I tuoi account tracciati - privati. Le statistiche si aggiornano allo scoccare dell'ora, sempre in numeri esatti, mai abbreviate.",
       dbError1: "Impossibile raggiungere il database - verifica che ",

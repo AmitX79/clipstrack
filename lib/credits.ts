@@ -15,6 +15,7 @@
 import { createHash } from "crypto";
 import { headers } from "next/headers";
 import { prisma } from "./db";
+import { ensureUserCode } from "./usercode";
 
 export const DAILY_LIMIT_MESSAGE =
   "Instagram/TikTok daily limit reached - YouTube keeps working. Resumes at midnight IST.";
@@ -59,7 +60,9 @@ export function requestComboHash(uid: string): string {
 
 // Record the request-time combo on the User row so the hourly cron (which has
 // no request IP) can attribute background syncs to the same budget. No-op-ish
-// when the value is unchanged; the upsert also guarantees the row exists.
+// when the value is unchanged; the upsert also guarantees the row exists. The
+// visitor's UserCode row is created/kept in sync so admin grants (bonus top-up,
+// per-user limit override) always resolve against the current identity.
 export async function recordAttribution(
   userId: string,
   combo: string,
@@ -69,6 +72,7 @@ export async function recordAttribution(
     create: { id: userId, comboHash: combo },
     update: { comboHash: combo },
   });
+  await ensureUserCode(userId, combo);
 }
 
 // Resolve the combo to charge for a channel: the request-time combo, else the
@@ -108,15 +112,32 @@ export interface CreditsStatus {
   remaining: number;
 }
 
+// Effective daily budget for a combo: the visitor's per-user override if one
+// was granted on /admin, else the global limit, plus any one-time bonus top-up.
+// resolveUserBudget expects an already-fetched UserCode row (null when none).
+function budgetFromUserCode(
+  globalLimit: number,
+  userCode: { limitOverride: number | null; bonusCredits: number } | null,
+): number {
+  const base = userCode?.limitOverride ?? globalLimit;
+  return base + (userCode?.bonusCredits ?? 0);
+}
+
 export async function getCreditsStatus(
   combo: string | null,
 ): Promise<CreditsStatus> {
   const date = istDateKey();
-  const limit = await getDailyLimit();
-  if (!combo) return { date, used: 0, limit, remaining: limit };
-  const row = await prisma.creditUsage.findUnique({
-    where: { comboHash_date: { comboHash: combo, date } },
-  });
+  const globalLimit = await getDailyLimit();
+  if (!combo) {
+    return { date, used: 0, limit: globalLimit, remaining: globalLimit };
+  }
+  const [userCode, row] = await Promise.all([
+    prisma.userCode.findFirst({ where: { comboHash: combo } }),
+    prisma.creditUsage.findUnique({
+      where: { comboHash_date: { comboHash: combo, date } },
+    }),
+  ]);
+  const limit = budgetFromUserCode(globalLimit, userCode);
   const used = row?.creditsUsed ?? 0;
   return { date, used, limit, remaining: Math.max(0, limit - used) };
 }
@@ -124,7 +145,10 @@ export async function getCreditsStatus(
 // Atomically deduct up to `count` credits from a combo's remaining budget.
 // Returns the number actually granted (<= count). Safe against the day
 // rolling over between reads and writes: the unique key pins the write to the
-// day it was started on.
+// day it was started on. Grant credits on /admin live as a one-time bonus pool
+// on the visitor's UserCode: usage beyond the daily allowance drains the pool
+// (so a top-up does not renew every day), while a per-user override simply
+// replaces the global daily limit for that visitor.
 export async function consumeCredits(
   combo: string,
   count: number,
@@ -133,19 +157,33 @@ export async function consumeCredits(
   let granted = 0;
   await prisma.$transaction(async (tx) => {
     const date = istDateKey();
-    const limit = await getDailyLimit();
-    const row = await tx.creditUsage.upsert({
-      where: { comboHash_date: { comboHash: combo, date } },
-      create: { comboHash: combo, date, creditsUsed: 0 },
-      update: {},
-    });
+    const globalLimit = await getDailyLimit();
+    const [userCode, row] = await Promise.all([
+      tx.userCode.findFirst({ where: { comboHash: combo } }),
+      tx.creditUsage.upsert({
+        where: { comboHash_date: { comboHash: combo, date } },
+        create: { comboHash: combo, date, creditsUsed: 0 },
+        update: {},
+      }),
+    ]);
+    const limit = budgetFromUserCode(globalLimit, userCode);
     const remaining = Math.max(0, limit - row.creditsUsed);
     granted = Math.min(count, remaining);
     if (granted > 0) {
+      const usedAfter = row.creditsUsed + granted;
       await tx.creditUsage.update({
         where: { id: row.id },
-        data: { creditsUsed: { increment: granted } },
+        data: { creditsUsed: usedAfter },
       });
+      const base = userCode?.limitOverride ?? globalLimit;
+      const excess = Math.max(0, usedAfter - base);
+      const bonusAfter = Math.max(0, (userCode?.bonusCredits ?? 0) - excess);
+      if (userCode && bonusAfter !== userCode.bonusCredits) {
+        await tx.userCode.update({
+          where: { id: userCode.id },
+          data: { bonusCredits: bonusAfter },
+        });
+      }
     }
   });
   return granted;

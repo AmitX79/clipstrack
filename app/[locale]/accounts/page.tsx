@@ -15,6 +15,7 @@ import {
   tpl,
 } from "@/lib/i18n";
 import { getVisitorId } from "@/lib/visitor";
+import { ensureUserCode } from "@/lib/usercode";
 import {
   comboHash,
   getClientIp,
@@ -57,9 +58,11 @@ export default async function TrackedPage({
   let channels: LoadedChannel[] = [];
   let dbError = false;
   let credits: CreditsStatus | null = null;
+  let userCode: string | null = null;
   if (userId) {
     try {
       channels = await loadChannels(userId);
+      userCode = await ensureUserCode(userId, comboHash(getClientIp(), userId));
       credits = await getCreditsStatus(comboHash(getClientIp(), userId));
     } catch (err) {
       console.error("[accounts] db query failed:", err);
@@ -78,37 +81,44 @@ export default async function TrackedPage({
     <div className="min-h-screen bg-canvas">
       <NavBar active="accounts" locale={locale} />
       <main className="mx-auto max-w-6xl px-6 pb-12">
-        <section
-          aria-label={dict.acct.eyebrow}
-          className="flex flex-wrap items-start justify-between gap-6 pt-8 md:pt-12"
-        >
-          <div className="min-w-0 flex-1">
-            <p className="mono-eyebrow text-mute">
-              {dict.acct.eyebrow}
-              {channels.length > 0 && (
-                <span className="text-faint"> · {channels.length}</span>
-              )}
-            </p>
-            <h1 className="display-lg mt-3 text-ink">{dict.acct.title}</h1>
-            <p className="mt-3 max-w-xl text-base text-body">
-              {dict.acct.sub}
-            </p>
-          </div>
-          {credits && (
-            <div className="ml-auto mt-7 shrink-0">
-              <CreditsBadge
-                badge={tpl(dict.credits.badge, {
-                  used: credits.used,
-                  limit: credits.limit,
-                })}
-                tooltipYt={dict.credits.tooltipYt}
-                tooltipIgtt={tpl(dict.credits.tooltipIgtt, {
-                  used: credits.used,
-                  limit: credits.limit,
-                })}
-              />
+        <section aria-label={dict.acct.eyebrow} className="pt-8 md:pt-12">
+          <div className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+            <div className="min-w-0">
+              <p className="mono-eyebrow text-mute">
+                {dict.acct.eyebrow}
+                {channels.length > 0 && (
+                  <span className="text-faint"> · {channels.length}</span>
+                )}
+              </p>
+              <h1 className="display-lg mt-3 text-ink">{dict.acct.title}</h1>
             </div>
-          )}
+            {(credits || userCode) && (
+              <div className="ml-auto flex shrink-0 flex-col items-end gap-2">
+                {credits && (
+                  <CreditsBadge
+                    badge={tpl(dict.credits.badge, {
+                      used: credits.used,
+                      limit: credits.limit,
+                    })}
+                    tooltipYt={dict.credits.tooltipYt}
+                    tooltipIgtt={tpl(dict.credits.tooltipIgtt, {
+                      used: credits.used,
+                      limit: credits.limit,
+                    })}
+                  />
+                )}
+                {userCode && (
+                  <p
+                    className="mono-eyebrow select-all text-faint"
+                    title="Share this ID so an admin can look up your account"
+                  >
+                    {tpl(dict.acct.yourId, { id: userCode })}
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
+          <p className="mt-3 max-w-xl text-base text-body">{dict.acct.sub}</p>
         </section>
 
         <div className="pt-6">

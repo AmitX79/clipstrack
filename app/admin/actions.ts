@@ -5,7 +5,7 @@ import { timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
 import { ADMIN_COOKIE, adminSecretHash, isAdmin } from "@/lib/admin";
-import { SETTING_DAILY_LIMIT } from "@/lib/credits";
+import { SETTING_DAILY_LIMIT, getDailyLimit, istDateKey } from "@/lib/credits";
 import { fetchKeyBalance, refreshKeyBalances } from "@/lib/scrapekeys";
 
 export type AdminLoginResult = { ok: true } | { ok: false };
@@ -49,6 +49,114 @@ const NOT_SIGNED_IN: AdminResult = {
   ok: false,
   error: "Not signed in - sign in again and retry.",
 };
+
+// Short User IDs are "CT-" + 6 unambiguous chars (no 0/O/1/I).
+const USER_CODE_REGEX = /^CT-[A-Z0-9]{6}$/;
+
+export type GrantLookupUser = {
+  code: string;
+  used: number;
+  baseLimit: number;
+  bonus: number;
+  limitOverride: number | null;
+  totalLimit: number;
+  remaining: number;
+};
+
+export type GrantLookupResult =
+  | { ok: true; user: GrantLookupUser }
+  | { ok: false; error: string };
+
+// Admin "Grant credits" panel: resolve a short User ID to the visitor's daily
+// usage so the grant form can preview their current budget before editing it.
+export async function lookupUserByCode(
+  raw: string,
+): Promise<GrantLookupResult> {
+  const code = raw.trim().toUpperCase();
+  if (!USER_CODE_REGEX.test(code)) {
+    return { ok: false, error: "Enter a valid User ID, e.g. CT-X7K9P2." };
+  }
+  const row = await prisma.userCode.findUnique({ where: { code } });
+  if (!row) {
+    return { ok: false, error: `No visitor with the ID ${code} yet.` };
+  }
+  const [usedRow, globalLimit] = await Promise.all([
+    row.comboHash
+      ? prisma.creditUsage.findUnique({
+          where: {
+            comboHash_date: { comboHash: row.comboHash, date: istDateKey() },
+          },
+        })
+      : Promise.resolve(null),
+    getDailyLimit(),
+  ]);
+  const baseLimit = row.limitOverride ?? globalLimit;
+  const bonus = row.bonusCredits;
+  const used = usedRow?.creditsUsed ?? 0;
+  const totalLimit = baseLimit + bonus;
+  return {
+    ok: true,
+    user: {
+      code,
+      used,
+      baseLimit,
+      bonus,
+      limitOverride: row.limitOverride,
+      totalLimit,
+      remaining: Math.max(0, totalLimit - used),
+    },
+  };
+}
+
+// Grant credits to a visitor: add a one-time bonus top-up and/or set (or clear,
+// via null) a per-visitor daily limit override. Reads are admin-gated and the
+// write uses one transaction so the two never drift apart.
+export async function grantCredits(args: {
+  code: string;
+  addBonus: number;
+  limitOverride: number | null;
+}): Promise<AdminResult> {
+  if (!isAdmin()) return NOT_SIGNED_IN;
+  const code = args.code.trim().toUpperCase();
+  if (!USER_CODE_REGEX.test(code)) {
+    return { ok: false, error: "Enter a valid User ID, e.g. CT-X7K9P2." };
+  }
+  const row = await prisma.userCode.findUnique({ where: { code } });
+  if (!row) return { ok: false, error: `No visitor with the ID ${code} yet.` };
+  if (
+    !Number.isInteger(args.addBonus) ||
+    args.addBonus < 0 ||
+    args.addBonus > 1_000_000
+  ) {
+    return {
+      ok: false,
+      error: "Bonus must be a whole number between 0 and 1,000,000.",
+    };
+  }
+  if (
+    args.limitOverride != null &&
+    (!Number.isInteger(args.limitOverride) ||
+      args.limitOverride < 1 ||
+      args.limitOverride > 1_000_000)
+  ) {
+    return {
+      ok: false,
+      error: "Override must be a whole number between 1 and 1,000,000 (or cleared).",
+    };
+  }
+  await prisma.$transaction([
+    prisma.userCode.update({
+      where: { id: row.id },
+      data: { bonusCredits: { increment: args.addBonus } },
+    }),
+    prisma.userCode.update({
+      where: { id: row.id },
+      data: { limitOverride: args.limitOverride },
+    }),
+  ]);
+  revalidatePath("/admin");
+  return { ok: true };
+}
 
 // Editable daily per-IP credit limit — read at runtime by lib/credits.
 export async function updateDailyLimit(limit: number): Promise<AdminResult> {
