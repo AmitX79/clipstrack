@@ -4,11 +4,14 @@
 //
 // A failing platform fetch or a single bad channel never aborts the rest.
 //
-// Credit accounting: when a `comboHash` is supplied, the sync is charged
-// against that visitor's daily budget — 1 credit per video actually fetched —
-// and runs with a credit-capped fetch limit. During a backfill, a credit-capped
-// partial run keeps the channel `backfilled: false` so progress is preserved
-// and the window re-opens on a later (better-funded) sync.
+// Credit accounting: when a `comboHash` is supplied, an Instagram/TikTok sync
+// is charged against that visitor's daily ScrapeCreators budget — 1 credit per
+// video actually fetched — and runs with a credit-capped fetch limit. During a
+// backfill, a credit-capped partial run keeps the channel `backfilled: false`
+// so progress is preserved and the window re-opens on a later (better-funded)
+// sync. YouTube is exempt: it uses the official YouTube Data API's own
+// 10,000 units/day quota (tracked in /admin) and never touches the per-IP
+// ScrapeCreators budget.
 
 import { prisma } from "./db";
 import { fetchInstagramChannel } from "./instagram";
@@ -41,12 +44,16 @@ export interface SyncOptions {
 }
 
 // Syncs one channel and returns the number of credits it consumed (the number
-// of videos fetched). Returns 0 when skipped for reaching the daily budget.
+// of videos fetched). Instagram/TikTok are charged against the visitor's daily
+// ScrapeCreators budget; YouTube never is. Returns 0 when skipped for reaching
+// the daily budget.
 export async function syncChannel(
   channel: Channel,
   opts: SyncOptions = {},
 ): Promise<number> {
-  const credited = opts.comboHash != null;
+  // YouTube uses the official YouTube Data API (its own 10,000 units/day
+  // quota), so the per-IP ScrapeCreators budget only governs IG/TikTok.
+  const budgeted = opts.comboHash != null && channel.platform !== "YOUTUBE";
 
   // First sync on a channel = the one-time "Old" backfill window; every sync
   // after that only looks at the newest uploads ("Latest").
@@ -56,7 +63,7 @@ export async function syncChannel(
     : channel.latestVideoCount;
 
   let wanted = trackVideos > 0 ? trackVideos : 0;
-  if (credited) {
+  if (budgeted) {
     const status =
       opts.remaining != null
         ? { remaining: opts.remaining }
@@ -89,9 +96,10 @@ export async function syncChannel(
   }
 
   // Charge after a successful fetch: exactly as many credits as videos that
-  // came back (never more than the credit-capped limit we asked for).
+  // came back (never more than the credit-capped limit we asked for). Only
+  // Instagram/TikTok are charged; YouTube stays on its own API quota.
   const consumed = result.media.length;
-  if (credited && consumed > 0) {
+  if (budgeted && consumed > 0) {
     await consumeCredits(opts.comboHash!, consumed);
   }
 
@@ -183,7 +191,7 @@ export async function syncChannel(
   // returned no media), so the next syncs track only the newest uploads. A
   // credit-capped partial run leaves it open so the remaining old videos are
   // backfilled on the next funded sync.
-  const creditCapped = credited && trackVideos > 0 && wanted < trackVideos;
+  const creditCapped = budgeted && trackVideos > 0 && wanted < trackVideos;
   if (doingBackfill && !creditCapped) {
     await prisma.channel.update({
       where: { id: channel.id },
@@ -224,7 +232,12 @@ export async function runSync(): Promise<void> {
 
   for (const [combo, list] of Array.from(groups.entries())) {
     const { remaining } = await getCreditsStatus(combo);
-    if (remaining <= 0) {
+
+    // A group with no YouTube channels that is out of ScrapeCreators credits
+    // is skipped wholesale. Groups that include YouTube still run so their
+    // YouTube channels keep syncing on the official API quota.
+    const hasYouTube = list.some((c) => c.platform === "YOUTUBE");
+    if (remaining <= 0 && !hasYouTube) {
       console.log(`[sync] skip ${list.length} channel(s): daily limit reached`);
       continue;
     }
@@ -238,9 +251,14 @@ export async function runSync(): Promise<void> {
 
     let left = remaining;
     for (const channel of ordered) {
+      // YouTube never spends the per-IP credit budget, so it always syncs.
+      if (channel.platform === "YOUTUBE") {
+        await syncChannel(channel);
+        continue;
+      }
       if (left <= 0) {
         console.log(`[sync] stop ${combo.slice(0, 8)}: daily limit reached`);
-        break;
+        continue;
       }
       const consumed = await syncChannel(channel, {
         comboHash: combo,

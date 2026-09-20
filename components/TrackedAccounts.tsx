@@ -117,7 +117,9 @@ export function TrackedAccounts({
           sortBy={sortBy}
           layout={effectiveLayout}
           locale={locale}
-          refreshDisabled={refreshDisabled}
+          refreshDisabled={
+            refreshDisabled && group.platform !== "YOUTUBE"
+          }
         />
       ))}
     </>

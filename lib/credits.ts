@@ -1,8 +1,10 @@
-// Per-IP+ct_uid daily credit system (anti-abuse rate limiting).
+// Per-IP+ct_uid daily credit system (anti-abuse rate limiting) for
+// Instagram and TikTok syncs only. YouTube syncs use the official YouTube
+// Data API v3 quota (10,000 units/day) and are never charged here.
 //
-// Each video fetched by a sync costs 1 credit against a per-visitor daily
-// budget (default 100). The budget resets at midnight IST. Two identities can
-// be resolved:
+// Each Instagram/TikTok video fetched by a sync costs 1 credit against a
+// per-visitor daily budget (default 100). The budget resets at midnight IST.
+// Two identities can be resolved:
 //   - request time: the current request's IP + ct_uid cookie
 //   - cron time:     the combo recorded on the User row at request time
 //                    (the hourly cron has no request IP)
@@ -15,7 +17,7 @@ import { headers } from "next/headers";
 import { prisma } from "./db";
 
 export const DAILY_LIMIT_MESSAGE =
-  "Daily limit reached - resumes at midnight IST.";
+  "Instagram/TikTok daily limit reached - YouTube keeps working. Resumes at midnight IST.";
 
 const DEFAULT_DAILY_LIMIT = 100;
 export const SETTING_DAILY_LIMIT = "dailyCreditLimit";

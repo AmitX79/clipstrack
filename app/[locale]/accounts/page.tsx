@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { AddChannelBar } from "@/components/AddChannelBar";
+import { CreditsBadge } from "@/components/CreditsBadge";
 import { Footer } from "@/components/Footer";
 import { NavBar } from "@/components/NavBar";
 import { TrackedAccounts } from "@/components/TrackedAccounts";
@@ -81,20 +82,11 @@ export default async function TrackedPage({
           aria-label={dict.acct.eyebrow}
           className="flex flex-wrap items-start justify-between gap-6 pt-8 md:pt-12"
         >
-          <div>
+          <div className="min-w-0 flex-1">
             <p className="mono-eyebrow text-mute">
               {dict.acct.eyebrow}
               {channels.length > 0 && (
                 <span className="text-faint"> · {channels.length}</span>
-              )}
-              {credits && (
-                <span className="text-faint">
-                  {" · "}
-                  {tpl(dict.credits.used, {
-                    used: credits.used,
-                    limit: credits.limit,
-                  })}
-                </span>
               )}
             </p>
             <h1 className="display-lg mt-3 text-ink">{dict.acct.title}</h1>
@@ -102,6 +94,21 @@ export default async function TrackedPage({
               {dict.acct.sub}
             </p>
           </div>
+          {credits && (
+            <div className="ml-auto mt-7 shrink-0">
+              <CreditsBadge
+                badge={tpl(dict.credits.badge, {
+                  used: credits.used,
+                  limit: credits.limit,
+                })}
+                tooltipYt={dict.credits.tooltipYt}
+                tooltipIgtt={tpl(dict.credits.tooltipIgtt, {
+                  used: credits.used,
+                  limit: credits.limit,
+                })}
+              />
+            </div>
+          )}
         </section>
 
         <div className="pt-6">

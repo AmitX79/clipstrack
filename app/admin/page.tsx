@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { prisma } from "@/lib/db";
 import { getDailyLimit, istDateKey } from "@/lib/credits";
+import { getYoutubeQuotaStatus } from "@/lib/youtubequota";
 import { isAdmin } from "@/lib/admin";
 import { adminScrapeKeys, refreshKeyBalances } from "@/lib/scrapekeys";
 import { adminLogout } from "./actions";
@@ -63,28 +64,36 @@ export default async function AdminPage() {
   }
 
   const today = istDateKey();
-  const [limit, creditsTodayAgg, totalChannels, totalUsers, activeCombos, keys] =
-    await Promise.all([
-      getDailyLimit(),
-      prisma.creditUsage.aggregate({
-        where: { date: today },
-        _sum: { creditsUsed: true },
-      }),
-      prisma.channel.count(),
-      prisma.user.count(),
-      prisma.creditUsage.groupBy({
-        by: ["comboHash"],
-        where: { date: today },
-      }),
-      (async () => {
-        try {
-          await refreshKeyBalances(false);
-        } catch {
-          // Balances stay stale but the panel still renders.
-        }
-        return adminScrapeKeys();
-      })(),
-    ]);
+  const [
+    limit,
+    creditsTodayAgg,
+    totalChannels,
+    totalUsers,
+    activeCombos,
+    keys,
+    youtubeQuota,
+  ] = await Promise.all([
+    getDailyLimit(),
+    prisma.creditUsage.aggregate({
+      where: { date: today },
+      _sum: { creditsUsed: true },
+    }),
+    prisma.channel.count(),
+    prisma.user.count(),
+    prisma.creditUsage.groupBy({
+      by: ["comboHash"],
+      where: { date: today },
+    }),
+    (async () => {
+      try {
+        await refreshKeyBalances(false);
+      } catch {
+        // Balances stay stale but the panel still renders.
+      }
+      return adminScrapeKeys();
+    })(),
+    getYoutubeQuotaStatus(),
+  ]);
   const creditsToday = creditsTodayAgg._sum.creditsUsed ?? 0;
 
   return (
@@ -121,14 +130,31 @@ export default async function AdminPage() {
         </div>
 
         <div className="mt-4 grid gap-4 lg:grid-cols-2">
-          <Card title="Daily per-visitor credit limit">
+          <Card title="Daily per-visitor credit limit (Instagram/TikTok)">
             <LimitForm initialLimit={limit} />
             <p className="mt-3 text-xs text-faint">
-              Read by the hourly sync and the request-time syncs; resets at
-              midnight IST.
+              Applies to Instagram/TikTok syncs only - YouTube uses its own
+              official API quota. Read by the hourly sync and the request-time
+              syncs; resets at midnight IST.
             </p>
           </Card>
 
+          <Card title="YouTube data API quota today">
+            <p className="display-md text-ink">
+              {youtubeQuota.used}
+              <span className="ml-1 text-sm font-normal text-mute">
+                / {youtubeQuota.limit} units
+              </span>
+            </p>
+            <p className="mt-3 text-xs text-faint">
+              Official YouTube Data API v3 budget (channels.list,
+              playlistItems.list and videos.list each cost 1 unit). YouTube
+              syncs never touch the per-visitor ScrapeCreators credit limit.
+            </p>
+          </Card>
+        </div>
+
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
           <Card title="ScrapeCreators API keys">
             <div className="flex flex-col gap-2">
               {keys.length === 0 ? (
@@ -160,9 +186,7 @@ export default async function AdminPage() {
               <RefreshAllButton />
             </div>
           </Card>
-        </div>
 
-        <div className="mt-4">
           <Card title="Add ScrapeCreators API key">
             <AddKeyForm />
             <p className="mt-3 text-xs text-faint">

@@ -97,22 +97,16 @@ export function AddChannelBar({
       ? "border-ink bg-ink text-on-ink"
       : "border-hairline bg-elevated text-body hover:border-ink hover:text-ink");
 
-  if (exhausted) {
-    return (
-      <div className="flex flex-col gap-2">
+  return (
+    <form onSubmit={onSubmit} className="flex flex-col gap-2">
+      {exhausted && (
         <div
           role="status"
           className="rounded-md border border-error bg-elevated p-4 text-sm font-medium text-error"
         >
           {dict.credits.limitReached}
         </div>
-        <p className="text-base text-mute">{dict.add.helper}</p>
-      </div>
-    );
-  }
-
-  return (
-    <form onSubmit={onSubmit} className="flex flex-col gap-2">
+      )}
       <fieldset>
         <legend className="mono-eyebrow mb-2 w-full text-mute">
           {dict.add.platform}

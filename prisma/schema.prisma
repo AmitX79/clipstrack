@@ -183,6 +183,20 @@ model Setting {
   @@map("settings")
 }
 
+// Official YouTube Data API v3 quota units consumed per IST day (the free
+// tier is 10,000 units/day). Entirely separate from the per-IP ScrapeCreators
+// credits that limit Instagram/TikTok syncs — counted as we call the API and
+// shown in /admin.
+model YoutubeQuotaUsage {
+  id        String   @id @default(cuid(2))
+  date      String   @unique // IST date, YYYY-MM-DD
+  unitsUsed Int      @default(0)
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
+
+  @@map("youtube_quota_usage")
+}
+
 // ScrapeCreators API keys, managed from /admin. `active` removes a key from
 // rotation without deleting it; `quotaExhausted` is set when the key runs out
 // of credits so the client rotates to the next one. Remaining credits can be

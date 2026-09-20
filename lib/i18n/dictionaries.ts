@@ -261,8 +261,12 @@ export const dictionaries = {
     },
     credits: {
       used: "Used today: {used}/{limit} credits",
-      left: "{left} credits left today",
-      limitReached: "Daily limit reached - resumes at midnight IST.",
+      badge: "IG+TikTok {used}/{limit}",
+      tooltipYt: "YouTube: unlimited (10,000 units/day via official API)",
+      tooltipIgtt: "Instagram + TikTok: {used}/{limit} credits used today",
+      left: "{left} credits left for Instagram/TikTok today",
+      limitReached:
+        "Instagram/TikTok daily limit reached. YouTube keeps working. Resumes at midnight IST.",
     },
     fmt: {
       ago: "ago",
@@ -513,8 +517,12 @@ export const dictionaries = {
     },
     credits: {
       used: "Usados hoy: {used}/{limit} créditos",
-      left: "Quedan {left} créditos hoy",
-      limitReached: "Límite diario alcanzado - se reanuda a medianoche (IST).",
+      badge: "IG+TikTok {used}/{limit}",
+      tooltipYt: "YouTube: ilimitado (10.000 unidades/día vía API oficial)",
+      tooltipIgtt: "Instagram + TikTok: {used}/{limit} créditos usados hoy",
+      left: "Quedan {left} créditos para Instagram/TikTok hoy",
+      limitReached:
+        "Se alcanzó el límite diario de Instagram/TikTok. YouTube sigue funcionando. Se reanuda a medianoche (IST).",
     },
     fmt: { ago: "atrás", growthUnit: "/h" },
   },
@@ -759,8 +767,12 @@ export const dictionaries = {
     },
     credits: {
       used: "今日の使用: {used}/{limit} クレジット",
-      left: "今日はあと {left} クレジット",
-      limitReached: "1日の使用上限に達しました - 深夜0時(IST)にリセットされます。",
+      badge: "IG+TikTok {used}/{limit}",
+      tooltipYt: "YouTube: 無制限 (公式API経由で1日10,000ユニット)",
+      tooltipIgtt: "Instagram + TikTok: 今日の使用 {used}/{limit} クレジット",
+      left: "今日のInstagram/TikTokはあと {left} クレジット",
+      limitReached:
+        "Instagram/TikTokの1日の上限に達しました。YouTubeは引き続き動作します。深夜0時(IST)にリセットされます。",
     },
     fmt: { ago: "前", growthUnit: "/h" },
   },
@@ -1008,8 +1020,12 @@ export const dictionaries = {
     },
     credits: {
       used: "Utilisés aujourd'hui : {used}/{limit} crédits",
-      left: "Encore {left} crédits aujourd'hui",
-      limitReached: "Limite quotidienne atteinte - reprend à minuit (IST).",
+      badge: "IG+TikTok {used}/{limit}",
+      tooltipYt: "YouTube : illimité (10 000 unités/jour via l'API officielle)",
+      tooltipIgtt: "Instagram + TikTok : {used}/{limit} crédits utilisés aujourd'hui",
+      left: "Encore {left} crédits pour Instagram/TikTok aujourd'hui",
+      limitReached:
+        "Limite quotidienne d'Instagram/TikTok atteinte. YouTube continue de fonctionner. Reprend à minuit (IST).",
     },
     fmt: { ago: "il y a", growthUnit: "/h" },
   },
@@ -1256,8 +1272,12 @@ export const dictionaries = {
     },
     credits: {
       used: "Heute verbraucht: {used}/{limit} Credits",
-      left: "Noch {left} Credits heute",
-      limitReached: "Tageslimit erreicht - läuft um Mitternacht (IST) weiter.",
+      badge: "IG+TikTok {used}/{limit}",
+      tooltipYt: "YouTube: unbegrenzt (10.000 Einheiten/Tag über die offizielle API)",
+      tooltipIgtt: "Instagram + TikTok: {used}/{limit} Credits heute verbraucht",
+      left: "Noch {left} Credits für Instagram/TikTok heute",
+      limitReached:
+        "Tageslimit für Instagram/TikTok erreicht. YouTube läuft weiter. Um Mitternacht (IST) geht es weiter.",
     },
     fmt: { ago: "vor", growthUnit: "/Std." },
   },
@@ -1505,8 +1525,12 @@ export const dictionaries = {
     },
     credits: {
       used: "Usado hoje: {used}/{limit} créditos",
-      left: "Restam {left} créditos hoje",
-      limitReached: "Limite diário atingido - retoma à meia-noite (IST).",
+      badge: "IG+TikTok {used}/{limit}",
+      tooltipYt: "YouTube: ilimitado (10.000 unidades/dia via API oficial)",
+      tooltipIgtt: "Instagram + TikTok: {used}/{limit} créditos usados hoje",
+      left: "Restam {left} créditos para Instagram/TikTok hoje",
+      limitReached:
+        "Limite diário de Instagram/TikTok atingido. O YouTube continua funcionando. Retoma à meia-noite (IST).",
     },
     fmt: { ago: "há", growthUnit: "/h" },
   },
@@ -1751,8 +1775,12 @@ export const dictionaries = {
     },
     credits: {
       used: "오늘 사용: {used}/{limit} 크레딧",
-      left: "오늘 남은 크레딧 {left}",
-      limitReached: "일일 한도에 도달 - 인도 표준시(IST) 자정에 재개됩니다.",
+      badge: "IG+TikTok {used}/{limit}",
+      tooltipYt: "YouTube: 무제한 (공식 API를 통한 일 10,000유닛)",
+      tooltipIgtt: "Instagram + TikTok: 오늘 사용한 크레딧 {used}/{limit}",
+      left: "오늘 Instagram/TikTok에 쓸 수 있는 크레딧 {left}개",
+      limitReached:
+        "Instagram/TikTok 일일 한도에 도달했습니다. YouTube는 계속 작동합니다. 인도 표준시(IST) 자정에 재개됩니다.",
     },
     fmt: { ago: "전", growthUnit: "/h" },
   },
@@ -2000,8 +2028,12 @@ export const dictionaries = {
     },
     credits: {
       used: "Usati oggi: {used}/{limit} crediti",
-      left: "Rimangono {left} crediti oggi",
-      limitReached: "Limite giornaliero raggiunto - riprende a mezzanotte (IST).",
+      badge: "IG+TikTok {used}/{limit}",
+      tooltipYt: "YouTube: illimitato (10.000 unità/giorno via API ufficiale)",
+      tooltipIgtt: "Instagram + TikTok: {used}/{limit} crediti usati oggi",
+      left: "Rimangono {left} crediti per Instagram/TikTok oggi",
+      limitReached:
+        "Limite giornaliero di Instagram/TikTok raggiunto. YouTube continua a funzionare. Riprende a mezzanotte (IST).",
     },
     fmt: { ago: "fa", growthUnit: "/h" },
   },

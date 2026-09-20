@@ -21,6 +21,7 @@ import type {
   MediaStats,
   PlatformFetcher,
 } from "./types";
+import { recordYoutubeQuota } from "./youtubequota";
 
 export const PLATFORM = "youtube" as const;
 
@@ -87,6 +88,10 @@ async function get<T>(path: string): Promise<T> {
 
   const url = `${API_BASE}${path}${path.includes("?") ? "&" : "?"}key=${apiKey}`;
   const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+  // Every call that reaches the API counts toward the 10,000 units/day quota
+  // (channels.list, playlistItems.list and videos.list each cost 1 unit),
+  // whether it succeeds or the API rejects it. Best-effort bookkeeping.
+  await recordYoutubeQuota(1).catch(() => undefined);
   if (!res.ok) {
     throw new Error(`YouTube API ${path} returned ${res.status}`);
   }
