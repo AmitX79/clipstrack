@@ -100,7 +100,7 @@ function ChannelActions({
               : tpl(dict.card.ariaRefresh, { user })
           }
           className={
-            "inline-flex h-7 items-center gap-1.5 rounded-[6px] border border-hairline px-2.5 text-xs font-medium text-body " +
+            "inline-flex h-11 items-center gap-1.5 rounded-[6px] border border-hairline px-2.5 text-xs font-medium text-body sm:h-9 " +
             "hover:border-ink hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated disabled:opacity-50"
           }
         >
@@ -118,7 +118,7 @@ function ChannelActions({
           }}
           disabled={disabled}
           aria-label={tpl(dict.card.ariaEdit, { user })}
-          className="inline-flex h-7 items-center rounded-[6px] border border-hairline px-2.5 text-xs font-medium text-body hover:border-ink hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated disabled:opacity-50"
+          className="inline-flex h-11 items-center rounded-[6px] border border-hairline px-2.5 text-xs font-medium text-body hover:border-ink hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated disabled:opacity-50 sm:h-9"
         >
           {dict.card.edit}
         </button>
@@ -127,7 +127,7 @@ function ChannelActions({
           onClick={onRemove}
           disabled={disabled}
           aria-label={tpl(dict.card.ariaRemove, { user })}
-          className="inline-flex h-7 items-center rounded-[6px] border border-hairline px-2.5 text-xs font-medium text-error hover:border-error hover:text-error-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error focus-visible:ring-offset-2 focus-visible:ring-offset-elevated disabled:opacity-50"
+          className="inline-flex h-11 items-center rounded-[6px] border border-hairline px-2.5 text-xs font-medium text-error hover:border-error hover:text-error-deep focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error focus-visible:ring-offset-2 focus-visible:ring-offset-elevated disabled:opacity-50 sm:h-9"
         >
           {dict.card.remove}
         </button>
@@ -230,7 +230,7 @@ function EditPanel({
         <button
           type="submit"
           disabled={isPending}
-          className="h-8 rounded-[6px] bg-ink px-3 text-xs font-medium text-on-ink hover:bg-ink-press disabled:opacity-60"
+          className="h-11 rounded-[6px] bg-ink px-3 text-xs font-medium text-on-ink hover:bg-ink-press disabled:opacity-60 sm:h-8"
         >
           {isPending ? dict.card.saving : dict.card.save}
         </button>
@@ -238,7 +238,7 @@ function EditPanel({
           type="button"
           onClick={onCancel}
           disabled={isPending}
-          className="h-8 rounded-[6px] border border-hairline px-3 text-xs font-medium text-body hover:text-ink disabled:opacity-60"
+          className="h-11 rounded-[6px] border border-hairline px-3 text-xs font-medium text-body hover:text-ink disabled:opacity-60 sm:h-8"
         >
           {dict.card.cancel}
         </button>
@@ -281,7 +281,7 @@ function Field({
         defaultValue={defaultValue ?? ""}
         required={required}
         aria-describedby={`${name}-hint`}
-        className="h-8 w-full rounded-[6px] border border-hairline bg-elevated px-2.5 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated focus-visible:border-link"
+        className="h-11 w-full rounded-[6px] border border-hairline bg-elevated px-2.5 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated focus-visible:border-link sm:h-8"
       />
       <span id={`${name}-hint`} className="text-xs text-faint">
         {hint}
@@ -570,8 +570,14 @@ function VideoRow({
         </a>
         {latest ? (
           <>
-            <dl className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1">
-              <span className="col-span-2">
+            <dl
+              className={
+                layout === "horizontal"
+                  ? "mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1"
+                  : "mt-1.5 grid grid-cols-1 gap-y-1 sm:grid-cols-2 sm:gap-x-3"
+              }
+            >
+              <span className={layout === "horizontal" ? "col-span-2" : "sm:col-span-2"}>
                 <dt className="mono-eyebrow text-faint">{dict.card.views}</dt>
                 <dd
                   className="mt-0.5 whitespace-nowrap tabular-nums text-body"

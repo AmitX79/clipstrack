@@ -5,7 +5,7 @@ import { useState, useTransition } from "react";
 import { refreshBalancesNow } from "./actions";
 
 const buttonClass =
-  "h-9 rounded-[6px] px-3.5 text-sm font-medium transition-colors " +
+  "h-11 rounded-[6px] px-3.5 text-sm font-medium transition-colors sm:h-9 " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link " +
   "focus-visible:ring-offset-2 focus-visible:ring-offset-canvas";
 

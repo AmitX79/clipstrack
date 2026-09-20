@@ -37,6 +37,18 @@ export function TrackedAccounts({
   const [sortBy, setSortBy] = useState<SortKey>("published");
   const [layout, setLayout] = useVideoLayout();
 
+  // Below `sm` (640px) video lists always render vertically: horizontal
+  // carousels are cramped on phones and the layout toggle is hidden there.
+  const [isSmall, setIsSmall] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const update = () => setIsSmall(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  const effectiveLayout: VideoLayout = isSmall ? "vertical" : layout;
+
   const groups = PLATFORM_VALUES.map((platform) => ({
     platform,
     channels: channels.filter((c) => c.platform === platform),
@@ -66,7 +78,7 @@ export function TrackedAccounts({
           <select
             value={sortBy}
             onChange={(event) => setSortBy(event.target.value as SortKey)}
-            className="ml-2 h-9 rounded-[6px] border border-hairline bg-elevated px-2.5 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated"
+            className="ml-2 h-11 rounded-[6px] border border-hairline bg-elevated px-2.5 text-sm text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-elevated sm:h-9"
           >
             {SORT_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -78,7 +90,7 @@ export function TrackedAccounts({
         <div
           role="group"
           aria-label="Video layout"
-          className="flex items-center rounded-[6px] border border-hairline bg-elevated p-0.5"
+          className="hidden items-center rounded-[6px] border border-hairline bg-elevated p-0.5 sm:flex"
         >
           {(["horizontal", "vertical"] as const).map((option) => (
             <button
@@ -103,7 +115,7 @@ export function TrackedAccounts({
           platform={group.platform}
           channels={group.channels}
           sortBy={sortBy}
-          layout={layout}
+          layout={effectiveLayout}
           locale={locale}
           refreshDisabled={refreshDisabled}
         />

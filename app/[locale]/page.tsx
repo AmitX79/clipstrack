@@ -64,16 +64,16 @@ export default function Home({ params }: { params: { locale: string } }) {
               <span className="font-bold text-link">{dict.hero.subtitleAccent}</span>
               {dict.hero.subtitleAfter}
             </p>
-            <div className="mt-10 flex flex-wrap items-center gap-3">
+            <div className="mt-10 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               <a
                 href={localizedHref(locale, "/accounts#add")}
-                className="inline-flex h-12 items-center rounded-full bg-ink px-8 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-ink px-8 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 sm:w-auto"
               >
                 {dict.hero.add}
               </a>
               <a
                 href={localizedHref(locale, "/accounts")}
-                className="inline-flex h-12 items-center rounded-full border border-hairline bg-elevated px-8 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+                className="inline-flex h-12 w-full items-center justify-center rounded-full border border-hairline bg-elevated px-8 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 sm:w-auto"
               >
                 {dict.hero.view}
               </a>
@@ -159,16 +159,16 @@ export default function Home({ params }: { params: { locale: string } }) {
           <div className="border-t border-hairline pt-14 text-center">
             <p className="mono-eyebrow text-mute">{dict.cta.eyebrow}</p>
             <h2 className="display-lg mt-3 text-ink">{dict.cta.title}</h2>
-            <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+            <div className="mt-6 flex flex-col items-stretch justify-center gap-3 sm:flex-row sm:flex-wrap sm:items-center">
               <a
                 href={localizedHref(locale, "/accounts#add")}
-                className="inline-flex h-12 items-center rounded-full bg-ink px-8 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+                className="inline-flex h-12 w-full items-center justify-center rounded-full bg-ink px-8 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 sm:w-auto"
               >
                 {dict.hero.add}
               </a>
               <a
                 href={localizedHref(locale, "/accounts")}
-                className="inline-flex h-12 items-center rounded-full border border-hairline bg-elevated px-8 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+                className="inline-flex h-12 w-full items-center justify-center rounded-full border border-hairline bg-elevated px-8 text-base font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 sm:w-auto"
               >
                 {dict.hero.view}
               </a>

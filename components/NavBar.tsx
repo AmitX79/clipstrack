@@ -111,6 +111,16 @@ export function NavBar({
     };
   }, [langOpen]);
 
+  // Close the mobile drawer on Escape.
+  useEffect(() => {
+    if (!menuOpen) return;
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setMenuOpen(false);
+    }
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [menuOpen]);
+
   function toggleTheme() {
     const next = !document.documentElement.classList.contains("dark");
     document.documentElement.classList.toggle("dark", next);
@@ -130,6 +140,7 @@ export function NavBar({
         ? pathname
         : pathname.replace(new RegExp(`^/${locale}`), "") || "/";
     setLangOpen(false);
+    setMenuOpen(false);
     window.location.href = localizedHref(next, rest === "/" ? "" : rest);
   }
 
@@ -163,7 +174,8 @@ export function NavBar({
             ))}
           </div>
 
-          {/* Language switcher — always visible */}
+          {/* Language switcher, theme toggle and CTA — desktop only; the mobile drawer carries these */}
+          <div className="hidden items-center gap-2 sm:flex">
           <div ref={langRef} className="relative">
             <button
               type="button"
@@ -206,23 +218,24 @@ export function NavBar({
           </div>
 
           {/* Theme toggle — always visible */}
-          <button
-            type="button"
-            onClick={toggleTheme}
-            aria-label={dark ? dict.nav.themeLight : dict.nav.themeDark}
-            aria-pressed={dark}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-hairline bg-elevated text-body transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
-          >
-            {dark ? <SunIcon /> : <MoonIcon />}
-          </button>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={dark ? dict.nav.themeLight : dict.nav.themeDark}
+              aria-pressed={dark}
+              className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-hairline bg-elevated text-body transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+            >
+              {dark ? <SunIcon /> : <MoonIcon />}
+            </button>
 
-          {/* Desktop CTA */}
-          <a
-            href={localizedHref(locale, "/accounts#add")}
-            className="hidden rounded-[6px] bg-ink px-4 py-2.5 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 sm:inline-flex"
-          >
-            {dict.nav.add}
-          </a>
+            {/* Desktop CTA */}
+            <a
+              href={localizedHref(locale, "/accounts#add")}
+              className="inline-flex rounded-[6px] bg-ink px-4 py-2.5 text-base font-medium text-on-ink hover:bg-ink-press focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
+            >
+              {dict.nav.add}
+            </a>
+          </div>
 
           {/* Mobile menu toggle */}
           <button
@@ -231,7 +244,7 @@ export function NavBar({
             aria-expanded={menuOpen}
             aria-controls="mobile-nav"
             aria-label={menuOpen ? dict.nav.closeMenu : dict.nav.openMenu}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-[6px] border border-hairline bg-elevated text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 sm:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-[6px] border border-hairline bg-elevated text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 sm:hidden"
           >
             {menuOpen ? <CloseIcon /> : <MenuIcon />}
           </button>
@@ -241,14 +254,14 @@ export function NavBar({
       {/* Mobile menu panel */}
       {menuOpen && (
         <div id="mobile-nav" className="border-t border-hairline bg-white dark:bg-elevated sm:hidden">
-          <div className="mx-auto flex max-w-6xl flex-col gap-1 px-6 py-3">
+          <div className="mx-auto flex max-w-6xl flex-col px-6 py-4">
             {LINKS.map((link) => (
               <a
                 key={link.key}
                 href={link.href}
                 aria-current={active === link.key ? "page" : undefined}
                 onClick={() => setMenuOpen(false)}
-                className="rounded-[6px] px-3 py-2.5 text-sm text-ink hover:bg-hairline-soft"
+                className="flex min-h-[44px] items-center rounded-[6px] px-3 text-sm text-ink hover:bg-hairline-soft"
               >
                 {link.label}
               </a>
@@ -256,10 +269,43 @@ export function NavBar({
             <a
               href={localizedHref(locale, "/accounts#add")}
               onClick={() => setMenuOpen(false)}
-              className="mt-2 rounded-[6px] bg-ink px-4 py-2.5 text-center text-base font-medium text-on-ink hover:bg-ink-press"
+              className="mt-2 flex min-h-[44px] items-center justify-center rounded-[6px] bg-ink px-4 text-base font-medium text-on-ink hover:bg-ink-press"
             >
               {dict.nav.add}
             </a>
+
+            {/* Language switcher (mobile) */}
+            <div className="mt-4 border-t border-hairline pt-4">
+              <p className="mono-eyebrow text-mute">{dict.nav.lang}</p>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {LOCALES.map((other) => (
+                  <button
+                    key={other}
+                    type="button"
+                    aria-pressed={other === locale}
+                    onClick={() => switchLocale(other)}
+                    className="flex h-11 items-center justify-between gap-2 rounded-[6px] border border-hairline bg-elevated px-3 text-sm text-body hover:text-ink"
+                  >
+                    <span className="truncate">{LOCALE_LABELS[other]}</span>
+                    {other === locale && (
+                      <span aria-hidden="true" className="shrink-0 text-link">
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Theme toggle (mobile) */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="mt-3 flex min-h-[44px] items-center justify-center gap-2 rounded-[6px] border border-hairline bg-elevated px-4 text-sm font-medium text-body hover:text-ink"
+            >
+              {dark ? <SunIcon /> : <MoonIcon />}
+              <span>{dark ? dict.nav.themeLight : dict.nav.themeDark}</span>
+            </button>
           </div>
         </div>
       )}

@@ -14,13 +14,13 @@ import { RefreshAllButton } from "./RefreshAllButton";
 export const dynamic = "force-dynamic";
 
 const inputClass =
-  "h-9 rounded-[6px] border border-hairline px-2.5 text-sm text-ink " +
+  "h-11 rounded-[6px] border border-hairline px-2.5 text-sm text-ink sm:h-9 " +
   "bg-elevated placeholder:text-faint focus-visible:outline-none " +
   "focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 " +
   "focus-visible:ring-offset-canvas";
 
 const buttonClass =
-  "h-9 rounded-[6px] px-3.5 text-sm font-medium transition-colors " +
+  "h-11 rounded-[6px] px-3.5 text-sm font-medium transition-colors sm:h-9 " +
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link " +
   "focus-visible:ring-offset-2 focus-visible:ring-offset-canvas";
 

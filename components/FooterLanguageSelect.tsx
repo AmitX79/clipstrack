@@ -75,7 +75,7 @@ export function FooterLanguageSelect({
         aria-haspopup="menu"
         aria-expanded={open}
         aria-label={label}
-        className="inline-flex h-9 items-center gap-1.5 rounded-full border border-hairline bg-elevated px-3 text-sm font-medium text-body transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-canvas"
+        className="inline-flex h-11 items-center gap-1.5 rounded-full border border-hairline bg-elevated px-3 text-sm font-medium text-body transition-colors hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 focus-visible:ring-offset-canvas sm:h-9"
       >
         <GlobeIcon />
         <span className="tabular-nums">{locale.toUpperCase()}</span>

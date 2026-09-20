@@ -93,7 +93,7 @@ export function KeyRow({ item }: { item: AdminScrapeKeyData }) {
           type="button"
           onClick={() => run("refresh", () => refreshKeyBalance(item.id))}
           disabled={busy != null}
-          className="text-xs font-medium text-link hover:text-link-deep disabled:opacity-50"
+          className="inline-flex min-h-[44px] items-center rounded-[6px] px-2 text-left text-xs font-medium text-link hover:bg-hairline-soft hover:text-link-deep disabled:opacity-50"
         >
           {busy === "refresh" ? "Refreshing..." : "Refresh balance"}
         </button>
@@ -101,7 +101,7 @@ export function KeyRow({ item }: { item: AdminScrapeKeyData }) {
           type="button"
           onClick={() => run("toggle", () => toggleScrapeKey(item.id))}
           disabled={busy != null}
-          className="text-xs font-medium text-link hover:text-link-deep disabled:opacity-50"
+          className="inline-flex min-h-[44px] items-center rounded-[6px] px-2 text-left text-xs font-medium text-link hover:bg-hairline-soft hover:text-link-deep disabled:opacity-50"
         >
           {busy === "toggle"
             ? item.active
@@ -115,7 +115,7 @@ export function KeyRow({ item }: { item: AdminScrapeKeyData }) {
           type="button"
           onClick={() => run("remove", () => removeScrapeKey(item.id))}
           disabled={busy != null}
-          className="text-xs font-medium text-error hover:text-error-deep disabled:opacity-50"
+          className="inline-flex min-h-[44px] items-center rounded-[6px] px-2 text-left text-xs font-medium text-error hover:bg-hairline-soft hover:text-error-deep disabled:opacity-50"
         >
           {busy === "remove" ? "Removing..." : "Remove"}
         </button>
