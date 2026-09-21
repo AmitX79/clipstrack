@@ -97,6 +97,24 @@ export default async function AdminPage() {
   ]);
   const creditsToday = creditsTodayAgg._sum.creditsUsed ?? 0;
 
+  // Grant-history audit trail + inactivity cleanup log (most recent first).
+  const [history, cleanupRuns] = await Promise.all([
+    prisma.grantHistory.findMany({
+      orderBy: { grantedAt: "desc" },
+      take: 50,
+    }),
+    prisma.cleanupLog.findMany({ orderBy: { runAt: "desc" }, take: 10 }),
+  ]);
+  const historyUserIds = Array.from(new Set(history.map((h) => h.userId)));
+  const codeByUserId = new Map<string, string>(
+    (
+      await prisma.userCode.findMany({
+        where: { userId: { in: historyUserIds } },
+        select: { userId: true, code: true },
+      })
+    ).map((row) => [row.userId, row.code]),
+  );
+
   return (
     <div className="min-h-screen bg-canvas">
       <main className="mx-auto max-w-4xl px-6 py-10">
@@ -202,12 +220,102 @@ export default async function AdminPage() {
             <GrantCredits />
             <p className="mt-3 text-xs text-faint">
               Search by the short User ID shown on a visitor&apos;s /accounts
-              page (&quot;Your ID: CT-X7K9P2&quot;). A bonus top-up is one-time
-              - it only kicks in after their daily allowance is used (and
-              resets with the daily allowance). An override replaces the global
-              daily credit limit for just that visitor; leave it blank to clear
-              it.
+              page (&quot;Your ID: CT-X7K9P2&quot;). Bonus credits are one-time
+              - they only kick in after the daily allowance is used and do not
+              renew tomorrow. A permanent daily limit replaces the global daily
+              credit limit for that visitor every day until you change or clear
+              it (blank = clear). Every change is written to the grant history.
             </p>
+          </Card>
+        </div>
+
+        <div className="mt-4">
+          <Card title="Grant history">
+            {history.length === 0 ? (
+              <p className="text-sm text-mute">
+                No grants yet - bonus top-ups and permanent daily limits will
+                be listed here.
+              </p>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-hairline text-xs text-faint">
+                      <th className="py-2 pr-4 font-medium">User ID</th>
+                      <th className="py-2 pr-4 font-medium">What</th>
+                      <th className="py-2 pr-4 font-medium">Amount</th>
+                      <th className="py-2 font-medium">When</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-hairline">
+                    {history.map((entry) => {
+                      const cleared =
+                        entry.type === "OVERRIDE" && entry.amount === 0;
+                      const label =
+                        entry.type === "BONUS"
+                          ? "Bonus credits"
+                          : cleared
+                            ? "Daily limit cleared"
+                            : "Permanent daily limit";
+                      return (
+                        <tr key={entry.id} className="text-body">
+                          <td className="py-2 pr-4 font-mono text-ink">
+                            {codeByUserId.get(entry.userId) ??
+                              entry.userId.slice(0, 8)}
+                            {codeByUserId.has(entry.userId) ? "" : "…"}
+                          </td>
+                          <td className="py-2 pr-4">{label}</td>
+                          <td className="py-2 pr-4 tabular-nums text-ink">
+                            {entry.type === "BONUS"
+                              ? `+${entry.amount}`
+                              : cleared
+                                ? "—"
+                                : entry.amount}
+                          </td>
+                          <td className="py-2 whitespace-nowrap text-faint">
+                            {entry.grantedAt.toLocaleString()}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </Card>
+        </div>
+
+        <div className="mt-4">
+          <Card title="Inactive-account cleanup">
+            {cleanupRuns.length === 0 ? (
+              <p className="text-sm text-mute">
+                No cleanup runs yet. The daily job deletes visitors with zero
+                activity for 5 consecutive days.
+              </p>
+            ) : (
+              <ul className="flex flex-col divide-y divide-hairline text-sm">
+                {cleanupRuns.map((run) => (
+                  <li
+                    key={run.id}
+                    className="flex flex-wrap items-baseline justify-between gap-2 py-2"
+                  >
+                    <span className="whitespace-nowrap text-faint">
+                      {run.runAt.toLocaleString()}
+                    </span>
+                    <span className="text-body">
+                      <span className="tabular-nums text-ink">
+                        {run.deletedUsers}
+                      </span>{" "}
+                      visitor(s),{" "}
+                      <span className="tabular-nums text-ink">
+                        {run.deletedChannels}
+                      </span>{" "}
+                      channel(s) deleted
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
           </Card>
         </div>
       </main>

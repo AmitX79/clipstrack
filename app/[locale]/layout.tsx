@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ConsentGate } from "@/components/ConsentGate";
 import { DocumentLanguage } from "@/components/DocumentLanguage";
 import {
   DEFAULT_LOCALE,
@@ -90,7 +91,7 @@ export default function LocaleLayout({
         }}
       />
       <DocumentLanguage locale={locale} />
-      {children}
+      <ConsentGate locale={locale}>{children}</ConsentGate>
     </>
   );
 }

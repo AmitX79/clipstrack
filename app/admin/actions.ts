@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/db";
+import { GrantType } from "@/app/generated/prisma/client";
 import { ADMIN_COOKIE, adminSecretHash, isAdmin } from "@/lib/admin";
 import { SETTING_DAILY_LIMIT, getDailyLimit, istDateKey } from "@/lib/credits";
 import { fetchKeyBalance, refreshKeyBalances } from "@/lib/scrapekeys";
@@ -58,7 +59,7 @@ export type GrantLookupUser = {
   used: number;
   baseLimit: number;
   bonus: number;
-  limitOverride: number | null;
+  dailyOverride: number | null;
   totalLimit: number;
   remaining: number;
 };
@@ -90,7 +91,7 @@ export async function lookupUserByCode(
       : Promise.resolve(null),
     getDailyLimit(),
   ]);
-  const baseLimit = row.limitOverride ?? globalLimit;
+  const baseLimit = row.dailyOverride ?? globalLimit;
   const bonus = row.bonusCredits;
   const used = usedRow?.creditsUsed ?? 0;
   const totalLimit = baseLimit + bonus;
@@ -101,7 +102,7 @@ export async function lookupUserByCode(
       used,
       baseLimit,
       bonus,
-      limitOverride: row.limitOverride,
+      dailyOverride: row.dailyOverride,
       totalLimit,
       remaining: Math.max(0, totalLimit - used),
     },
@@ -109,12 +110,15 @@ export async function lookupUserByCode(
 }
 
 // Grant credits to a visitor: add a one-time bonus top-up and/or set (or clear,
-// via null) a per-visitor daily limit override. Reads are admin-gated and the
-// write uses one transaction so the two never drift apart.
+// via null) the visitor's PERMANENT daily limit override. Reads are admin-gated
+// and the write uses one transaction so the UserCode values and the GrantHistory
+// audit trail never drift apart. Every credit change is logged: a bonus grant
+// logs type=BONUS; setting a daily limit logs OVERRIDE with the new value;
+// clearing a previously-set limit logs OVERRIDE with amount 0 (= cleared).
 export async function grantCredits(args: {
   code: string;
   addBonus: number;
-  limitOverride: number | null;
+  dailyOverride: number | null;
 }): Promise<AdminResult> {
   if (!isAdmin()) return NOT_SIGNED_IN;
   const code = args.code.trim().toUpperCase();
@@ -134,15 +138,34 @@ export async function grantCredits(args: {
     };
   }
   if (
-    args.limitOverride != null &&
-    (!Number.isInteger(args.limitOverride) ||
-      args.limitOverride < 1 ||
-      args.limitOverride > 1_000_000)
+    args.dailyOverride != null &&
+    (!Number.isInteger(args.dailyOverride) ||
+      args.dailyOverride < 1 ||
+      args.dailyOverride > 1_000_000)
   ) {
     return {
       ok: false,
-      error: "Override must be a whole number between 1 and 1,000,000 (or cleared).",
+      error:
+        "Daily limit must be a whole number between 1 and 1,000,000 (or cleared).",
     };
+  }
+  const history: {
+    userId: string;
+    type: GrantType;
+    amount: number;
+  }[] = [];
+  if (args.addBonus > 0) {
+    history.push({ userId: row.userId, type: GrantType.BONUS, amount: args.addBonus });
+  }
+  if (args.dailyOverride != null) {
+    history.push({
+      userId: row.userId,
+      type: GrantType.OVERRIDE,
+      amount: args.dailyOverride,
+    });
+  } else if (row.dailyOverride != null) {
+    // Explicitly cleared a previously-set permanent limit.
+    history.push({ userId: row.userId, type: GrantType.OVERRIDE, amount: 0 });
   }
   await prisma.$transaction([
     prisma.userCode.update({
@@ -151,8 +174,9 @@ export async function grantCredits(args: {
     }),
     prisma.userCode.update({
       where: { id: row.id },
-      data: { limitOverride: args.limitOverride },
+      data: { dailyOverride: args.dailyOverride },
     }),
+    ...history.map((entry) => prisma.grantHistory.create({ data: entry })),
   ]);
   revalidatePath("/admin");
   return { ok: true };

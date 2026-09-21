@@ -19,6 +19,18 @@ const buttonClass =
   "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link " +
   "focus-visible:ring-offset-2 focus-visible:ring-offset-canvas";
 
+function SaveButton({ pending, saved }: { pending: boolean; saved: boolean }) {
+  return (
+    <button
+      type="submit"
+      disabled={pending}
+      className={`${buttonClass} bg-ink text-on-ink hover:bg-ink-press disabled:opacity-60`}
+    >
+      {pending ? "Saving..." : saved ? "Saved ✓" : "Save"}
+    </button>
+  );
+}
+
 export function GrantCredits() {
   const router = useRouter();
   const [code, setCode] = useState("");
@@ -26,8 +38,9 @@ export function GrantCredits() {
   const [lookupPending, setLookupPending] = useState(false);
   const [lookupError, setLookupError] = useState<string | null>(null);
   const [bonus, setBonus] = useState("");
-  const [override, setOverride] = useState("");
-  const [saved, setSaved] = useState(false);
+  const [daily, setDaily] = useState("");
+  const [bonusSaved, setBonusSaved] = useState(false);
+  const [dailySaved, setDailySaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
@@ -36,7 +49,8 @@ export function GrantCredits() {
     if (lookupPending || pending) return;
     setLookupError(null);
     setError(null);
-    setSaved(false);
+    setBonusSaved(false);
+    setDailySaved(false);
     setUser(null);
     setLookupPending(true);
     const result = await lookupUserByCode(code);
@@ -44,35 +58,61 @@ export function GrantCredits() {
     if (result.ok) {
       setUser(result.user);
       setBonus("");
-      setOverride(
-        result.user.limitOverride != null
-          ? String(result.user.limitOverride)
-          : "",
+      setDaily(
+        result.user.dailyOverride != null ? String(result.user.dailyOverride) : "",
       );
     } else {
       setLookupError(result.error);
     }
   }
 
-  function onSave(event: React.FormEvent<HTMLFormElement>) {
+  async function refreshUser() {
+    if (!user) return;
+    const again = await lookupUserByCode(user.code);
+    if (again.ok) setUser(again.user);
+    router.refresh();
+  }
+
+  function onSaveBonus(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (pending || !user) return;
+    const addBonus = bonus.trim() === "" ? 0 : Number(bonus);
+    if (addBonus <= 0) return;
     setError(null);
-    setSaved(false);
+    setBonusSaved(false);
     startTransition(async () => {
       const result = await grantCredits({
         code: user.code,
-        addBonus: bonus.trim() === "" ? 0 : Number(bonus),
-        limitOverride: override.trim() === "" ? null : Number(override),
+        addBonus,
+        dailyOverride: null,
       });
       if (result.ok) {
-        setSaved(true);
+        setBonusSaved(true);
         setBonus("");
-        setOverride("");
-        const again = await lookupUserByCode(user.code);
-        if (again.ok) setUser(again.user);
-        router.refresh();
-        setTimeout(() => setSaved(false), 2000);
+        await refreshUser();
+        setTimeout(() => setBonusSaved(false), 2000);
+      } else {
+        setError(result.error);
+      }
+    });
+  }
+
+  function onSaveDaily(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (pending || !user) return;
+    const dailyOverride = daily.trim() === "" ? null : Number(daily);
+    setError(null);
+    setDailySaved(false);
+    startTransition(async () => {
+      const result = await grantCredits({
+        code: user.code,
+        addBonus: 0,
+        dailyOverride,
+      });
+      if (result.ok) {
+        setDailySaved(true);
+        await refreshUser();
+        setTimeout(() => setDailySaved(false), 2000);
       } else {
         setError(result.error);
       }
@@ -122,66 +162,101 @@ export function GrantCredits() {
               {user.bonus > 0 && (
                 <span className="text-faint"> (incl. {user.bonus} bonus)</span>
               )}
-              {user.limitOverride != null && (
+              {user.dailyOverride != null && (
                 <span className="text-faint">
-                  {" "}· override {user.limitOverride}
+                  {" "}· daily limit {user.dailyOverride}
                 </span>
               )}
             </span>
           </div>
           <p className="mt-1 text-xs text-faint">
-            Remaining today: {user.remaining}. Base limit (global or override):{" "}
-            {user.baseLimit}.
+            Remaining today: {user.remaining}.{" "}
+            {user.dailyOverride != null ? (
+              <>
+                Permanent daily limit set: {user.dailyOverride}. This replaces
+                the global limit every day until changed or cleared.
+              </>
+            ) : (
+              <>
+                No permanent limit set — the global daily limit ({user.baseLimit}
+                ) applies.
+              </>
+            )}
           </p>
 
-          <form onSubmit={onSave} id="grant-edit-form" className="mt-3 flex flex-wrap items-end gap-2">
-            <label htmlFor="grant-bonus" className="flex flex-col gap-1">
-              <span className="mono-eyebrow text-mute">Add bonus credits</span>
-              <input
-                id="grant-bonus"
-                name="bonus"
-                type="number"
-                min={0}
-                max={1000000}
-                step={1}
-                placeholder="0"
-                value={bonus}
-                onChange={(e) => setBonus(e.target.value)}
-                className={`${inputClass} w-28`}
-              />
-            </label>
-            <label htmlFor="grant-override" className="flex flex-col gap-1">
-              <span className="mono-eyebrow text-mute">
-                Daily limit override
-              </span>
-              <input
-                id="grant-override"
-                name="override"
-                type="number"
-                min={1}
-                max={1000000}
-                step={1}
-                placeholder="blank = clear"
-                value={override}
-                onChange={(e) => setOverride(e.target.value)}
-                className={`${inputClass} w-36`}
-              />
-            </label>
-            <button
-              type="submit"
-              disabled={pending}
-              className={`${buttonClass} bg-ink text-on-ink hover:bg-ink-press disabled:opacity-60`}
+          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+            <form
+              onSubmit={onSaveBonus}
+              id="grant-bonus-form"
+              className="flex flex-wrap items-end gap-2"
             >
-              {pending ? "Saving..." : saved ? "Saved ✓" : "Save"}
-            </button>
-            <div aria-live="polite" className="w-full basis-full">
-              {error && (
-                <p className="text-sm text-error" role="status">
-                  {error}
-                </p>
-              )}
-            </div>
-          </form>
+              <label htmlFor="grant-bonus" className="flex flex-col gap-1">
+                <span className="mono-eyebrow text-mute">
+                  Add one-time bonus credits
+                </span>
+                <input
+                  id="grant-bonus"
+                  name="bonus"
+                  type="number"
+                  min={1}
+                  max={1000000}
+                  step={1}
+                  placeholder="0"
+                  value={bonus}
+                  onChange={(e) => setBonus(e.target.value)}
+                  className={`${inputClass} w-28`}
+                />
+              </label>
+              <div className="flex flex-col gap-1">
+                <span className="mono-eyebrow text-mute">&nbsp;</span>
+                <SaveButton pending={pending} saved={bonusSaved} />
+              </div>
+              <p className="w-full basis-full text-xs text-faint sm:hidden">
+                One-time only — kicks in after the daily allowance and does not
+                renew tomorrow.
+              </p>
+            </form>
+
+            <form
+              onSubmit={onSaveDaily}
+              id="grant-daily-form"
+              className="flex flex-wrap items-end gap-2"
+            >
+              <label htmlFor="grant-daily" className="flex flex-col gap-1">
+                <span className="mono-eyebrow text-mute">
+                  Permanent daily limit
+                </span>
+                <input
+                  id="grant-daily"
+                  name="daily"
+                  type="number"
+                  min={1}
+                  max={1000000}
+                  step={1}
+                  placeholder="blank = clear"
+                  value={daily}
+                  onChange={(e) => setDaily(e.target.value)}
+                  className={`${inputClass} w-36`}
+                />
+              </label>
+              <div className="flex flex-col gap-1">
+                <span className="mono-eyebrow text-mute">&nbsp;</span>
+                <SaveButton pending={pending} saved={dailySaved} />
+              </div>
+              <p className="w-full basis-full text-xs text-faint sm:hidden">
+                Replaces the global limit for this visitor every day until
+                changed; blank clears it.
+              </p>
+            </form>
+          </div>
+
+          <div aria-live="polite" className="mt-2">
+            {error && (
+              <p className="text-sm text-error" role="status">
+                {error}
+              </p>
+            )}
+          </div>
         </div>
       )}
     </div>

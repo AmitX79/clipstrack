@@ -269,6 +269,18 @@ export const dictionaries = {
       limitReached:
         "Instagram/TikTok daily limit reached. YouTube keeps working. Resumes at midnight IST.",
     },
+    consent: {
+      eyebrow: "Before you add channels",
+      title: "We use a small cookie to keep your tracked accounts yours",
+      body:
+        "ClipsTrack uses one cookie (ct_uid) so the accounts you add stay tied to you on this device. It only tracks publicly available video stats - views, likes and comments - for channels you choose to add. It never reads private account data.",
+      allow: "Allow",
+      decline: "Decline",
+      blockedTitle: "Please agree to continue",
+      blockedBody:
+        "Adding channels needs your agreement to the cookie notice. You can change your mind later - nothing is tracked until you agree.",
+      note: "Agree to the cookie notice to add channels.",
+    },
     fmt: {
       ago: "ago",
       growthUnit: "/hr",
@@ -526,6 +538,18 @@ export const dictionaries = {
       limitReached:
         "Se alcanzó el límite diario de Instagram/TikTok. YouTube sigue funcionando. Se reanuda a medianoche (IST).",
     },
+    consent: {
+      eyebrow: "Antes de añadir canales",
+      title: "Usamos una pequeña cookie para que tus cuentas rastreadas sean tuyas",
+      body:
+        "ClipsTrack usa una cookie (ct_uid) para que las cuentas que añades queden ligadas a ti en este dispositivo. Solo rastrea estadísticas públicas de vídeo (vistas, likes y comentarios) de los canales que elijas añadir. Nunca lee datos privados de tu cuenta.",
+      allow: "Permitir",
+      decline: "Rechazar",
+      blockedTitle: "Acepta para continuar",
+      blockedBody:
+        "Añadir canales requiere tu aceptación del aviso de cookies. Puedes cambiar de opinión más tarde: no se rastrea nada hasta que aceptes.",
+      note: "Acepta el aviso de cookies para añadir canales.",
+    },
     fmt: { ago: "atrás", growthUnit: "/h" },
   },
   ja: {
@@ -776,6 +800,18 @@ export const dictionaries = {
       left: "今日のInstagram/TikTokはあと {left} クレジット",
       limitReached:
         "Instagram/TikTokの1日の上限に達しました。YouTubeは引き続き動作します。深夜0時(IST)にリセットされます。",
+    },
+    consent: {
+      eyebrow: "チャンネルを追加する前に",
+      title: "追跡したアカウントを守るために、小さなCookieを使います",
+      body:
+        "ClipsTrackは、追加したアカウントがこの端末上で自分専用になるよう、1つのCookie（ct_uid）を使います。追跡するのは、追加したチャンネルの公開動画統計（再生数・いいね・コメント）だけです。プライベートなアカウント情報を読み取ることはありません。",
+      allow: "許可する",
+      decline: "拒否する",
+      blockedTitle: "続けるには同意が必要です",
+      blockedBody:
+        "チャンネルを追加するにはCookie通知への同意が必要です。後でいつでも変更できます。同意するまで何も追跡されません。",
+      note: "Cookie通知に同意するとチャンネルを追加できます。",
     },
     fmt: { ago: "前", growthUnit: "/h" },
   },
@@ -1031,6 +1067,18 @@ export const dictionaries = {
       limitReached:
         "Limite quotidienne d'Instagram/TikTok atteinte. YouTube continue de fonctionner. Reprend à minuit (IST).",
     },
+    consent: {
+      eyebrow: "Avant d'ajouter des chaînes",
+      title: "Nous utilisons un petit cookie pour garder vos comptes suivis",
+      body:
+        "ClipsTrack utilise un cookie (ct_uid) pour que les comptes que vous ajoutez restent liés à vous sur cet appareil. Il ne suit que des statistiques publiques de vidéos (vues, likes, commentaires) des chaînes que vous choisissez d'ajouter. Il ne lit jamais vos données privées.",
+      allow: "Autoriser",
+      decline: "Refuser",
+      blockedTitle: "Merci d'accepter pour continuer",
+      blockedBody:
+        "Ajouter des chaînes nécessite votre accord sur l'avis concernant les cookies. Vous pouvez changer d'avis plus tard - rien n'est suivi tant que vous n'acceptez pas.",
+      note: "Acceptez l'avis concernant les cookies pour ajouter des chaînes.",
+    },
     fmt: { ago: "il y a", growthUnit: "/h" },
   },
   de: {
@@ -1283,6 +1331,18 @@ export const dictionaries = {
       left: "Noch {left} Credits für Instagram/TikTok heute",
       limitReached:
         "Tageslimit für Instagram/TikTok erreicht. YouTube läuft weiter. Um Mitternacht (IST) geht es weiter.",
+    },
+    consent: {
+      eyebrow: "Bevor du Kanäle hinzufügst",
+      title: "Wir verwenden ein kleines Cookie, damit deine getrackten Konten dir gehören",
+      body:
+        "ClipsTrack verwendet ein Cookie (ct_uid), damit die Kanäle, die du hinzufügst, auf diesem Gerät mit dir verbunden bleiben. Verfolgt werden ausschließlich öffentliche Videostatistiken (Aufrufe, Likes, Kommentare) für Kanäle, die du selbst hinzufügst. Private Kontodaten liest ClipsTrack nie.",
+      allow: "Erlauben",
+      decline: "Ablehnen",
+      blockedTitle: "Bitte stimme zu, um fortzufahren",
+      blockedBody:
+        "Um Kanäle hinzuzufügen, ist dein Einverständnis zum Cookie-Hinweis nötig. Du kannst deine Meinung später ändern - bis dahin wird nichts verfolgt.",
+      note: "Stimme dem Cookie-Hinweis zu, um Kanäle hinzuzufügen.",
     },
     fmt: { ago: "vor", growthUnit: "/Std." },
   },
@@ -1538,6 +1598,18 @@ export const dictionaries = {
       limitReached:
         "Limite diário de Instagram/TikTok atingido. O YouTube continua funcionando. Retoma à meia-noite (IST).",
     },
+    consent: {
+      eyebrow: "Antes de adicionar canais",
+      title: "Usamos um pequeno cookie para que suas contas rastreadas continuem suas",
+      body:
+        "O ClipsTrack usa um cookie (ct_uid) para que as contas que você adiciona fiquem ligadas a você neste dispositivo. Ele só rastreia estatísticas públicas de vídeo (visualizações, curtidas e comentários) dos canais que você escolher adicionar. Nunca lê dados privados da conta.",
+      allow: "Permitir",
+      decline: "Recusar",
+      blockedTitle: "Aceite para continuar",
+      blockedBody:
+        "Para adicionar canais, é preciso aceitar o aviso de cookies. Você pode mudar de ideia depois - nada é rastreado até você aceitar.",
+      note: "Aceite o aviso de cookies para adicionar canais.",
+    },
     fmt: { ago: "há", growthUnit: "/h" },
   },
   ko: {
@@ -1788,6 +1860,18 @@ export const dictionaries = {
       left: "오늘 Instagram/TikTok에 쓸 수 있는 크레딧 {left}개",
       limitReached:
         "Instagram/TikTok 일일 한도에 도달했습니다. YouTube는 계속 작동합니다. 인도 표준시(IST) 자정에 재개됩니다.",
+    },
+    consent: {
+      eyebrow: "채널을 추가하기 전에",
+      title: "추적한 계정이 내 것이라는 것을 보장하기 위해 작은 쿠키를 사용합니다",
+      body:
+        "ClipsTrack은 쿠키(ct_uid) 하나로, 추가한 계정이 이 기기에서 나의 것으로 유지되도록 합니다. 추가한 채널의 공개 동영상 통계(조회수, 좋아요, 댓글)만 추적하며, 비공개 계정 데이터는 읽지 않습니다.",
+      allow: "허용",
+      decline: "거부",
+      blockedTitle: "계속하려면 동의해 주세요",
+      blockedBody:
+        "채널을 추가하려면 쿠키 안내에 동의해야 합니다. 나중에 언제든 마음을 바꿀 수 있으며, 동의하기 전에는 아무것도 추적되지 않습니다.",
+      note: "쿠키 안내에 동의하면 채널을 추가할 수 있습니다.",
     },
     fmt: { ago: "전", growthUnit: "/h" },
   },
@@ -2042,6 +2126,18 @@ export const dictionaries = {
       left: "Rimangono {left} crediti per Instagram/TikTok oggi",
       limitReached:
         "Limite giornaliero di Instagram/TikTok raggiunto. YouTube continua a funzionare. Riprende a mezzanotte (IST).",
+    },
+    consent: {
+      eyebrow: "Prima di aggiungere canali",
+      title: "Usiamo un piccolo cookie per mantenere tuoi gli account che tracci",
+      body:
+        "ClipsTrack usa un cookie (ct_uid) perché gli account che aggiungi restino legati a te su questo dispositivo. Traccia solo statistiche pubbliche dei video (visualizzazioni, like, commenti) dei canali che scegli di aggiungere. Non legge mai dati privati dell'account.",
+      allow: "Consenti",
+      decline: "Rifiuta",
+      blockedTitle: "Accetta per continuare",
+      blockedBody:
+        "Per aggiungere canali serve il tuo consenso all'informativa sui cookie. Puoi cambiare idea in seguito: non viene tracciato nulla finché non accetti.",
+      note: "Accetta l'informativa sui cookie per aggiungere canali.",
     },
     fmt: { ago: "fa", growthUnit: "/h" },
   },

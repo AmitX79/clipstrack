@@ -18,7 +18,19 @@ import {
   PLATFORM_VALUES,
 } from "@/lib/types";
 import type { PlatformValue } from "@/lib/types";
-import { ensureVisitorId } from "@/lib/visitor";
+import { getVisitorId, setConsent, setVisitorId } from "@/lib/visitor";
+import { touchActivity } from "@/lib/usercode";
+
+// Called when a visitor keeps cookies on (or refreshes the consent banner
+// mid-flow). Writes the ct_consent choice AND the ct_uid identity cookie so
+// the /accounts page resolves a stable User ID. Never called for declined
+// visitors — those get no cookies at all from this action.
+export async function allowConsent(): Promise<void> {
+  const existing = getVisitorId();
+  const id = existing ?? crypto.randomUUID();
+  setVisitorId(id);
+  setConsent("1");
+}
 
 export type AddChannelsResult =
   | { ok: true; added: string[]; message: string }
@@ -139,7 +151,15 @@ export async function addChannels(
     return { ok: false, error: "Enter at least one handle, e.g. @mrbeast, @veritasium." };
   }
 
-  const userId = ensureVisitorId();
+  // Consent gate (server-side): no ct_uid cookie means the visitor never
+  // agreed to the consent notice, so refuse before creating any data.
+  const userId = getVisitorId();
+  if (!userId) {
+    return {
+      ok: false,
+      error: "Please agree to the notice before adding channels.",
+    };
+  }
   const oldVideoCount = parseVideoCount(formData.get("oldVideoCount"), 8);
   // Latest window defaults back to the ongoing track whenever the counts are
   // absent — re-adding a handle must not turn tracking off unless it was set
@@ -271,6 +291,9 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
     const channel = await prisma.channel.findUnique({ where: { id } });
     if (!channel) return { ok: false, error: "Channel not found." };
 
+    // Any refresh counts as visitor activity for the inactivity cleanup.
+    await touchActivity(channel.userId);
+
     // Instagram/TikTok refreshes cost credits against the visitor's daily
     // ScrapeCreators budget. YouTube is never credit-gated.
     if (channel.platform === "YOUTUBE") {
@@ -358,6 +381,9 @@ export async function editChannel(
       data: { oldVideoCount, latestVideoCount, minLikeRatio },
     });
 
+    // Editing a channel counts as visitor activity for the inactivity cleanup.
+    await touchActivity(channel.userId);
+
     // Lowered window on either bucket? Trim to that bucket's own rule
     // (publish date vs addedAt) immediately — never a cross-bucket move.
     await trimBucketToCount(channel.id, true, channel.oldVideoCount, channel.createdAt);
@@ -389,6 +415,8 @@ export async function editChannel(
 export async function removeChannel(id: string): Promise<EditChannelResult> {
   try {
     const channel = await prisma.channel.delete({ where: { id } });
+    // Removing counts as visitor activity for the inactivity cleanup.
+    await touchActivity(channel.userId).catch(() => {});
     revalidateAccountPages();
     return { ok: true, channel: `@${channel.username}` };
   } catch (err) {

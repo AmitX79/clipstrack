@@ -60,3 +60,16 @@ export async function ensureUserCode(
   }
   return derived;
 }
+
+// Stamp the visitor's User row as active (any page load, add, refresh, edit or
+// remove). The daily inactivity cleanup deletes visitors whose lastActive is
+// older than INACTIVE_DAYS, so every real interaction keeps their data alive.
+// Creates the row if the visitor has not added anything yet (loading /accounts
+// alone counts as activity).
+export async function touchActivity(userId: string): Promise<void> {
+  await prisma.user.upsert({
+    where: { id: userId },
+    create: { id: userId, lastActive: new Date() },
+    update: { lastActive: new Date() },
+  });
+}

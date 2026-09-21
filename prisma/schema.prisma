@@ -40,10 +40,15 @@ model User {
   // the ip+ct_uid combo hash is captured at request time (add/edit/refresh)
   // and re-used by the cron so background syncs share the visitor's budget.
   comboHash String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  channels  Channel[]
+  // Last sign of activity (any page load / add / refresh / edit / remove).
+  // The daily cleanup cron deletes visitors who have been still for
+  // INACTIVE_DAYS (5) consecutive days.
+  lastActive DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  channels    Channel[]
 
+  @@index([lastActive])
   @@map("users")
 }
 
@@ -158,22 +163,58 @@ model VideoSnapshot {
 
 // One row per visitor (ct_uid). `code` is the short shareable User ID shown on
 // /accounts (e.g. "CT-X7K9P2") so users can hand it to an admin. The admin
-// "Grant credits" panel uses it to find the visitor: `limitOverride` replaces
-// the global daily credit limit for this visitor, and `bonusCredits` is a
-// one-time top-up pool that is only drained after the daily allowance is
-// exhausted (so it does NOT renew each day). `comboHash` tracks the visitor's
-// current identity so the admin panel can read their daily usage.
+// "Grant credits" panel uses it to find the visitor: `dailyOverride` is the
+// visitor's PERMANENT daily credit limit — it replaces the global daily limit
+// for this visitor every day until an admin changes or clears it (it does NOT
+// reset at midnight). `bonusCredits` is a one-time top-up pool that is only
+// drained after the daily allowance is exhausted (so it does NOT renew each
+// day). `comboHash` tracks the visitor's current identity so the admin panel
+// can read their daily usage.
 model UserCode {
-  id            String   @id @default(cuid(2))
-  code          String   @unique
-  userId        String   @unique
-  comboHash     String?
-  limitOverride Int?
-  bonusCredits  Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(cuid(2))
+  code         String   @unique
+  userId       String   @unique
+  comboHash    String?
+  dailyOverride Int?
+  bonusCredits Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@map("user_codes")
+}
+
+// Admin grant/override audit trail. One row per credit change ever made
+// (bonus top-up, or permanent daily limit set/cleared). Keep rows even after
+// the visitor's records are purged by the inactivity cleanup — this history is
+// the reference for "what was ever granted". Intentionally NOT a Prisma
+// relation, so a user_codes delete never cascades the audit trail away.
+model GrantHistory {
+  id        String    @id @default(cuid(2))
+  userId    String
+  type      GrantType
+  amount    Int // bonus: credits given; OVERRIDE: new limit, 0 = cleared
+  grantedAt DateTime  @default(now())
+
+  @@index([userId, grantedAt])
+  @@index([grantedAt])
+  @@map("grant_history")
+}
+
+enum GrantType {
+  BONUS
+  OVERRIDE
+}
+
+// Daily inactivity cleanup summary. One row per run with only counts — the
+// requirement explicitly wants a summary, not per-user deletion history.
+model CleanupLog {
+  id              String   @id @default(cuid(2))
+  runAt           DateTime @default(now())
+  deletedUsers    Int      @default(0)
+  deletedChannels Int      @default(0)
+
+  @@index([runAt])
+  @@map("cleanup_logs")
 }
 
 // ---- Daily credits ---------------------------------------------------------

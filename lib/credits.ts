@@ -62,15 +62,15 @@ export function requestComboHash(uid: string): string {
 // no request IP) can attribute background syncs to the same budget. No-op-ish
 // when the value is unchanged; the upsert also guarantees the row exists. The
 // visitor's UserCode row is created/kept in sync so admin grants (bonus top-up,
-// per-user limit override) always resolve against the current identity.
+// permanent daily limit) always resolve against the current identity.
 export async function recordAttribution(
   userId: string,
   combo: string,
 ): Promise<void> {
   await prisma.user.upsert({
     where: { id: userId },
-    create: { id: userId, comboHash: combo },
-    update: { comboHash: combo },
+    create: { id: userId, comboHash: combo, lastActive: new Date() },
+    update: { comboHash: combo, lastActive: new Date() },
   });
   await ensureUserCode(userId, combo);
 }
@@ -112,14 +112,15 @@ export interface CreditsStatus {
   remaining: number;
 }
 
-// Effective daily budget for a combo: the visitor's per-user override if one
-// was granted on /admin, else the global limit, plus any one-time bonus top-up.
+// Effective daily budget for a combo: the visitor's permanent per-user daily
+// limit (dailyOverride) if one was set on /admin, else the global limit, plus
+// any one-time bonus top-up.
 // resolveUserBudget expects an already-fetched UserCode row (null when none).
 function budgetFromUserCode(
   globalLimit: number,
-  userCode: { limitOverride: number | null; bonusCredits: number } | null,
+  userCode: { dailyOverride: number | null; bonusCredits: number } | null,
 ): number {
-  const base = userCode?.limitOverride ?? globalLimit;
+  const base = userCode?.dailyOverride ?? globalLimit;
   return base + (userCode?.bonusCredits ?? 0);
 }
 
@@ -147,8 +148,8 @@ export async function getCreditsStatus(
 // rolling over between reads and writes: the unique key pins the write to the
 // day it was started on. Grant credits on /admin live as a one-time bonus pool
 // on the visitor's UserCode: usage beyond the daily allowance drains the pool
-// (so a top-up does not renew every day), while a per-user override simply
-// replaces the global daily limit for that visitor.
+// (so a top-up does not renew every day), while a permanent dailyOverride
+// simply replaces the global daily limit for that visitor.
 export async function consumeCredits(
   combo: string,
   count: number,
@@ -175,7 +176,7 @@ export async function consumeCredits(
         where: { id: row.id },
         data: { creditsUsed: usedAfter },
       });
-      const base = userCode?.limitOverride ?? globalLimit;
+      const base = userCode?.dailyOverride ?? globalLimit;
       const excess = Math.max(0, usedAfter - base);
       const bonusAfter = Math.max(0, (userCode?.bonusCredits ?? 0) - excess);
       if (userCode && bonusAfter !== userCode.bonusCredits) {

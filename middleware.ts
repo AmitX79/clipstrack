@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { DEFAULT_LOCALE } from "@/lib/i18n";
-import { VISITOR_COOKIE } from "@/lib/visitor";
 
 // Routes that live at bare paths in the default locale (English). Every other
 // locale keeps its /{locale} prefix and resolves through the dynamic [locale]
@@ -20,24 +19,12 @@ const BARE_PATHS = [
 // /{locale} prefix. Bare paths are rewritten onto the English route so one
 // route tree serves both, and any `/en`-prefixed URL is canonicalized onto the
 // bare path.
+//
+// Note: no cookies are set here anymore. The ct_uid identity cookie is only
+// written once the visitor grants consent (allowConsent server action), never
+// on first sight.
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-
-  // First visit to any page (no ct_uid yet): issue the per-visitor id cookie
-  // so /accounts can show a stable "Your ID: CT-XXXXXX" without a hydration
-  // round-trip. Server Components can't call cookies().set(), middleware can.
-  const visitorIdMissing = !request.cookies.has(VISITOR_COOKIE);
-  const withVisitorCookie = (response: NextResponse) => {
-    if (visitorIdMissing) {
-      response.cookies.set(VISITOR_COOKIE, crypto.randomUUID(), {
-        httpOnly: true,
-        sameSite: "lax",
-        maxAge: 60 * 60 * 24 * 365, // 1 year, so tracked accounts persist
-        path: "/",
-      });
-    }
-    return response;
-  };
 
   // The accounts page was renamed from /tracked. Redirect every old URL —
   // bare, /en-prefixed, or any /{locale} variant — so bookmarks keep working.
@@ -46,7 +33,7 @@ export function middleware(request: NextRequest) {
     const locale = base === "" || base === "/en" ? "" : base;
     const url = request.nextUrl.clone();
     url.pathname = `${locale}/accounts`;
-    return withVisitorCookie(NextResponse.redirect(url, 308));
+    return NextResponse.redirect(url, 308);
   }
 
   // Canonicalize /en-prefixed URLs onto the bare path. Only known bare paths
@@ -60,14 +47,14 @@ export function middleware(request: NextRequest) {
   if (bare && (BARE_PATHS as readonly string[]).includes(bare)) {
     const url = request.nextUrl.clone();
     url.pathname = bare;
-    return withVisitorCookie(NextResponse.redirect(url, 308));
+    return NextResponse.redirect(url, 308);
   }
 
   // Every other bare path rewrites onto the default (English) route.
   const url = request.nextUrl.clone();
   url.pathname =
     pathname === "/" ? `/${DEFAULT_LOCALE}` : `/${DEFAULT_LOCALE}${pathname}`;
-  return withVisitorCookie(NextResponse.rewrite(url));
+  return NextResponse.rewrite(url);
 }
 
 export const config = {

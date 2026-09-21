@@ -1,8 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useRef, useState, useTransition } from "react";
 import { addChannels } from "@/app/actions";
+import { useConsent } from "@/components/ConsentGate";
 import {
   detectProfileUrl,
   isUrlLike,
@@ -27,10 +28,12 @@ export function AddChannelBar({
 }) {
   const dict = getDictionary(locale);
   const router = useRouter();
+  const { status, requestConsent } = useConsent();
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [platform, setPlatform] = useState<PlatformValue>("YOUTUBE");
   const [isPending, startTransition] = useTransition();
+  const formRef = useRef<HTMLFormElement | null>(null);
 
   function onUsernamesChange(event: React.ChangeEvent<HTMLInputElement>) {
     const tokens = event.target.value.split(/[\s,;]+/).filter(Boolean);
@@ -68,18 +71,22 @@ export function AddChannelBar({
     }
 
     // Capture the form before awaiting — React nulls `event.currentTarget`
-    // once the synchronous handler returns.
+    // once the synchronous handler returns. Kept in a ref too so the pending
+    // re-submit (after consent is granted) can still reset the fields.
     const form = event.currentTarget;
+    formRef.current = form;
     const formData = new FormData(form);
-    startTransition(async () => {
-      const result = await addChannels(formData);
-      if (!result.ok) {
-        setError(result.error);
-        return;
-      }
-      form.reset();
-      setMessage(result.message);
-      router.refresh();
+    requestConsent(() => {
+      startTransition(async () => {
+        const result = await addChannels(formData);
+        if (!result.ok) {
+          setError(result.error);
+          return;
+        }
+        formRef.current?.reset();
+        setMessage(result.message);
+        router.refresh();
+      });
     });
   }
 
@@ -207,6 +214,11 @@ export function AddChannelBar({
           </p>
         )}
       </div>
+      {status !== "granted" && (
+        <p className="text-sm text-warning-deep" role="note">
+          {dict.consent.note}
+        </p>
+      )}
       <p className="text-base text-mute">{dict.add.helper}</p>
     </form>
   );

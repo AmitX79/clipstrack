@@ -15,7 +15,7 @@ import {
   tpl,
 } from "@/lib/i18n";
 import { getVisitorId } from "@/lib/visitor";
-import { ensureUserCode } from "@/lib/usercode";
+import { ensureUserCode, touchActivity } from "@/lib/usercode";
 import {
   comboHash,
   getClientIp,
@@ -64,6 +64,8 @@ export default async function TrackedPage({
       channels = await loadChannels(userId);
       userCode = await ensureUserCode(userId, comboHash(getClientIp(), userId));
       credits = await getCreditsStatus(comboHash(getClientIp(), userId));
+      // Loading /accounts counts as activity for the inactivity cleanup.
+      await touchActivity(userId);
     } catch (err) {
       console.error("[accounts] db query failed:", err);
       dbError = true;
