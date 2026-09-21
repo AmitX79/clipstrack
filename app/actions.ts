@@ -20,6 +20,7 @@ import {
 import type { PlatformValue } from "@/lib/types";
 import { getVisitorId, setConsent, setVisitorId } from "@/lib/visitor";
 import { touchActivity } from "@/lib/usercode";
+import { getMaxChannelsPerUser } from "@/lib/channels";
 
 // Called when a visitor keeps cookies on (or refreshes the consent banner
 // mid-flow). Writes the ct_consent choice AND the ct_uid identity cookie so
@@ -166,6 +167,24 @@ export async function addChannels(
   // to 0 explicitly.
   const latestVideoCount = parseVideoCount(formData.get("latestVideoCount"), 8);
   const minLikeRatio = parseMinLikeRatio(formData.get("minLikeRatio"));
+
+  // Per-visitor channel cap (scaling guard): only genuinely new channels count,
+  // since re-adding an existing handle/URL updates that row in place.
+  const maxChannels = await getMaxChannelsPerUser();
+  const tracked = await prisma.channel.findMany({
+    where: { userId },
+    select: { platform: true, username: true },
+  });
+  const trackedKeys = new Set(tracked.map((c) => `${c.platform}:${c.username}`));
+  const newChannels = handles.filter(
+    (h) => !trackedKeys.has(`${h.platform}:${h.username}`),
+  ).length;
+  if (trackedKeys.size + newChannels > maxChannels) {
+    return {
+      ok: false,
+      error: `You can track up to ${maxChannels} channels. Remove some before adding more.`,
+    };
+  }
 
   try {
     await prisma.user.createMany({ data: [{ id: userId }], skipDuplicates: true });

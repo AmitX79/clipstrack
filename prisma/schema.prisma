@@ -279,3 +279,26 @@ model ScrapeKey {
   @@unique([key])
   @@map("scrape_keys")
 }
+
+// Official YouTube Data API v3 keys, managed from /admin. Each key carries its
+// own 10,000 units/day free quota, so rotating across keys multiplies the
+// effective daily capacity — the single global quota was the scaling ceiling.
+// `unitsUsed` is the count for `quotaDate` (IST day) and is reset lazily when
+// the day rolls over. `quotaExhausted` is set when a key reaches its daily
+// limit (or the API returns a quota/permission error) so the client rotates to
+// the next key; it clears on the next day (or when an admin re-enables it).
+model YoutubeKey {
+  id             String    @id @default(cuid(2))
+  label          String
+  key            String
+  active         Boolean   @default(true)
+  quotaExhausted Boolean   @default(false)
+  unitsUsed      Int       @default(0)
+  quotaDate      String? // IST date (YYYY-MM-DD) the unitsUsed counter belongs to
+  lastUsedAt     DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([key])
+  @@map("youtube_keys")
+}

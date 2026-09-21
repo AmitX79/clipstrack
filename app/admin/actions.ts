@@ -249,6 +249,57 @@ export async function toggleScrapeKey(id: string): Promise<AdminResult> {
   return { ok: true };
 }
 
+// ---- YouTube Data API keys -------------------------------------------------
+// Each key adds its own 10,000 units/day capacity; rotation lives in
+// lib/youtubekeys. Adding/toggling/removing here is the same shape as the
+// ScrapeCreators keys above.
+
+export async function addYoutubeKey(
+  label: string,
+  key: string,
+): Promise<AdminResult> {
+  if (!isAdmin()) return NOT_SIGNED_IN;
+  const cleanLabel = label.trim();
+  const cleanKey = key.trim();
+  if (!cleanLabel) return { ok: false, error: "Give the key a label." };
+  if (cleanLabel.length > 60) {
+    return { ok: false, error: "Label must be 60 characters or fewer." };
+  }
+  if (!cleanKey || cleanKey.length < 8) {
+    return { ok: false, error: "That does not look like a real API key." };
+  }
+  try {
+    await prisma.youtubeKey.create({
+      data: { label: cleanLabel, key: cleanKey },
+    });
+  } catch {
+    return { ok: false, error: "That key is already stored." };
+  }
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+export async function removeYoutubeKey(id: string): Promise<AdminResult> {
+  if (!isAdmin()) return NOT_SIGNED_IN;
+  await prisma.youtubeKey.deleteMany({ where: { id } });
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
+export async function toggleYoutubeKey(id: string): Promise<AdminResult> {
+  if (!isAdmin()) return NOT_SIGNED_IN;
+  const row = await prisma.youtubeKey.findUnique({ where: { id } });
+  if (!row) return { ok: false, error: "That key no longer exists." };
+  await prisma.youtubeKey.update({
+    where: { id },
+    // Re-enabling also clears the exhausted flag so the key returns to rotation
+    // without waiting for the next day.
+    data: { active: !row.active, quotaExhausted: false },
+  });
+  revalidatePath("/admin");
+  return { ok: true };
+}
+
 export async function refreshBalancesNow(): Promise<AdminResult> {
   if (!isAdmin()) return NOT_SIGNED_IN;
   try {

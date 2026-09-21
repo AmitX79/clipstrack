@@ -22,6 +22,11 @@ import type {
   PlatformFetcher,
 } from "./types";
 import { recordYoutubeQuota } from "./youtubequota";
+import {
+  markYoutubeKeyExhausted,
+  nextYoutubeKey,
+  recordYoutubeUnits,
+} from "./youtubekeys";
 
 export const PLATFORM = "youtube" as const;
 
@@ -82,22 +87,52 @@ function parseIsoDuration(iso: string | undefined): number | undefined {
   );
 }
 
+// Rotate across the managed API keys: each call uses the enabled key with the
+// most quota left, bills one unit to it, and on a quota/permission failure
+// retires that key and retries with the next one. The whole app's daily
+// capacity is therefore (number of active keys) x 10,000 units.
 async function get<T>(path: string): Promise<T> {
-  const apiKey = process.env.YOUTUBE_API_KEY;
-  if (!apiKey) throw new Error("YOUTUBE_API_KEY is not set");
+  let lastError = "No YouTube API key is configured.";
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const keyRow = await nextYoutubeKey();
+    if (!keyRow) {
+      throw new Error(
+        "YouTube API daily quota reached on every key - resumes after the quota resets.",
+      );
+    }
 
-  const url = `${API_BASE}${path}${path.includes("?") ? "&" : "?"}key=${apiKey}`;
-  const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
-  // Every call that reaches the API counts toward the 10,000 units/day quota
-  // (channels.list, playlistItems.list and videos.list each cost 1 unit),
-  // whether it succeeds or the API rejects it. Best-effort bookkeeping.
-  await recordYoutubeQuota(1).catch(() => undefined);
-  if (!res.ok) {
-    throw new Error(`YouTube API ${path} returned ${res.status}`);
+    const url = `${API_BASE}${path}${path.includes("?") ? "&" : "?"}key=${keyRow.key}`;
+    const res = await fetch(url, { signal: AbortSignal.timeout(15_000) });
+    // Every call that reaches the API counts toward the quota (channels.list,
+    // playlistItems.list and videos.list each cost 1 unit), whether it succeeds
+    // or the API rejects it. Best-effort bookkeeping, globally and per key.
+    await recordYoutubeQuota(1).catch(() => undefined);
+    await recordYoutubeUnits(keyRow.id, 1).catch(() => undefined);
+
+    if (!res.ok) {
+      // 403 = daily quota exceeded for this key (or a bad/disabled key): retire
+      // it and try the next one. Other statuses (404/5xx) are not key-specific.
+      if (res.status === 403) {
+        await markYoutubeKeyExhausted(keyRow.id);
+        lastError = `YouTube API ${path} returned ${res.status}`;
+        continue;
+      }
+      throw new Error(`YouTube API ${path} returned ${res.status}`);
+    }
+
+    const json = (await res.json()) as { error?: { message?: string } };
+    if (json.error) {
+      const message = json.error.message ?? "unknown error";
+      if (/quota|exceeded|disabled|invalid|permission/i.test(message)) {
+        await markYoutubeKeyExhausted(keyRow.id);
+        lastError = `YouTube API error: ${message}`;
+        continue;
+      }
+      throw new Error(`YouTube API error: ${message}`);
+    }
+    return json as T;
   }
-  const json = (await res.json()) as { error?: { message?: string } };
-  if (json.error) throw new Error(`YouTube API error: ${json.error.message}`);
-  return json as T;
+  throw new Error(lastError);
 }
 
 export const fetchYouTubeChannel: PlatformFetcher = async (username, limit) => {

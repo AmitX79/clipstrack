@@ -2,13 +2,15 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { prisma } from "@/lib/db";
 import { getDailyLimit, istDateKey } from "@/lib/credits";
-import { getYoutubeQuotaStatus } from "@/lib/youtubequota";
+import { adminYoutubeKeys, getYoutubeQuotaSummary } from "@/lib/youtubekeys";
 import { isAdmin } from "@/lib/admin";
 import { adminScrapeKeys, refreshKeyBalances } from "@/lib/scrapekeys";
 import { adminLogout } from "./actions";
 import { AdminLoginForm } from "./AdminLoginForm";
 import { AddKeyForm } from "./AddKeyForm";
+import { AddYoutubeKeyForm } from "./AddYoutubeKeyForm";
 import { KeyRow } from "./KeyRow";
+import { YoutubeKeyRow } from "./YoutubeKeyRow";
 import { LimitForm } from "./LimitForm";
 import { GrantCredits } from "./GrantCredits";
 import { RefreshAllButton } from "./RefreshAllButton";
@@ -73,6 +75,7 @@ export default async function AdminPage() {
     activeCombos,
     keys,
     youtubeQuota,
+    youtubeKeys,
   ] = await Promise.all([
     getDailyLimit(),
     prisma.creditUsage.aggregate({
@@ -93,7 +96,8 @@ export default async function AdminPage() {
       }
       return adminScrapeKeys();
     })(),
-    getYoutubeQuotaStatus(),
+    getYoutubeQuotaSummary(),
+    adminYoutubeKeys(),
   ]);
   const creditsToday = creditsTodayAgg._sum.creditsUsed ?? 0;
 
@@ -166,9 +170,12 @@ export default async function AdminPage() {
               </span>
             </p>
             <p className="mt-3 text-xs text-faint">
-              Official YouTube Data API v3 budget (channels.list,
-              playlistItems.list and videos.list each cost 1 unit). YouTube
-              syncs never touch the per-visitor ScrapeCreators credit limit.
+              Official YouTube Data API v3 budget across{" "}
+              {youtubeQuota.activeKeys} active key
+              {youtubeQuota.activeKeys === 1 ? "" : "s"} (channels.list,
+              playlistItems.list and videos.list each cost 1 unit; 10,000/day
+              per key). YouTube syncs never touch the per-visitor ScrapeCreators
+              credit limit.
             </p>
           </Card>
         </div>
@@ -211,6 +218,50 @@ export default async function AdminPage() {
             <p className="mt-3 text-xs text-faint">
               Keys are stored server-side and rotate automatically when one
               runs out of credits.
+            </p>
+          </Card>
+        </div>
+
+        <div className="mt-4 grid gap-4 lg:grid-cols-2">
+          <Card title="YouTube Data API keys">
+            <div className="flex flex-col gap-2">
+              {youtubeKeys.length === 0 ? (
+                <p className="text-sm text-mute">
+                  No keys yet - one is seeded from YOUTUBE_API_KEY on first use.
+                  Add more below to raise the daily ceiling.
+                </p>
+              ) : (
+                <ul className="flex flex-col divide-y divide-hairline">
+                  {youtubeKeys.map((key) => (
+                    <YoutubeKeyRow
+                      key={key.id}
+                      item={{
+                        id: key.id,
+                        label: key.label,
+                        keyMasked: key.keyMasked,
+                        active: key.active,
+                        quotaExhausted: key.quotaExhausted,
+                        unitsUsed: key.unitsUsed,
+                        limit: key.limit,
+                        lastUsedAt: key.lastUsedAt
+                          ? key.lastUsedAt.toISOString()
+                          : null,
+                        createdAt: key.createdAt.toISOString(),
+                      }}
+                    />
+                  ))}
+                </ul>
+              )}
+            </div>
+          </Card>
+
+          <Card title="Add YouTube Data API key">
+            <AddYoutubeKeyForm />
+            <p className="mt-3 text-xs text-faint">
+              Each key adds 10,000 units/day. Rotation uses the key with the most
+              quota left, so the app&apos;s total YouTube capacity is the number
+              of enabled keys x 10,000 units/day. Create keys in Google Cloud
+              Console with the YouTube Data API v3 enabled.
             </p>
           </Card>
         </div>

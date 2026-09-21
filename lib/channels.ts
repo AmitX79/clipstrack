@@ -5,6 +5,31 @@ import type { Prisma } from "@/app/generated/prisma/client";
 
 export const GROUP_ORDER = PLATFORM_VALUES;
 
+// Per-visitor cap on tracked channels — a scaling guard so one visitor cannot
+// queue an unbounded number of channels into the hourly sync (and burn the
+// shared YouTube/ScrapeCreators quota). Editable via the `settings` table;
+// self-seeds to the default on first read.
+export const SETTING_MAX_CHANNELS = "maxChannelsPerUser";
+export const DEFAULT_MAX_CHANNELS = 50;
+
+export async function getMaxChannelsPerUser(): Promise<number> {
+  const row = await prisma.setting.findUnique({
+    where: { key: SETTING_MAX_CHANNELS },
+  });
+  if (row) {
+    const n = Number(row.value);
+    if (Number.isInteger(n) && n > 0) return n;
+  }
+  await prisma.setting
+    .upsert({
+      where: { key: SETTING_MAX_CHANNELS },
+      create: { key: SETTING_MAX_CHANNELS, value: String(DEFAULT_MAX_CHANNELS) },
+      update: {},
+    })
+    .catch(() => {});
+  return DEFAULT_MAX_CHANNELS;
+}
+
 // Videos carry their two latest snapshots so cards can show both the current
 // stats and the per-hour growth between them. BigInt/Date values are
 // serialized here so the data is safe to pass into client components.
