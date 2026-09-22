@@ -64,7 +64,7 @@ export function FooterLanguageSelect({
         ? pathname
         : pathname.replace(new RegExp(`^/${locale}`), "") || "/";
     setOpen(false);
-    window.location.href = localizedHref(next, rest === "/" ? "" : rest);
+    window.location.assign(localizedHref(next, rest === "/" ? "" : rest));
   }
 
   return (

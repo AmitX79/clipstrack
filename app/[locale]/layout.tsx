@@ -16,12 +16,13 @@ export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
 }
 
-export function generateMetadata({
+export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
-}): Metadata {
-  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   const dict = getDictionary(locale);
   const languages = Object.fromEntries(
     LOCALES.map((l) => [l, localizedHref(l, "")]),
@@ -72,14 +73,15 @@ const OG_LOCALES: Record<Locale, string> = {
   it: "it_IT",
 };
 
-export default function LocaleLayout({
+export default async function LocaleLayout({
   children,
   params,
 }: Readonly<{
   children: React.ReactNode;
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }>) {
-  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   return (
     <>
       <script

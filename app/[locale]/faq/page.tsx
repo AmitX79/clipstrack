@@ -22,12 +22,13 @@ function buildFaqs(dict: Dictionary): { q: string; a: string }[] {
   });
 }
 
-export function generateMetadata({
+export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
-}): Metadata {
-  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   const dict = getDictionary(locale);
   const languages = Object.fromEntries(
     LOCALES.map((l) => [l, localizedHref(l, "/faq")]),
@@ -45,8 +46,13 @@ export function generateMetadata({
   };
 }
 
-export default function FaqPage({ params }: { params: { locale: string } }) {
-  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
+export default async function FaqPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   const dict = getDictionary(locale);
   const faqs = buildFaqs(dict);
 

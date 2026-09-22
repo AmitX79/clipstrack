@@ -3,11 +3,21 @@
 import { revalidatePath } from "next/cache";
 import { timingSafeEqual } from "crypto";
 import { cookies } from "next/headers";
-import { prisma } from "@/lib/db";
-import { GrantType } from "@/app/generated/prisma/client";
+import { id, query, queryOne, tx } from "@/lib/db";
 import { ADMIN_COOKIE, adminSecretHash, isAdmin } from "@/lib/admin";
 import { SETTING_DAILY_LIMIT, getDailyLimit, istDateKey } from "@/lib/credits";
 import { fetchKeyBalance, refreshKeyBalances } from "@/lib/scrapekeys";
+
+type GrantTypeValue = "BONUS" | "OVERRIDE";
+
+type UserCodeRow = {
+  id: string;
+  code: string;
+  userId: string;
+  comboHash: string | null;
+  dailyOverride: number | null;
+  bonusCredits: number;
+};
 
 export type AdminLoginResult = { ok: true } | { ok: false };
 export type AdminResult =
@@ -31,7 +41,7 @@ export async function adminLogin(
   if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
     return { ok: false };
   }
-  cookies().set(ADMIN_COOKIE, adminSecretHash(secret), {
+  (await cookies()).set(ADMIN_COOKIE, adminSecretHash(secret), {
     httpOnly: true,
     secure: true,
     sameSite: "lax",
@@ -42,14 +52,14 @@ export async function adminLogin(
 }
 
 export async function adminLogout(): Promise<void> {
-  cookies().delete(ADMIN_COOKIE);
+  (await cookies()).delete(ADMIN_COOKIE);
   revalidatePath("/admin");
 }
 
-const NOT_SIGNED_IN: AdminResult = {
+const NOT_SIGNED_IN = {
   ok: false,
   error: "Not signed in - sign in again and retry.",
-};
+} as const;
 
 // Short User IDs are "CT-" + 6 unambiguous chars (no 0/O/1/I).
 const USER_CODE_REGEX = /^CT-[A-Z0-9]{6}$/;
@@ -73,22 +83,25 @@ export type GrantLookupResult =
 export async function lookupUserByCode(
   raw: string,
 ): Promise<GrantLookupResult> {
+  if (!(await isAdmin())) return NOT_SIGNED_IN;
   const code = raw.trim().toUpperCase();
   if (!USER_CODE_REGEX.test(code)) {
     return { ok: false, error: "Enter a valid User ID, e.g. CT-X7K9P2." };
   }
-  const row = await prisma.userCode.findUnique({ where: { code } });
+  const row = await queryOne<UserCodeRow>(
+    `SELECT * FROM user_codes WHERE code = $1`,
+    [code],
+  );
   if (!row) {
     return { ok: false, error: `No visitor with the ID ${code} yet.` };
   }
   const [usedRow, globalLimit] = await Promise.all([
     row.comboHash
-      ? prisma.creditUsage.findUnique({
-          where: {
-            comboHash_date: { comboHash: row.comboHash, date: istDateKey() },
-          },
-        })
-      : Promise.resolve(null),
+      ? queryOne<{ creditsUsed: number }>(
+          `SELECT "creditsUsed" FROM credit_usage WHERE "comboHash" = $1 AND date = $2`,
+          [row.comboHash, istDateKey()],
+        )
+      : Promise.resolve(undefined),
     getDailyLimit(),
   ]);
   const baseLimit = row.dailyOverride ?? globalLimit;
@@ -120,12 +133,15 @@ export async function grantCredits(args: {
   addBonus: number;
   dailyOverride: number | null;
 }): Promise<AdminResult> {
-  if (!isAdmin()) return NOT_SIGNED_IN;
+  if (!(await isAdmin())) return NOT_SIGNED_IN;
   const code = args.code.trim().toUpperCase();
   if (!USER_CODE_REGEX.test(code)) {
     return { ok: false, error: "Enter a valid User ID, e.g. CT-X7K9P2." };
   }
-  const row = await prisma.userCode.findUnique({ where: { code } });
+  const row = await queryOne<UserCodeRow>(
+    `SELECT * FROM user_codes WHERE code = $1`,
+    [code],
+  );
   if (!row) return { ok: false, error: `No visitor with the ID ${code} yet.` };
   if (
     !Number.isInteger(args.addBonus) ||
@@ -151,51 +167,61 @@ export async function grantCredits(args: {
   }
   const history: {
     userId: string;
-    type: GrantType;
+    type: GrantTypeValue;
     amount: number;
   }[] = [];
   if (args.addBonus > 0) {
-    history.push({ userId: row.userId, type: GrantType.BONUS, amount: args.addBonus });
+    history.push({ userId: row.userId, type: "BONUS", amount: args.addBonus });
   }
   if (args.dailyOverride != null) {
     history.push({
       userId: row.userId,
-      type: GrantType.OVERRIDE,
+      type: "OVERRIDE",
       amount: args.dailyOverride,
     });
   } else if (row.dailyOverride != null) {
     // Explicitly cleared a previously-set permanent limit.
-    history.push({ userId: row.userId, type: GrantType.OVERRIDE, amount: 0 });
+    history.push({ userId: row.userId, type: "OVERRIDE", amount: 0 });
   }
-  await prisma.$transaction([
-    prisma.userCode.update({
-      where: { id: row.id },
-      data: { bonusCredits: { increment: args.addBonus } },
-    }),
-    prisma.userCode.update({
-      where: { id: row.id },
-      data: { dailyOverride: args.dailyOverride },
-    }),
-    ...history.map((entry) => prisma.grantHistory.create({ data: entry })),
-  ]);
+
+  const statements: { text: string; params: unknown[] }[] = [];
+  if (args.addBonus > 0) {
+    statements.push({
+      text: `UPDATE user_codes SET "bonusCredits" = "bonusCredits" + $1, "updatedAt" = now() WHERE id = $2`,
+      params: [args.addBonus, row.id],
+    });
+  }
+  statements.push({
+    text: `UPDATE user_codes SET "dailyOverride" = $1, "updatedAt" = now() WHERE id = $2`,
+    params: [args.dailyOverride, row.id],
+  });
+  for (const entry of history) {
+    statements.push({
+      text: `INSERT INTO grant_history (id, "userId", type, amount) VALUES ($1, $2, $3, $4)`,
+      params: [id(), entry.userId, entry.type, entry.amount],
+    });
+  }
+  await tx(statements);
+
   revalidatePath("/admin");
   return { ok: true };
 }
 
 // Editable daily per-IP credit limit — read at runtime by lib/credits.
 export async function updateDailyLimit(limit: number): Promise<AdminResult> {
-  if (!isAdmin()) return NOT_SIGNED_IN;
+  if (!(await isAdmin())) return NOT_SIGNED_IN;
   if (!Number.isInteger(limit) || limit < 1 || limit > 1_000_000) {
     return {
       ok: false,
       error: "Limit must be a whole number between 1 and 1,000,000.",
     };
   }
-  await prisma.setting.upsert({
-    where: { key: SETTING_DAILY_LIMIT },
-    create: { key: SETTING_DAILY_LIMIT, value: String(limit) },
-    update: { value: String(limit) },
-  });
+  await query(
+    `INSERT INTO settings (key, value, "updatedAt", "createdAt")
+     VALUES ($1, $2, now(), now())
+     ON CONFLICT (key) DO UPDATE SET value = $2, "updatedAt" = now()`,
+    [SETTING_DAILY_LIMIT, String(limit)],
+  );
   revalidatePath("/admin");
   return { ok: true };
 }
@@ -204,7 +230,7 @@ export async function addScrapeKey(
   label: string,
   key: string,
 ): Promise<AdminResult> {
-  if (!isAdmin()) return NOT_SIGNED_IN;
+  if (!(await isAdmin())) return NOT_SIGNED_IN;
   const cleanLabel = label.trim();
   const cleanKey = key.trim();
   if (!cleanLabel) return { ok: false, error: "Give the key a label." };
@@ -215,9 +241,11 @@ export async function addScrapeKey(
     return { ok: false, error: "That does not look like a real API key." };
   }
   try {
-    await prisma.scrapeKey.create({
-      data: { label: cleanLabel, key: cleanKey },
-    });
+    await query(
+      `INSERT INTO scrape_keys (id, label, key, "active", "quotaExhausted", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, true, false, now(), now())`,
+      [id(), cleanLabel, cleanKey],
+    );
   } catch {
     return { ok: false, error: "That key is already stored." };
   }
@@ -231,20 +259,23 @@ export async function addScrapeKey(
 }
 
 export async function removeScrapeKey(id: string): Promise<AdminResult> {
-  if (!isAdmin()) return NOT_SIGNED_IN;
-  await prisma.scrapeKey.deleteMany({ where: { id } });
+  if (!(await isAdmin())) return NOT_SIGNED_IN;
+  await query(`DELETE FROM scrape_keys WHERE id = $1`, [id]);
   revalidatePath("/admin");
   return { ok: true };
 }
 
 export async function toggleScrapeKey(id: string): Promise<AdminResult> {
-  if (!isAdmin()) return NOT_SIGNED_IN;
-  const row = await prisma.scrapeKey.findUnique({ where: { id } });
+  if (!(await isAdmin())) return NOT_SIGNED_IN;
+  const row = await queryOne<{ active: boolean }>(
+    `SELECT "active" FROM scrape_keys WHERE id = $1`,
+    [id],
+  );
   if (!row) return { ok: false, error: "That key no longer exists." };
-  await prisma.scrapeKey.update({
-    where: { id },
-    data: { active: !row.active },
-  });
+  await query(
+    `UPDATE scrape_keys SET "active" = $1, "updatedAt" = now() WHERE id = $2`,
+    [!row.active, id],
+  );
   revalidatePath("/admin");
   return { ok: true };
 }
@@ -258,7 +289,7 @@ export async function addYoutubeKey(
   label: string,
   key: string,
 ): Promise<AdminResult> {
-  if (!isAdmin()) return NOT_SIGNED_IN;
+  if (!(await isAdmin())) return NOT_SIGNED_IN;
   const cleanLabel = label.trim();
   const cleanKey = key.trim();
   if (!cleanLabel) return { ok: false, error: "Give the key a label." };
@@ -269,9 +300,11 @@ export async function addYoutubeKey(
     return { ok: false, error: "That does not look like a real API key." };
   }
   try {
-    await prisma.youtubeKey.create({
-      data: { label: cleanLabel, key: cleanKey },
-    });
+    await query(
+      `INSERT INTO youtube_keys (id, label, key, "active", "quotaExhausted", "unitsUsed", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, true, false, 0, now(), now())`,
+      [id(), cleanLabel, cleanKey],
+    );
   } catch {
     return { ok: false, error: "That key is already stored." };
   }
@@ -280,28 +313,29 @@ export async function addYoutubeKey(
 }
 
 export async function removeYoutubeKey(id: string): Promise<AdminResult> {
-  if (!isAdmin()) return NOT_SIGNED_IN;
-  await prisma.youtubeKey.deleteMany({ where: { id } });
+  if (!(await isAdmin())) return NOT_SIGNED_IN;
+  await query(`DELETE FROM youtube_keys WHERE id = $1`, [id]);
   revalidatePath("/admin");
   return { ok: true };
 }
 
 export async function toggleYoutubeKey(id: string): Promise<AdminResult> {
-  if (!isAdmin()) return NOT_SIGNED_IN;
-  const row = await prisma.youtubeKey.findUnique({ where: { id } });
+  if (!(await isAdmin())) return NOT_SIGNED_IN;
+  const row = await queryOne<{ active: boolean }>(
+    `SELECT "active" FROM youtube_keys WHERE id = $1`,
+    [id],
+  );
   if (!row) return { ok: false, error: "That key no longer exists." };
-  await prisma.youtubeKey.update({
-    where: { id },
-    // Re-enabling also clears the exhausted flag so the key returns to rotation
-    // without waiting for the next day.
-    data: { active: !row.active, quotaExhausted: false },
-  });
+  await query(
+    `UPDATE youtube_keys SET "active" = $1, "quotaExhausted" = false, "updatedAt" = now() WHERE id = $2`,
+    [!row.active, id],
+  );
   revalidatePath("/admin");
   return { ok: true };
 }
 
 export async function refreshBalancesNow(): Promise<AdminResult> {
-  if (!isAdmin()) return NOT_SIGNED_IN;
+  if (!(await isAdmin())) return NOT_SIGNED_IN;
   try {
     await refreshKeyBalances(true);
   } catch (err) {
@@ -319,9 +353,12 @@ export async function refreshBalancesNow(): Promise<AdminResult> {
 
 // Per-key balance refresh used by the Refresh balance control in each row.
 export async function refreshKeyBalance(id: string): Promise<BalanceResult> {
-  if (!isAdmin())
+  if (!(await isAdmin()))
     return { ok: false, error: "Not signed in - sign in again and retry." };
-  const row = await prisma.scrapeKey.findUnique({ where: { id } });
+  const row = await queryOne<{ key: string }>(
+    `SELECT key FROM scrape_keys WHERE id = $1`,
+    [id],
+  );
   if (!row) return { ok: false, error: "That key no longer exists." };
   try {
     const count = await fetchKeyBalance(row.key);
@@ -331,14 +368,12 @@ export async function refreshKeyBalance(id: string): Promise<BalanceResult> {
         error: "ScrapeCreators did not return a balance for this key.",
       };
     }
-    await prisma.scrapeKey.update({
-      where: { id },
-      data: {
-        remainingCredits: count,
-        quotaExhausted: count <= 0,
-        lastCheckedAt: new Date(),
-      },
-    });
+    await query(
+      `UPDATE scrape_keys
+       SET "remainingCredits" = $1, "quotaExhausted" = $2, "lastCheckedAt" = now(), "updatedAt" = now()
+       WHERE id = $3`,
+      [count, count <= 0, id],
+    );
     revalidatePath("/admin");
     return { ok: true, remaining: count };
   } catch (err) {

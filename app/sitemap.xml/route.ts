@@ -1,10 +1,11 @@
 import type { Locale } from "@/lib/i18n";
 import { DEFAULT_LOCALE, LOCALES, localizedHref } from "@/lib/i18n";
+import { siteUrl } from "@/lib/site";
 
 // Static at build time: the whole sitemap is known ahead of every deploy.
 export const dynamic = "force-static";
 
-const base = "https://clipstrack.vercel.app";
+const base = siteUrl();
 const lastModified = new Date().toISOString();
 
 function hrefFor(locale: Locale, path: string): string {

@@ -12,11 +12,11 @@ export function adminSecretHash(secret: string): string {
   return createHash("sha256").update(secret).digest("hex");
 }
 
-export function isAdmin(): boolean {
+export async function isAdmin(): Promise<boolean> {
   const secret = process.env.ADMIN_SECRET;
   if (!secret) return false;
   const expected = Buffer.from(adminSecretHash(secret), "utf8");
-  const got = cookies().get(ADMIN_COOKIE)?.value;
+  const got = (await cookies()).get(ADMIN_COOKIE)?.value;
   if (!got) return false;
   const actual = Buffer.from(got, "utf8");
   return (

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { isLocale, tpl } from "@/lib/i18n";
 import { getPageContent } from "@/lib/i18n/pages";
+import { checkContactLimit, getContactIp } from "@/lib/contact";
 
 export async function POST(request: Request) {
   let body: {
@@ -30,6 +31,14 @@ export async function POST(request: Request) {
     message.length > 4000
   ) {
     return NextResponse.json({ error: "invalid" }, { status: 400 });
+  }
+
+  const limit = await checkContactLimit(await getContactIp());
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: "rate_limited", remaining: limit.remaining },
+      { status: 429 },
+    );
   }
 
   // No email service is configured yet, so the API hands the message off to

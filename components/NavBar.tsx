@@ -86,6 +86,7 @@ export function NavBar({
   // Sync local toggle state after hydration (class is already set by inline
   // script in <head>, so no flash occurs — this just lets the button icon match).
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setDark(document.documentElement.classList.contains("dark"));
   }, []);
 
@@ -141,7 +142,7 @@ export function NavBar({
         : pathname.replace(new RegExp(`^/${locale}`), "") || "/";
     setLangOpen(false);
     setMenuOpen(false);
-    window.location.href = localizedHref(next, rest === "/" ? "" : rest);
+    window.location.assign(localizedHref(next, rest === "/" ? "" : rest));
   }
 
   const linkClass = (key: string) =>

@@ -42,7 +42,7 @@ export function ContactForm({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, message, locale }),
       });
-      const data = await res.json();
+      const data = (await res.json()) as { mailto?: string }; 
       if (res.ok && typeof data.mailto === "string") {
         window.location.href = data.mailto;
       } else {

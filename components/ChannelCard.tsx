@@ -298,11 +298,13 @@ function useNow(): number | null {
   const [mounted, setMounted] = useState(false);
   const [tick, setTick] = useState(0);
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMounted(true);
     const id = window.setInterval(() => setTick((value) => value + 1), 30_000);
     return () => window.clearInterval(id);
   }, []);
   void tick;
+  // eslint-disable-next-line react-hooks/purity
   return mounted ? Date.now() : null;
 }
 
@@ -327,6 +329,7 @@ export function ChannelCard({
   const old = channel.videos.filter((video) => video.isBackfill);
   const synced = channel.lastSyncedAt;
   const fresh =
+    // eslint-disable-next-line react-hooks/purity
     synced && Date.now() - new Date(synced).getTime() < 36 * 60 * 60 * 1000;
 
   return (

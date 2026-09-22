@@ -13,7 +13,7 @@
 //   - a key that hits its limit (or the API rejects it) is flagged
 //     `quotaExhausted` and skipped until the next day (or an admin re-enables).
 
-import { prisma } from "./db";
+import { id, query, queryOne } from "./db";
 import { istDateKey } from "./credits";
 import { YOUTUBE_DAILY_QUOTA } from "./youtubequota";
 import { maskKey } from "./scrapekeys";
@@ -38,6 +38,18 @@ function envKeys(): { label: string; key: string }[] {
   return keys;
 }
 
+type YoutubeKeyRow = {
+  id: string;
+  label: string;
+  key: string;
+  active: boolean;
+  quotaExhausted: boolean;
+  unitsUsed: number;
+  quotaDate: string | null;
+  lastUsedAt: Date | null;
+  createdAt: Date;
+};
+
 // Seed the primary key(s) from the environment on first run. Idempotent across
 // serverless instances thanks to the unique constraint on `key`; skipped when
 // managed keys already exist.
@@ -47,12 +59,17 @@ export function seedYoutubeKeys(): Promise<void> {
     seedPromise = (async () => {
       const keys = envKeys();
       if (keys.length === 0) return;
-      const managed = await prisma.youtubeKey.count();
-      if (managed > 0) return;
+      const [{ count }] = await query<{ count: number }>(
+        `SELECT count(*) AS count FROM youtube_keys`,
+        [],
+      );
+      if (count > 0) return;
       for (const { label, key } of keys) {
-        await prisma.youtubeKey
-          .create({ data: { label, key } })
-          .catch(() => {});
+        await query(
+          `INSERT INTO youtube_keys (id, label, key, "active", "quotaExhausted", "unitsUsed", "createdAt", "updatedAt")
+           VALUES ($1, $2, $3, true, false, 0, now(), now())`,
+          [id(), label, key],
+        ).catch(() => {});
       }
     })();
   }
@@ -63,12 +80,11 @@ export function seedYoutubeKeys(): Promise<void> {
 // still belongs to a previous IST day, so the new day starts fresh.
 async function rollDay(): Promise<void> {
   const today = istDateKey();
-  await prisma.youtubeKey
-    .updateMany({
-      where: { OR: [{ quotaDate: { not: today } }, { quotaDate: null }] },
-      data: { unitsUsed: 0, quotaExhausted: false, quotaDate: today },
-    })
-    .catch(() => {});
+  await query(
+    `UPDATE youtube_keys SET "unitsUsed" = 0, "quotaExhausted" = false, "quotaDate" = $1, "updatedAt" = now()
+     WHERE "quotaDate" IS DISTINCT FROM $1`,
+    [today],
+  ).catch(() => {});
 }
 
 // The next key to use: the enabled, non-exhausted key with the most quota left
@@ -80,14 +96,13 @@ export async function nextYoutubeKey(): Promise<{
 } | null> {
   await seedYoutubeKeys();
   await rollDay();
-  const row = await prisma.youtubeKey.findFirst({
-    where: {
-      active: true,
-      quotaExhausted: false,
-      unitsUsed: { lt: YOUTUBE_DAILY_QUOTA },
-    },
-    orderBy: [{ unitsUsed: "asc" }, { lastUsedAt: "asc" }],
-  });
+  const row = await queryOne<YoutubeKeyRow>(
+    `SELECT * FROM youtube_keys
+     WHERE "active" = true AND "quotaExhausted" = false AND "unitsUsed" < $1
+     ORDER BY "unitsUsed" ASC, "lastUsedAt" ASC
+     LIMIT 1`,
+    [YOUTUBE_DAILY_QUOTA],
+  );
   return row ? { id: row.id, label: row.label, key: row.key } : null;
 }
 
@@ -98,15 +113,16 @@ export async function recordYoutubeUnits(
 ): Promise<void> {
   if (units <= 0) return;
   try {
-    const row = await prisma.youtubeKey.update({
-      where: { id },
-      data: { unitsUsed: { increment: units }, lastUsedAt: new Date() },
-    });
-    if (row.unitsUsed >= YOUTUBE_DAILY_QUOTA && !row.quotaExhausted) {
-      await prisma.youtubeKey.update({
-        where: { id },
-        data: { quotaExhausted: true },
-      });
+    const row = await queryOne<YoutubeKeyRow>(
+      `UPDATE youtube_keys SET "unitsUsed" = "unitsUsed" + $1, "lastUsedAt" = now(), "updatedAt" = now()
+       WHERE id = $2 RETURNING *`,
+      [units, id],
+    );
+    if (row && row.unitsUsed >= YOUTUBE_DAILY_QUOTA && !row.quotaExhausted) {
+      await query(
+        `UPDATE youtube_keys SET "quotaExhausted" = true, "updatedAt" = now() WHERE id = $1`,
+        [id],
+      );
     }
   } catch {
     // Best-effort accounting must never break a YouTube fetch.
@@ -114,9 +130,10 @@ export async function recordYoutubeUnits(
 }
 
 export async function markYoutubeKeyExhausted(id: string): Promise<void> {
-  await prisma.youtubeKey
-    .update({ where: { id }, data: { quotaExhausted: true, lastUsedAt: new Date() } })
-    .catch(() => {});
+  await query(
+    `UPDATE youtube_keys SET "quotaExhausted" = true, "lastUsedAt" = now(), "updatedAt" = now() WHERE id = $1`,
+    [id],
+  ).catch(() => {});
 }
 
 export type AdminYoutubeKey = {
@@ -135,9 +152,10 @@ export type AdminYoutubeKey = {
 export async function adminYoutubeKeys(): Promise<AdminYoutubeKey[]> {
   await seedYoutubeKeys();
   await rollDay();
-  const keys = await prisma.youtubeKey.findMany({
-    orderBy: [{ active: "desc" }, { createdAt: "asc" }],
-  });
+  const keys = await query<YoutubeKeyRow>(
+    `SELECT * FROM youtube_keys ORDER BY "active" DESC, "createdAt" ASC`,
+    [],
+  );
   return keys.map((key) => ({
     id: key.id,
     label: key.label,

@@ -13,11 +13,10 @@
 // 10,000 units/day quota (tracked in /admin) and never touches the per-IP
 // ScrapeCreators budget.
 
-import { prisma } from "./db";
+import { id, query, queryOne, type ChannelRow } from "./db";
 import { fetchInstagramChannel } from "./instagram";
 import { fetchTikTokChannel } from "./tiktok";
 import { fetchYouTubeChannel } from "./youtube";
-import type { Channel } from "../app/generated/prisma/client";
 import type { ChannelFetchResult } from "./types";
 import { comboHash, consumeCredits, getCreditsStatus } from "./credits";
 
@@ -28,10 +27,10 @@ const FETCHERS = {
 } as const;
 
 export async function fetchChannel(
-  channel: Channel,
+  channel: ChannelRow,
   limit?: number,
 ): Promise<ChannelFetchResult> {
-  const fetcher = FETCHERS[channel.platform];
+  const fetcher = FETCHERS[channel.platform as keyof typeof FETCHERS];
   return fetcher(channel.username, limit);
 }
 
@@ -48,7 +47,7 @@ export interface SyncOptions {
 // ScrapeCreators budget; YouTube never is. Returns 0 when skipped for reaching
 // the daily budget.
 export async function syncChannel(
-  channel: Channel,
+  channel: ChannelRow,
   opts: SyncOptions = {},
 ): Promise<number> {
   // YouTube uses the official YouTube Data API (its own 10,000 units/day
@@ -86,12 +85,10 @@ export async function syncChannel(
     // the next successful sync clears it. The rest of the batch keeps going.
     const detail = err instanceof Error ? err.message : String(err);
     console.error(`[sync] ${channel.platform} @${channel.username}:`, err);
-    await prisma.channel.update({
-      where: { id: channel.id },
-      data: {
-        lastSyncError: detail.slice(0, 500),
-      },
-    }).catch((e) => console.error("[sync] failed to store error:", e));
+    await query(
+      `UPDATE channels SET "lastSyncError" = $1, "updatedAt" = now() WHERE id = $2`,
+      [detail.slice(0, 500), channel.id],
+    ).catch((e) => console.error("[sync] failed to store error:", e));
     return 0;
   }
 
@@ -103,40 +100,47 @@ export async function syncChannel(
     await consumeCredits(opts.comboHash!, consumed);
   }
 
-  await prisma.channel.update({
-    where: { id: channel.id },
-    data: {
-      externalId: result.account.externalId,
-      displayName: result.account.displayName,
-      avatarUrl: result.account.avatarUrl,
-      profileUrl: result.account.profileUrl,
-      lastSyncedAt: new Date(),
-      lastSyncError: null,
-    },
-  });
+  await query(
+    `UPDATE channels SET
+       "externalId" = $1, "displayName" = $2, "avatarUrl" = $3, "profileUrl" = $4,
+       "lastSyncedAt" = now(), "lastSyncError" = NULL, "updatedAt" = now()
+     WHERE id = $5`,
+    [
+      result.account.externalId,
+      result.account.displayName,
+      result.account.avatarUrl,
+      result.account.profileUrl,
+      channel.id,
+    ],
+  );
 
-  await prisma.channelSnapshot.create({
-    data: {
-      channelId: channel.id,
-      followers: result.stats.followers,
-      following: result.stats.following,
-      totalPosts: result.stats.totalPosts,
-      totalViews:
-        result.stats.totalViews == null ? null : BigInt(result.stats.totalViews),
-      recordedAt: new Date(),
-    },
-  });
+  await query(
+    `INSERT INTO channel_snapshots (id, "channelId", followers, following, "totalPosts", "totalViews", "recordedAt")
+     VALUES ($1, $2, $3, $4, $5, $6, now())`,
+    [
+      id(),
+      channel.id,
+      result.stats.followers,
+      result.stats.following,
+      result.stats.totalPosts,
+      result.stats.totalViews == null
+        ? null
+        : BigInt(result.stats.totalViews),
+    ],
+  );
 
   // Bucket membership is decided by publish date vs the channel's addedAt
   // (createdAt): videos published at/before addedAt belong to "Old" (backfilled
   // once); later uploads belong to "Latest". Membership is assigned only at
   // creation and never changed on update — a video never moves buckets.
   const addedAt = channel.createdAt;
-  const existing = await prisma.video.findMany({
-    where: { channelId: channel.id },
-    select: { externalId: true },
-  });
-  const existingExternal = new Set(existing.map((video) => video.externalId));
+  const existing = await query<{ externalId: string }>(
+    `SELECT "externalId" FROM videos WHERE "channelId" = $1`,
+    [channel.id],
+  );
+  const existingExternal = new Set(
+    existing.map((video) => video.externalId),
+  );
 
   for (const item of result.media) {
     const publishedAt = item.meta.publishedAt;
@@ -149,40 +153,40 @@ export async function syncChannel(
     // keeps a trim (4 -> 2) from being undone on the next sync.
     if (!alreadyTracked && !doingBackfill && !belongsLatest) continue;
 
-    const video = await prisma.video.upsert({
-      where: {
-        channelId_externalId: {
-          channelId: channel.id,
-          externalId: item.meta.externalId,
-        },
-      },
-      create: {
-        channelId: channel.id,
-        externalId: item.meta.externalId,
-        title: item.meta.title,
-        url: item.meta.url,
-        thumbnailUrl: item.meta.thumbnailUrl,
-        publishedAt: item.meta.publishedAt,
-        isBackfill: !belongsLatest,
-      },
-      update: {
-        title: item.meta.title,
-        url: item.meta.url,
-        thumbnailUrl: item.meta.thumbnailUrl,
-        publishedAt: item.meta.publishedAt,
-      },
-    });
+    const video = await queryOne<{ id: string }>(
+      `INSERT INTO videos (id, "channelId", "externalId", title, url, "thumbnailUrl", "publishedAt", "isBackfill", "updatedAt", "createdAt")
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
+       ON CONFLICT ("channelId", "externalId") DO UPDATE SET
+         title = EXCLUDED.title,
+         url = EXCLUDED.url,
+         "thumbnailUrl" = EXCLUDED."thumbnailUrl",
+         "publishedAt" = EXCLUDED."publishedAt",
+         "updatedAt" = now()
+       RETURNING id`,
+      [
+        id(),
+        channel.id,
+        item.meta.externalId,
+        item.meta.title,
+        item.meta.url,
+        item.meta.thumbnailUrl,
+        item.meta.publishedAt,
+        !belongsLatest,
+      ],
+    );
 
-    await prisma.videoSnapshot.create({
-      data: {
-        videoId: video.id,
-        views: item.stats.views == null ? null : BigInt(item.stats.views),
-        likes: item.stats.likes,
-        comments: item.stats.comments,
-        favorites: item.stats.favorites,
-        recordedAt: new Date(),
-      },
-    });
+    await query(
+      `INSERT INTO video_snapshots (id, "videoId", views, likes, comments, favorites, "recordedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, now())`,
+      [
+        id(),
+        video!.id,
+        item.stats.views == null ? null : BigInt(item.stats.views),
+        item.stats.likes,
+        item.stats.comments,
+        item.stats.favorites,
+      ],
+    );
 
     existingExternal.add(item.meta.externalId);
   }
@@ -193,10 +197,10 @@ export async function syncChannel(
   // backfilled on the next funded sync.
   const creditCapped = budgeted && trackVideos > 0 && wanted < trackVideos;
   if (doingBackfill && !creditCapped) {
-    await prisma.channel.update({
-      where: { id: channel.id },
-      data: { backfilled: true },
-    });
+    await query(
+      `UPDATE channels SET "backfilled" = true, "updatedAt" = now() WHERE id = $1`,
+      [channel.id],
+    );
   }
 
   console.log(
@@ -206,7 +210,7 @@ export async function syncChannel(
   return consumed;
 }
 
-type ChannelWithUser = Channel & {
+type ChannelWithUser = ChannelRow & {
   user: { comboHash: string | null };
 };
 
@@ -215,10 +219,19 @@ type ChannelWithUser = Channel & {
 // pending backfills run before routine refreshes so scarce credits go to new
 // channels first. A combo at 0 credits is skipped entirely ("pause").
 export async function runSync(): Promise<void> {
-  const channels = (await prisma.channel.findMany({
-    orderBy: { id: "asc" },
-    include: { user: { select: { comboHash: true } } },
-  })) as ChannelWithUser[];
+  const raw = await query<
+    ChannelRow & { comboHash: string | null }
+  >(
+    `SELECT c.*, u."comboHash" AS "comboHash"
+     FROM channels c
+     LEFT JOIN users u ON u.id = c."userId"
+     ORDER BY c.id ASC`,
+    [],
+  );
+  const channels: ChannelWithUser[] = raw.map((row) => ({
+    ...row,
+    user: { comboHash: row.comboHash },
+  }));
 
   console.log(`[sync] ${channels.length} channel(s) to sync`);
 

@@ -8,12 +8,13 @@ import {
 } from "@/lib/i18n";
 import { getPageContent } from "@/lib/i18n/pages";
 
-export function generateMetadata({
+export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
-}): Metadata {
-  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   const meta = getPageContent(locale).meta.about;
   const languages = Object.fromEntries(
     LOCALES.map((l) => [l, localizedHref(l, "/about")]),
@@ -31,8 +32,13 @@ export function generateMetadata({
   };
 }
 
-export default function AboutPage({ params }: { params: { locale: string } }) {
-  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
+export default async function AboutPage({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   const content = getPageContent(locale);
 
   return (

@@ -14,7 +14,7 @@
 
 import { createHash } from "crypto";
 import { headers } from "next/headers";
-import { prisma } from "./db";
+import { id, query, queryOne, tx } from "./db";
 import { ensureUserCode } from "./usercode";
 
 export const DAILY_LIMIT_MESSAGE =
@@ -35,8 +35,8 @@ export function istDateKey(date = new Date()): string {
 
 // Client IP from the request headers. Vercel passes the peer address as the
 // first entry of x-forwarded-for; x-real-ip is a fallback for other hosts.
-export function getClientIp(): string | undefined {
-  const h = headers();
+export async function getClientIp(): Promise<string | undefined> {
+  const h = await headers();
   const forwarded = h.get("x-forwarded-for");
   if (forwarded) {
     const first = forwarded.split(",")[0]?.trim();
@@ -54,24 +54,26 @@ export function comboHash(ip: string | undefined, uid: string): string {
 // The current request's combo (IP + ct_uid). Only call where the visitor
 // cookie is appropriate (server actions / pages that already identify the
 // visitor).
-export function requestComboHash(uid: string): string {
-  return comboHash(getClientIp(), uid);
+export async function requestComboHash(uid: string): Promise<string> {
+  return comboHash(await getClientIp(), uid);
 }
 
 // Record the request-time combo on the User row so the hourly cron (which has
-// no request IP) can attribute background syncs to the same budget. No-op-ish
-// when the value is unchanged; the upsert also guarantees the row exists. The
-// visitor's UserCode row is created/kept in sync so admin grants (bonus top-up,
-// permanent daily limit) always resolve against the current identity.
+// no request IP) can attribute background syncs to the same budget. The upsert
+// also guarantees the row exists. The visitor's UserCode row is created/kept
+// in sync so admin grants (bonus top-up, permanent daily limit) always resolve
+// against the current identity.
 export async function recordAttribution(
   userId: string,
   combo: string,
 ): Promise<void> {
-  await prisma.user.upsert({
-    where: { id: userId },
-    create: { id: userId, comboHash: combo, lastActive: new Date() },
-    update: { comboHash: combo, lastActive: new Date() },
-  });
+  await query(
+    `INSERT INTO users (id, "comboHash", "lastActive", "createdAt", "updatedAt")
+     VALUES ($1, $2, now(), now(), now())
+     ON CONFLICT (id) DO UPDATE SET
+       "comboHash" = $2, "lastActive" = now(), "updatedAt" = now()`,
+    [userId, combo],
+  );
   await ensureUserCode(userId, combo);
 }
 
@@ -88,20 +90,20 @@ export function resolveAttribution(
 // The editable daily credit limit from /admin (Setting), defaulting to 100.
 // The row self-seeds on first read so the value is never hard-coded at runtime.
 export async function getDailyLimit(): Promise<number> {
-  const row = await prisma.setting.findUnique({
-    where: { key: SETTING_DAILY_LIMIT },
-  });
+  const row = await queryOne<{ value: string }>(
+    `SELECT value FROM settings WHERE key = $1`,
+    [SETTING_DAILY_LIMIT],
+  );
   if (row) {
     const n = Number(row.value);
     if (Number.isInteger(n) && n > 0) return n;
   }
-  await prisma.setting
-    .upsert({
-      where: { key: SETTING_DAILY_LIMIT },
-      create: { key: SETTING_DAILY_LIMIT, value: String(DEFAULT_DAILY_LIMIT) },
-      update: {},
-    })
-    .catch(() => {});
+  await query(
+    `INSERT INTO settings (key, value, "updatedAt", "createdAt")
+     VALUES ($1, $2, now(), now())
+     ON CONFLICT (key) DO NOTHING`,
+    [SETTING_DAILY_LIMIT, String(DEFAULT_DAILY_LIMIT)],
+  ).catch(() => {});
   return DEFAULT_DAILY_LIMIT;
 }
 
@@ -115,10 +117,12 @@ export interface CreditsStatus {
 // Effective daily budget for a combo: the visitor's permanent per-user daily
 // limit (dailyOverride) if one was set on /admin, else the global limit, plus
 // any one-time bonus top-up.
-// resolveUserBudget expects an already-fetched UserCode row (null when none).
 function budgetFromUserCode(
   globalLimit: number,
-  userCode: { dailyOverride: number | null; bonusCredits: number } | null,
+  userCode:
+    | { dailyOverride: number | null; bonusCredits: number }
+    | null
+    | undefined,
 ): number {
   const base = userCode?.dailyOverride ?? globalLimit;
   return base + (userCode?.bonusCredits ?? 0);
@@ -133,59 +137,83 @@ export async function getCreditsStatus(
     return { date, used: 0, limit: globalLimit, remaining: globalLimit };
   }
   const [userCode, row] = await Promise.all([
-    prisma.userCode.findFirst({ where: { comboHash: combo } }),
-    prisma.creditUsage.findUnique({
-      where: { comboHash_date: { comboHash: combo, date } },
-    }),
+    queryOne<{ dailyOverride: number | null; bonusCredits: number }>(
+      `SELECT "dailyOverride", "bonusCredits" FROM user_codes WHERE "comboHash" = $1 LIMIT 1`,
+      [combo],
+    ),
+    queryOne<{ creditsUsed: number }>(
+      `SELECT "creditsUsed" FROM credit_usage WHERE "comboHash" = $1 AND date = $2`,
+      [combo, date],
+    ),
   ]);
   const limit = budgetFromUserCode(globalLimit, userCode);
   const used = row?.creditsUsed ?? 0;
   return { date, used, limit, remaining: Math.max(0, limit - used) };
 }
 
-// Atomically deduct up to `count` credits from a combo's remaining budget.
-// Returns the number actually granted (<= count). Safe against the day
-// rolling over between reads and writes: the unique key pins the write to the
-// day it was started on. Grant credits on /admin live as a one-time bonus pool
-// on the visitor's UserCode: usage beyond the daily allowance drains the pool
-// (so a top-up does not renew every day), while a permanent dailyOverride
-// simply replaces the global daily limit for that visitor.
+// Atomically-ish deduct up to `count` credits from a combo's remaining budget.
+// Returns the number actually granted (<= count). The unique (comboHash, date)
+// pin keeps the write on the day it was started on; the row is ensured first
+// and the granted amount computed from a fresh read. Grant credits on /admin
+// live as a one-time bonus pool on the visitor's UserCode: usage beyond the
+// daily allowance drains the pool (so a top-up does not renew every day), while
+// a permanent dailyOverride simply replaces the global daily limit.
 export async function consumeCredits(
   combo: string,
   count: number,
 ): Promise<number> {
   if (count <= 0) return 0;
-  let granted = 0;
-  await prisma.$transaction(async (tx) => {
-    const date = istDateKey();
-    const globalLimit = await getDailyLimit();
-    const [userCode, row] = await Promise.all([
-      tx.userCode.findFirst({ where: { comboHash: combo } }),
-      tx.creditUsage.upsert({
-        where: { comboHash_date: { comboHash: combo, date } },
-        create: { comboHash: combo, date, creditsUsed: 0 },
-        update: {},
-      }),
-    ]);
-    const limit = budgetFromUserCode(globalLimit, userCode);
-    const remaining = Math.max(0, limit - row.creditsUsed);
-    granted = Math.min(count, remaining);
-    if (granted > 0) {
-      const usedAfter = row.creditsUsed + granted;
-      await tx.creditUsage.update({
-        where: { id: row.id },
-        data: { creditsUsed: usedAfter },
-      });
-      const base = userCode?.dailyOverride ?? globalLimit;
-      const excess = Math.max(0, usedAfter - base);
-      const bonusAfter = Math.max(0, (userCode?.bonusCredits ?? 0) - excess);
-      if (userCode && bonusAfter !== userCode.bonusCredits) {
-        await tx.userCode.update({
-          where: { id: userCode.id },
-          data: { bonusCredits: bonusAfter },
-        });
-      }
-    }
-  });
+  const date = istDateKey();
+
+  // Ensure the daily row exists so it can be updated in the batch below.
+  await query(
+    `INSERT INTO credit_usage (id, "comboHash", date, "updatedAt")
+     VALUES ($1, $2, $3, now())
+     ON CONFLICT ("comboHash", date) DO NOTHING`,
+    [id(), combo, date],
+  );
+
+  const [globalLimit, userCode, row] = await Promise.all([
+    getDailyLimit(),
+    queryOne<{ id: string; dailyOverride: number | null; bonusCredits: number }>(
+      `SELECT id, "dailyOverride", "bonusCredits" FROM user_codes WHERE "comboHash" = $1 LIMIT 1`,
+      [combo],
+    ),
+    queryOne<{ creditsUsed: number }>(
+      `SELECT "creditsUsed" FROM credit_usage WHERE "comboHash" = $1 AND date = $2`,
+      [combo, date],
+    ),
+  ]);
+  const limit = budgetFromUserCode(globalLimit, userCode);
+  const used = row?.creditsUsed ?? 0;
+  const granted = Math.min(count, Math.max(0, limit - used));
+  if (granted <= 0) return 0;
+
+  const base = userCode?.dailyOverride ?? globalLimit;
+  const excess = Math.max(0, used + granted - base);
+  const bonusAfter = Math.max(
+    0,
+    (userCode?.bonusCredits ?? 0) - excess,
+  );
+
+  const statements: { text: string; params: unknown[] }[] = [
+    {
+      text: `UPDATE credit_usage SET "creditsUsed" = $1, "updatedAt" = now()
+             WHERE "comboHash" = $2 AND date = $3`,
+      params: [used + granted, combo, date],
+    },
+  ];
+  if (userCode && bonusAfter !== userCode.bonusCredits) {
+    statements.push({
+      text: `UPDATE user_codes SET "bonusCredits" = $1, "updatedAt" = now() WHERE id = $2`,
+      params: [bonusAfter, userCode.id],
+    });
+  }
+
+  if (statements.length === 1) {
+    await query(statements[0].text, statements[0].params);
+  } else {
+    await tx(statements);
+  }
   return granted;
 }

@@ -8,7 +8,7 @@
 // quota failure is flagged `quotaExhausted` and skipped until the balance is
 // refreshed.
 
-import { prisma } from "./db";
+import { id, query, queryOne } from "./db";
 
 export const SCRAPECREATORS_API = "https://api.scrapecreators.com";
 export const SCRAPECREATORS_BALANCE_PATH = "/v1/account/credit-balance";
@@ -25,6 +25,7 @@ type ScrapeKeyRow = {
   remainingCredits: number | null;
   lastCheckedAt: Date | null;
   lastUsedAt: Date | null;
+  createdAt: Date;
 };
 
 // Seed the primary key from the environment on first run. Idempotent across
@@ -36,16 +37,21 @@ export function seedScrapeKeys(): Promise<void> {
     seedPromise = (async () => {
       const envKey = process.env.SCRAPECREATORS_API_KEY;
       if (!envKey) return;
-      const exists = await prisma.scrapeKey.findFirst({
-        where: { key: envKey },
-        select: { id: true },
-      });
+      const exists = await queryOne<{ id: string }>(
+        `SELECT id FROM scrape_keys WHERE key = $1 LIMIT 1`,
+        [envKey],
+      );
       if (exists) return;
-      const managed = await prisma.scrapeKey.count();
-      if (managed > 0) return;
-      await prisma.scrapeKey
-        .create({ data: { label: "env", key: envKey } })
-        .catch(() => {});
+      const [{ count }] = await query<{ count: number }>(
+        `SELECT count(*) AS count FROM scrape_keys`,
+        [],
+      );
+      if (count > 0) return;
+      await query(
+        `INSERT INTO scrape_keys (id, label, key, "active", "quotaExhausted", "createdAt", "updatedAt")
+         VALUES ($1, $2, $3, true, false, now(), now())`,
+        [id(), "env", envKey],
+      ).catch(() => {});
     })();
   }
   return seedPromise;
@@ -55,25 +61,28 @@ export function seedScrapeKeys(): Promise<void> {
 // that are inactive or flagged quota-exhausted.
 export async function enabledScrapeKeys(): Promise<ScrapeKeyRow[]> {
   await seedScrapeKeys();
-  return prisma.scrapeKey.findMany({
-    where: { active: true, quotaExhausted: false },
-    orderBy: { lastUsedAt: "asc" },
-  });
+  return query<ScrapeKeyRow>(
+    `SELECT * FROM scrape_keys
+     WHERE "active" = true AND "quotaExhausted" = false
+     ORDER BY "lastUsedAt" ASC`,
+    [],
+  );
 }
 
 export async function markScrapeKeyExhausted(id: string): Promise<void> {
-  await prisma.scrapeKey
-    .update({
-      where: { id },
-      data: { quotaExhausted: true, lastUsedAt: new Date(), remainingCredits: 0 },
-    })
-    .catch(() => {});
+  await query(
+    `UPDATE scrape_keys SET "quotaExhausted" = true, "lastUsedAt" = now(), "remainingCredits" = 0, "updatedAt" = now()
+     WHERE id = $1`,
+    [id],
+  ).catch(() => {});
 }
 
 export async function markScrapeKeyOk(id: string): Promise<void> {
-  await prisma.scrapeKey
-    .update({ where: { id }, data: { quotaExhausted: false, lastUsedAt: new Date() } })
-    .catch(() => {});
+  await query(
+    `UPDATE scrape_keys SET "quotaExhausted" = false, "lastUsedAt" = now(), "updatedAt" = now()
+     WHERE id = $1`,
+    [id],
+  ).catch(() => {});
 }
 
 // Fetch a key's remaining ScrapeCreators credits from the balance endpoint.
@@ -103,7 +112,10 @@ export async function fetchKeyBalance(
 // or empty are re-flagged so rotation skips them.
 export async function refreshKeyBalances(force = false): Promise<void> {
   await seedScrapeKeys();
-  const keys = await prisma.scrapeKey.findMany({ orderBy: { createdAt: "asc" } });
+  const keys = await query<ScrapeKeyRow>(
+    `SELECT * FROM scrape_keys ORDER BY "createdAt" ASC`,
+    [],
+  );
   const now = Date.now();
   for (const key of keys) {
     if (
@@ -116,14 +128,12 @@ export async function refreshKeyBalances(force = false): Promise<void> {
     try {
       const count = await fetchKeyBalance(key.key);
       if (count == null) continue;
-      await prisma.scrapeKey.update({
-        where: { id: key.id },
-        data: {
-          remainingCredits: count,
-          quotaExhausted: count <= 0,
-          lastCheckedAt: new Date(),
-        },
-      });
+      await query(
+        `UPDATE scrape_keys
+         SET "remainingCredits" = $1, "quotaExhausted" = $2, "lastCheckedAt" = now(), "updatedAt" = now()
+         WHERE id = $3`,
+        [count, count <= 0, key.id],
+      );
     } catch {
       // Network/parse hiccup - keep whatever balance we had.
     }
@@ -143,9 +153,10 @@ export type AdminScrapeKey = {
 
 export async function adminScrapeKeys(): Promise<AdminScrapeKey[]> {
   await seedScrapeKeys();
-  const keys = await prisma.scrapeKey.findMany({
-    orderBy: [{ active: "desc" }, { createdAt: "asc" }],
-  });
+  const keys = await query<ScrapeKeyRow>(
+    `SELECT * FROM scrape_keys ORDER BY "active" DESC, "createdAt" ASC`,
+    [],
+  );
   return keys.map((key) => ({
     id: key.id,
     label: key.label,

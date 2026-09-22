@@ -25,12 +25,13 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export function generateMetadata({
+export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
-}): Metadata {
-  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   const dict = getDictionary(locale);
   const languages = Object.fromEntries(
     LOCALES.map((l) => [l, localizedHref(l, "/accounts")]),
@@ -49,11 +50,12 @@ export function generateMetadata({
 export default async function TrackedPage({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   const dict = getDictionary(locale);
-  const userId = getVisitorId();
+  const userId = await getVisitorId();
 
   let channels: LoadedChannel[] = [];
   let dbError = false;
@@ -62,8 +64,8 @@ export default async function TrackedPage({
   if (userId) {
     try {
       channels = await loadChannels(userId);
-      userCode = await ensureUserCode(userId, comboHash(getClientIp(), userId));
-      credits = await getCreditsStatus(comboHash(getClientIp(), userId));
+      userCode = await ensureUserCode(userId, comboHash(await getClientIp(), userId));
+      credits = await getCreditsStatus(comboHash(await getClientIp(), userId));
       // Loading /accounts counts as activity for the inactivity cleanup.
       await touchActivity(userId);
     } catch (err) {

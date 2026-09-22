@@ -7,7 +7,7 @@
 // per IST day and surface the running total in the /admin panel. Counting is
 // best-effort: a failed write must never break a YouTube fetch.
 
-import { prisma } from "./db";
+import { id, query, queryOne } from "./db";
 import { istDateKey } from "./credits";
 
 export const YOUTUBE_DAILY_QUOTA = 10_000;
@@ -19,29 +19,31 @@ export interface YoutubeQuotaStatus {
   limit: number;
 }
 
-// Add `units` to today's IST usage. Upsert-with-fallback handles the rare
-// concurrent first-write per day so counter drops are never lost.
+// Add `units` to today's IST usage. A single INSERT ... ON CONFLICT handles
+// the concurrent first-write-per-day case atomically, so counter drops are
+// never lost.
 export async function recordYoutubeQuota(units: number): Promise<void> {
   if (units <= 0) return;
   const date = istDateKey();
   try {
-    await prisma.youtubeQuotaUsage.upsert({
-      where: { date },
-      create: { date, unitsUsed: units },
-      update: { unitsUsed: { increment: units } },
-    });
+    await query(
+      `INSERT INTO youtube_quota_usage (id, date, "unitsUsed", "updatedAt", "createdAt")
+       VALUES ($1, $2, $3, now(), now())
+       ON CONFLICT (date) DO UPDATE SET
+         "unitsUsed" = youtube_quota_usage."unitsUsed" + EXCLUDED."unitsUsed",
+         "updatedAt" = now()`,
+      [id(), date, units],
+    );
   } catch {
-    await prisma.youtubeQuotaUsage
-      .update({
-        where: { date },
-        data: { unitsUsed: { increment: units } },
-      })
-      .catch(() => {});
+    // Best-effort accounting must never break a YouTube fetch.
   }
 }
 
 export async function getYoutubeQuotaStatus(): Promise<YoutubeQuotaStatus> {
   const date = istDateKey();
-  const row = await prisma.youtubeQuotaUsage.findUnique({ where: { date } });
+  const row = await queryOne<{ unitsUsed: number }>(
+    `SELECT "unitsUsed" FROM youtube_quota_usage WHERE date = $1`,
+    [date],
+  );
   return { date, used: row?.unitsUsed ?? 0, limit: YOUTUBE_DAILY_QUOTA };
 }

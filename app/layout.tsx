@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -16,7 +17,7 @@ const geistMono = localFont({
 // Base site-level metadata. Per-locale title/description/OG/twitter live in
 // app/[locale]/layout.tsx; metadataBase resolves the relative OG/canonical URLs.
 export const metadata: Metadata = {
-  metadataBase: new URL("https://clipstrack.vercel.app"),
+  metadataBase: new URL(siteUrl()),
   manifest: "/site.webmanifest",
   icons: {
     icon: [

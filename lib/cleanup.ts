@@ -6,11 +6,10 @@
 // snapshots), their credit-usage rows, and the visitor identity rows.
 //
 // GrantHistory rows are intentionally kept: the audit trail must survive its
-// owner being purged, so GrantHistory is not a Prisma relation and is never
-// touched here. The deletion is summarized in CleanupLog (counts only, no
-// per-user history), as requested.
+// owner being purged, so GrantHistory is never touched here. The deletion is
+// summarized in CleanupLog (counts only, no per-user history), as requested.
 
-import { prisma } from "./db";
+import { id, query } from "./db";
 
 export const INACTIVE_DAYS = 5;
 
@@ -21,18 +20,20 @@ export interface CleanupResult {
 
 export async function runCleanup(): Promise<CleanupResult> {
   const cutoff = new Date(Date.now() - INACTIVE_DAYS * 24 * 60 * 60 * 1000);
-  const users = await prisma.user.findMany({
-    where: { lastActive: { lt: cutoff } },
-    select: { id: true, comboHash: true },
-  });
+  const users = await query<{ id: string; comboHash: string | null }>(
+    `SELECT id, "comboHash" FROM users WHERE "lastActive" < $1`,
+    [cutoff],
+  );
 
   if (users.length === 0) {
     console.log(
       `[cleanup] no inactive users (cutoff ${cutoff.toISOString()}, ${INACTIVE_DAYS} days)`,
     );
-    await prisma.cleanupLog.create({
-      data: { deletedUsers: 0, deletedChannels: 0 },
-    });
+    await query(
+      `INSERT INTO cleanup_logs (id, "runAt", "deletedUsers", "deletedChannels")
+       VALUES ($1, now(), 0, 0)`,
+      [id()],
+    );
     return { deletedUsers: 0, deletedChannels: 0 };
   }
 
@@ -41,31 +42,41 @@ export async function runCleanup(): Promise<CleanupResult> {
   // Identity rows hold the current combo too; both are combos to clear credits
   // for. Different ct_uid cookies hash differently, so a combo only ever maps
   // to one visitor - stale rows can be removed without touching live budgets.
-  const codes = await prisma.userCode.findMany({
-    where: { userId: { in: userIds } },
-    select: { comboHash: true },
-  });
+  const codes = await query<{ comboHash: string | null }>(
+    `SELECT "comboHash" FROM user_codes WHERE "userId" = ANY($1)`,
+    [userIds],
+  );
   const combos = new Set<string>();
   for (const user of users) if (user.comboHash) combos.add(user.comboHash);
   for (const code of codes) if (code.comboHash) combos.add(code.comboHash);
 
-  let deletedUsers = 0;
-  let deletedChannels = 0;
-  const comboList = Array.from(combos);
-  for (const user of users) {
-    const channels = await prisma.channel.count({ where: { userId: user.id } });
-    await prisma.creditUsage.deleteMany({
-      where: { comboHash: { in: comboList } },
-    });
-    await prisma.userCode.deleteMany({ where: { userId: user.id } });
-    const result = await prisma.user.deleteMany({ where: { id: user.id } });
-    deletedUsers += result.count;
-    deletedChannels += channels;
-  }
+  // Channel counts per user, so the summary stays exact.
+  const counts = await query<{ userId: string; count: number }>(
+    `SELECT "userId", count(*) AS count FROM channels WHERE "userId" = ANY($1) GROUP BY "userId"`,
+    [userIds],
+  );
+  const deletedChannels = counts.reduce((sum, row) => sum + row.count, 0);
 
-  await prisma.cleanupLog.create({
-    data: { deletedUsers, deletedChannels },
-  });
+  const comboList = Array.from(combos);
+  if (comboList.length > 0) {
+    await query(
+      `DELETE FROM credit_usage WHERE "comboHash" = ANY($1)`,
+      [comboList],
+    );
+  }
+  await query(`DELETE FROM user_codes WHERE "userId" = ANY($1)`, [userIds]);
+  // Channels/videos/snapshots cascade off the user via their FK relationships.
+  const result = await query<{ id: string }>(
+    `DELETE FROM users WHERE id = ANY($1) RETURNING id`,
+    [userIds],
+  );
+  const deletedUsers = result.length;
+
+  await query(
+    `INSERT INTO cleanup_logs (id, "runAt", "deletedUsers", "deletedChannels")
+     VALUES ($1, now(), $2, $3)`,
+    [id(), deletedUsers, deletedChannels],
+  );
   console.log(
     `[cleanup] deleted ${deletedUsers} visitor(s), ${deletedChannels} channel(s) ` +
       `(cutoff ${cutoff.toISOString()})`,

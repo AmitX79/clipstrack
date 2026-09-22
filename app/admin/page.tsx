@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { prisma } from "@/lib/db";
+import { query } from "@/lib/db";
 import { getDailyLimit, istDateKey } from "@/lib/credits";
 import { adminYoutubeKeys, getYoutubeQuotaSummary } from "@/lib/youtubekeys";
 import { isAdmin } from "@/lib/admin";
@@ -16,6 +16,21 @@ import { GrantCredits } from "./GrantCredits";
 import { RefreshAllButton } from "./RefreshAllButton";
 
 export const dynamic = "force-dynamic";
+
+type GrantHistoryRow = {
+  id: string;
+  userId: string;
+  type: string;
+  amount: number;
+  grantedAt: Date;
+};
+
+type CleanupRunRow = {
+  id: string;
+  runAt: Date;
+  deletedUsers: number;
+  deletedChannels: number;
+};
 
 const inputClass =
   "h-11 rounded-[6px] border border-hairline px-2.5 text-sm text-ink sm:h-9 " +
@@ -44,7 +59,7 @@ function Card({
 }
 
 export default async function AdminPage() {
-  if (!isAdmin()) {
+  if (!(await isAdmin())) {
     const configured = Boolean(process.env.ADMIN_SECRET);
     return (
       <div className="min-h-screen bg-canvas">
@@ -78,16 +93,20 @@ export default async function AdminPage() {
     youtubeKeys,
   ] = await Promise.all([
     getDailyLimit(),
-    prisma.creditUsage.aggregate({
-      where: { date: today },
-      _sum: { creditsUsed: true },
-    }),
-    prisma.channel.count(),
-    prisma.user.count(),
-    prisma.creditUsage.groupBy({
-      by: ["comboHash"],
-      where: { date: today },
-    }),
+    query<{ total: number | null }>(
+      `SELECT COALESCE(SUM("creditsUsed"), 0) AS total FROM credit_usage WHERE date = $1`,
+      [today],
+    ),
+    query<{ count: number }>(`SELECT count(*) AS count FROM channels`, []).then(
+      (rows) => rows[0]?.count ?? 0,
+    ),
+    query<{ count: number }>(`SELECT count(*) AS count FROM users`, []).then(
+      (rows) => rows[0]?.count ?? 0,
+    ),
+    query<{ comboHash: string }>(
+      `SELECT "comboHash" FROM credit_usage WHERE date = $1 GROUP BY "comboHash"`,
+      [today],
+    ),
     (async () => {
       try {
         await refreshKeyBalances(false);
@@ -99,23 +118,26 @@ export default async function AdminPage() {
     getYoutubeQuotaSummary(),
     adminYoutubeKeys(),
   ]);
-  const creditsToday = creditsTodayAgg._sum.creditsUsed ?? 0;
+  const creditsToday = creditsTodayAgg[0]?.total ?? 0;
 
   // Grant-history audit trail + inactivity cleanup log (most recent first).
   const [history, cleanupRuns] = await Promise.all([
-    prisma.grantHistory.findMany({
-      orderBy: { grantedAt: "desc" },
-      take: 50,
-    }),
-    prisma.cleanupLog.findMany({ orderBy: { runAt: "desc" }, take: 10 }),
+    query<GrantHistoryRow>(
+      `SELECT * FROM grant_history ORDER BY "grantedAt" DESC LIMIT 50`,
+      [],
+    ),
+    query<CleanupRunRow>(
+      `SELECT * FROM cleanup_logs ORDER BY "runAt" DESC LIMIT 10`,
+      [],
+    ),
   ]);
   const historyUserIds = Array.from(new Set(history.map((h) => h.userId)));
   const codeByUserId = new Map<string, string>(
     (
-      await prisma.userCode.findMany({
-        where: { userId: { in: historyUserIds } },
-        select: { userId: true, code: true },
-      })
+      await query<{ userId: string; code: string }>(
+        `SELECT "userId", code FROM user_codes WHERE "userId" = ANY($1)`,
+        [historyUserIds],
+      )
     ).map((row) => [row.userId, row.code]),
   );
 

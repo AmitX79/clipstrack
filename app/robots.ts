@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { DEFAULT_LOCALE, LOCALES } from "@/lib/i18n";
+import { siteUrl } from "@/lib/site";
 
-const base = "https://clipstrack.vercel.app";
+const base = siteUrl();
 
 export default function robots(): MetadataRoute.Robots {
   const accountsPaths = [

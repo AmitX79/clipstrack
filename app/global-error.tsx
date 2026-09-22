@@ -34,12 +34,15 @@ export default function GlobalError({
             >
               Try again
             </button>
-            <a
-              href="/"
+            <button
+              type="button"
+              onClick={() => {
+                window.location.href = "/";
+              }}
               className="inline-flex h-11 items-center rounded-full border border-hairline bg-elevated px-7 text-sm font-medium text-ink hover:border-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2"
             >
               Reload page
-            </a>
+            </button>
           </div>
         </div>
       </body>

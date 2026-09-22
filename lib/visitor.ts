@@ -12,8 +12,8 @@ export const VISITOR_COOKIE = "ct_uid";
 // cookie is only ever written once consent is granted.
 export const CONSENT_COOKIE = "ct_consent";
 
-export function setConsent(value: "0" | "1"): void {
-  cookies().set(CONSENT_COOKIE, value, {
+export async function setConsent(value: "0" | "1"): Promise<void> {
+  (await cookies()).set(CONSENT_COOKIE, value, {
     httpOnly: false,
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 365, // remember the choice for a year
@@ -23,16 +23,16 @@ export function setConsent(value: "0" | "1"): void {
 
 // Returns an existing visitor id from the cookie, or undefined. Only call
 // from a Server Component / Server Action (needs the request scope).
-export function getVisitorId(): string | undefined {
-  const cookieStore = cookies();
+export async function getVisitorId(): Promise<string | undefined> {
+  const cookieStore = await cookies();
   return cookieStore.get(VISITOR_COOKIE)?.value;
 }
 
 // Write the identity cookie for a specific id (used by allowConsent so an
 // existing visitor keeps the same id after consenting). HttpOnly keeps the id
 // away from page script.
-export function setVisitorId(id: string): void {
-  cookies().set(VISITOR_COOKIE, id, {
+export async function setVisitorId(id: string): Promise<void> {
+  (await cookies()).set(VISITOR_COOKIE, id, {
     httpOnly: true,
     sameSite: "lax",
     maxAge: 60 * 60 * 24 * 365, // 1 year, so tracked accounts persist

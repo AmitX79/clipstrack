@@ -1,6 +1,7 @@
 import { Footer } from "@/components/Footer";
 import { NavBar } from "@/components/NavBar";
 import { getDictionary, isLocale, localizedHref, type Locale } from "@/lib/i18n";
+import { siteUrl } from "@/lib/site";
 
 function FeatureCard({
   index,
@@ -26,7 +27,7 @@ function webAppSchema(locale: Locale) {
     "@type": "WebApplication",
     name: "Clips Track",
     alternateName: "ClipsTrack",
-    url: `https://clipstrack.vercel.app${localizedHref(locale, "")}`,
+    url: `${siteUrl()}${localizedHref(locale, "")}`,
     description:
       "A clip tracker for YouTube Shorts, Instagram Reels and TikTok videos. Snapshots views, likes and comments every hour, shown in full numbers, so you can track video views over time.",
     applicationCategory: "UtilitiesApplication",
@@ -38,8 +39,13 @@ function webAppSchema(locale: Locale) {
   };
 }
 
-export default function Home({ params }: { params: { locale: string } }) {
-  const locale = isLocale(params.locale) ? params.locale : "en";
+export default async function Home({
+  params,
+}: {
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : "en";
   const dict = getDictionary(locale);
 
   return (

@@ -5,7 +5,7 @@
 // aloud and type from a screenshot.
 
 import { createHash, randomBytes } from "crypto";
-import { prisma } from "./db";
+import { query, exec, id } from "./db";
 
 export const USER_CODE_PREFIX = "CT-";
 
@@ -36,11 +36,14 @@ export async function ensureUserCode(
 ): Promise<string> {
   const derived = deriveUserCode(userId);
   try {
-    await prisma.userCode.upsert({
-      where: { userId },
-      create: { userId, code: derived, comboHash: combo },
-      update: { comboHash: combo ?? undefined },
-    });
+    await query(
+      `INSERT INTO user_codes (id, "userId", code, "comboHash", "updatedAt")
+       VALUES ($1, $2, $3, $4, now())
+       ON CONFLICT ("userId") DO UPDATE SET
+         "comboHash" = COALESCE(EXCLUDED."comboHash", user_codes."comboHash"),
+         "updatedAt" = now()`,
+      [id(), userId, derived, combo],
+    );
     return derived;
   } catch {
     // Derivation collision against another visitor: fall back to random codes.
@@ -48,11 +51,14 @@ export async function ensureUserCode(
   for (let attempt = 0; attempt < 3; attempt++) {
     const randomCode = codeFromBytes(randomBytes(6));
     try {
-      await prisma.userCode.upsert({
-        where: { userId },
-        create: { userId, code: randomCode, comboHash: combo },
-        update: {},
-      });
+      await query(
+        `INSERT INTO user_codes (id, "userId", code, "comboHash", "updatedAt")
+         VALUES ($1, $2, $3, $4, now())
+         ON CONFLICT ("userId") DO UPDATE SET
+           "comboHash" = COALESCE(EXCLUDED."comboHash", user_codes."comboHash"),
+           "updatedAt" = now()`,
+        [id(), userId, randomCode, combo],
+      );
       return randomCode;
     } catch {
       // Collision again - keep trying.
@@ -67,9 +73,10 @@ export async function ensureUserCode(
 // Creates the row if the visitor has not added anything yet (loading /accounts
 // alone counts as activity).
 export async function touchActivity(userId: string): Promise<void> {
-  await prisma.user.upsert({
-    where: { id: userId },
-    create: { id: userId, lastActive: new Date() },
-    update: { lastActive: new Date() },
-  });
+  await exec(
+    `INSERT INTO users (id, "lastActive", "createdAt", "updatedAt")
+     VALUES ($1, now(), now(), now())
+     ON CONFLICT (id) DO UPDATE SET "lastActive" = now(), "updatedAt" = now()`,
+    [userId],
+  );
 }

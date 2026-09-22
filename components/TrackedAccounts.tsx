@@ -12,11 +12,13 @@ import type { LoadedChannel } from "@/lib/channels";
 const VIDEO_LAYOUT_KEY = "clipstrack.videoLayout";
 
 function useVideoLayout(): [VideoLayout, (layout: VideoLayout) => void] {
-  const [layout, setLayout] = useState<VideoLayout>("horizontal");
-  useEffect(() => {
+  // Lazy-initialize from localStorage (client-only hook; window is undefined
+  // during SSR, so fall back to the default). Avoids a post-mount effect.
+  const [layout, setLayout] = useState<VideoLayout>(() => {
+    if (typeof window === "undefined") return "horizontal";
     const saved = window.localStorage.getItem(VIDEO_LAYOUT_KEY);
-    if (saved === "horizontal" || saved === "vertical") setLayout(saved);
-  }, []);
+    return saved === "vertical" ? "vertical" : "horizontal";
+  });
   const change = (next: VideoLayout) => {
     setLayout(next);
     window.localStorage.setItem(VIDEO_LAYOUT_KEY, next);

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { prisma } from "@/lib/db";
+import { id, query, queryOne, type ChannelRow } from "@/lib/db";
 import { LOCALES } from "@/lib/i18n";
 import { syncChannel } from "@/lib/sync";
 import {
@@ -27,10 +27,10 @@ import { getMaxChannelsPerUser } from "@/lib/channels";
 // the /accounts page resolves a stable User ID. Never called for declined
 // visitors — those get no cookies at all from this action.
 export async function allowConsent(): Promise<void> {
-  const existing = getVisitorId();
+  const existing = await getVisitorId();
   const id = existing ?? crypto.randomUUID();
-  setVisitorId(id);
-  setConsent("1");
+  await setVisitorId(id);
+  await setConsent("1");
 }
 
 export type AddChannelsResult =
@@ -154,7 +154,7 @@ export async function addChannels(
 
   // Consent gate (server-side): no ct_uid cookie means the visitor never
   // agreed to the consent notice, so refuse before creating any data.
-  const userId = getVisitorId();
+  const userId = await getVisitorId();
   if (!userId) {
     return {
       ok: false,
@@ -171,10 +171,10 @@ export async function addChannels(
   // Per-visitor channel cap (scaling guard): only genuinely new channels count,
   // since re-adding an existing handle/URL updates that row in place.
   const maxChannels = await getMaxChannelsPerUser();
-  const tracked = await prisma.channel.findMany({
-    where: { userId },
-    select: { platform: true, username: true },
-  });
+  const tracked = await query<{ platform: string; username: string }>(
+    `SELECT platform, username FROM channels WHERE "userId" = $1`,
+    [userId],
+  );
   const trackedKeys = new Set(tracked.map((c) => `${c.platform}:${c.username}`));
   const newChannels = handles.filter(
     (h) => !trackedKeys.has(`${h.platform}:${h.username}`),
@@ -187,12 +187,17 @@ export async function addChannels(
   }
 
   try {
-    await prisma.user.createMany({ data: [{ id: userId }], skipDuplicates: true });
+    await query(
+      `INSERT INTO users (id, "lastActive", "createdAt", "updatedAt")
+       VALUES ($1, now(), now(), now())
+       ON CONFLICT (id) DO NOTHING`,
+      [userId],
+    );
 
     // Instagram/TikTok shares one per-IP ScrapeCreators budget; YouTube uses
     // the official API and is never limited by it (or the mid-batch pause
     // below — YouTube handles always sync immediately).
-    const combo = requestComboHash(userId);
+    const combo = await requestComboHash(userId);
     await recordAttribution(userId, combo);
     const credits = await getCreditsStatus(combo);
     let remaining = credits.remaining;
@@ -204,45 +209,56 @@ export async function addChannels(
       // Re-adding the same handle on the SAME platform updates that row. A
       // different platform gets its own channel so both can be tracked (e.g.
       // @mrbeast on Instagram and TikTok separately).
-      const existing = await prisma.channel.findFirst({
-        where: { userId, username, platform },
-      });
+      const existing = await queryOne<ChannelRow>(
+        `SELECT * FROM channels WHERE "userId" = $1 AND username = $2 AND platform = $3 LIMIT 1`,
+        [userId, username, platform],
+      );
 
-      let channel;
+      let channel: ChannelRow;
       if (existing) {
-        channel = await prisma.channel.update({
-          where: { id: existing.id },
-          data: {
+        channel = (await queryOne<ChannelRow>(
+          `UPDATE channels SET
+             platform = $2, "profileUrl" = $3, "oldVideoCount" = $4,
+             "latestVideoCount" = $5, "minLikeRatio" = $6, "updatedAt" = now()
+           WHERE id = $1
+           RETURNING *`,
+          [
+            existing.id,
             platform,
-            profileUrl: profileUrlFor(platform, username),
+            profileUrlFor(platform, username),
             oldVideoCount,
             latestVideoCount,
             minLikeRatio,
-          },
-        });
+          ],
+        ))!;
       } else {
-        channel = await prisma.channel.upsert({
-          where: {
-            userId_platform_username: { userId, platform, username },
-          },
-          create: {
+        channel = (await queryOne<ChannelRow>(
+          `INSERT INTO channels (
+             id, "userId", platform, username, "displayName", "externalId",
+             "profileUrl", "oldVideoCount", "latestVideoCount", "minLikeRatio",
+             "createdAt", "updatedAt"
+           )
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), now())
+           ON CONFLICT ("userId", platform, username) DO UPDATE SET
+             "profileUrl" = EXCLUDED."profileUrl",
+             "oldVideoCount" = EXCLUDED."oldVideoCount",
+             "latestVideoCount" = EXCLUDED."latestVideoCount",
+             "minLikeRatio" = EXCLUDED."minLikeRatio",
+             "updatedAt" = now()
+           RETURNING *`,
+          [
+            id(),
             userId,
             platform,
             username,
-            displayName: username,
-            externalId: username,
-            profileUrl: profileUrlFor(platform, username),
+            username,
+            username,
+            profileUrlFor(platform, username),
             oldVideoCount,
             latestVideoCount,
             minLikeRatio,
-          },
-          update: {
-            profileUrl: profileUrlFor(platform, username),
-            oldVideoCount,
-            latestVideoCount,
-            minLikeRatio,
-          },
-        });
+          ],
+        ))!;
       }
 
       added.push(username);
@@ -262,10 +278,10 @@ export async function addChannels(
           });
           remaining -= consumed;
         }
-        const fresh = await prisma.channel.findUnique({
-          where: { id: channel.id },
-          select: { lastSyncedAt: true },
-        });
+        const fresh = await queryOne<{ lastSyncedAt: Date | null }>(
+          `SELECT "lastSyncedAt" FROM channels WHERE id = $1`,
+          [channel.id],
+        );
         if (fresh?.lastSyncedAt) syncedCount += 1;
       } catch (err) {
         console.error(`[addChannels] sync @${username}:`, err);
@@ -307,7 +323,10 @@ export type EditChannelResult =
 // Re-run a single channel's sync on demand (Refresh button on each card).
 export async function refreshChannel(id: string): Promise<EditChannelResult> {
   try {
-    const channel = await prisma.channel.findUnique({ where: { id } });
+    const channel = await queryOne<ChannelRow>(
+      `SELECT * FROM channels WHERE id = $1`,
+      [id],
+    );
     if (!channel) return { ok: false, error: "Channel not found." };
 
     // Any refresh counts as visitor activity for the inactivity cleanup.
@@ -318,7 +337,7 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
     if (channel.platform === "YOUTUBE") {
       await syncChannel(channel);
     } else {
-      const combo = requestComboHash(channel.userId);
+      const combo = await requestComboHash(channel.userId);
       await recordAttribution(channel.userId, combo);
       const credits = await getCreditsStatus(combo);
       if (credits.remaining <= 0) {
@@ -349,11 +368,12 @@ async function trimBucketToCount(
   keep: number,
   addedAt: Date,
 ): Promise<void> {
-  const videos = await prisma.video.findMany({
-    where: { channelId, isBackfill },
-    orderBy: { publishedAt: "desc" },
-    select: { id: true, publishedAt: true },
-  });
+  const videos = await query<{ id: string; publishedAt: Date | null }>(
+    `SELECT id, "publishedAt" FROM videos
+     WHERE "channelId" = $1 AND "isBackfill" = $2
+     ORDER BY "publishedAt" DESC`,
+    [channelId, isBackfill],
+  );
 
   const violatesRule = (video: { publishedAt: Date | null }) =>
     isBackfill
@@ -370,7 +390,7 @@ async function trimBucketToCount(
 
   const drop = [...ruleBreakers, ...overCap];
   if (drop.length > 0) {
-    await prisma.video.deleteMany({ where: { id: { in: drop } } });
+    await query(`DELETE FROM videos WHERE id = ANY($1)`, [drop]);
   }
 }
 
@@ -395,10 +415,14 @@ export async function editChannel(
     counts.minLikeRatio == null ? null : clampRatio(counts.minLikeRatio);
 
   try {
-    const channel = await prisma.channel.update({
-      where: { id },
-      data: { oldVideoCount, latestVideoCount, minLikeRatio },
-    });
+    let channel = await queryOne<ChannelRow>(
+      `UPDATE channels SET
+         "oldVideoCount" = $1, "latestVideoCount" = $2, "minLikeRatio" = $3, "updatedAt" = now()
+       WHERE id = $4
+       RETURNING *`,
+      [oldVideoCount, latestVideoCount, minLikeRatio, id],
+    );
+    if (!channel) return { ok: false, error: "Could not update the channel." };
 
     // Editing a channel counts as visitor activity for the inactivity cleanup.
     await touchActivity(channel.userId);
@@ -411,14 +435,15 @@ export async function editChannel(
     // Raised Old window on an already-backfilled channel? Re-open the one-time
     // backfill so the immediate refresh picks up the additional older videos.
     if (channel.backfilled && channel.oldVideoCount > 0) {
-      const oldTracked = await prisma.video.count({
-        where: { channelId: channel.id, isBackfill: true },
-      });
-      if (channel.oldVideoCount > oldTracked) {
-        await prisma.channel.update({
-          where: { id: channel.id },
-          data: { backfilled: false },
-        });
+      const [{ count }] = await query<{ count: number }>(
+        `SELECT count(*) AS count FROM videos WHERE "channelId" = $1 AND "isBackfill" = true`,
+        [channel.id],
+      );
+      if (channel.oldVideoCount > count) {
+        channel = (await queryOne<ChannelRow>(
+          `UPDATE channels SET "backfilled" = false, "updatedAt" = now() WHERE id = $1 RETURNING *`,
+          [channel.id],
+        ))!;
       }
     }
 
@@ -433,7 +458,13 @@ export async function editChannel(
 // Remove a tracked channel and its entire history (Remove button on each card).
 export async function removeChannel(id: string): Promise<EditChannelResult> {
   try {
-    const channel = await prisma.channel.delete({ where: { id } });
+    const channel = await queryOne<ChannelRow>(
+      `DELETE FROM channels WHERE id = $1 RETURNING id, username, "userId"`,
+      [id],
+    );
+    if (!channel) {
+      return { ok: false, error: "Could not remove the channel - is it still there?" };
+    }
     // Removing counts as visitor activity for the inactivity cleanup.
     await touchActivity(channel.userId).catch(() => {});
     revalidateAccountPages();

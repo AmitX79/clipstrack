@@ -69,6 +69,7 @@ export function ConsentGate({
 
   useEffect(() => {
     if (readGranted()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setStatus("granted");
     } else if (readDecline()) {
       setStatus("declined");

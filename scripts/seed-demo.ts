@@ -1,41 +1,62 @@
 // Dev utility: seed a demo visitor with a few accounts so the dashboard
 // renders realistic stats. Run: npm run db:seed-demo
 import "dotenv/config";
-import { prisma } from "../lib/db";
+import { id, query, queryOne, type ChannelRow } from "../lib/db";
 
 const DEMO_USER_ID = "cliptrack-demo";
 
 export async function seedDemo(): Promise<void> {
-  const user = await prisma.user.upsert({
-    where: { id: DEMO_USER_ID },
-    create: { id: DEMO_USER_ID },
-    update: {},
+  await query(
+    `INSERT INTO users (id, "lastActive", "createdAt", "updatedAt")
+     VALUES ($1, now(), now(), now())
+     ON CONFLICT (id) DO NOTHING`,
+    [DEMO_USER_ID],
+  );
+
+  const upsertChannel = async (input: {
+    platform: string;
+    username: string;
+    displayName: string;
+    externalId: string;
+    profileUrl: string;
+  }): Promise<ChannelRow> => {
+    const row = await queryOne<ChannelRow>(
+      `INSERT INTO channels (
+         id, "userId", platform, username, "displayName", "externalId",
+         "profileUrl", "lastSyncedAt", "oldVideoCount", "latestVideoCount",
+         "backfilled", "createdAt", "updatedAt"
+       )
+       VALUES ($1, $2, $3, $4, $5, $6, $7, now(), 8, 8, true, now(), now())
+       ON CONFLICT ("userId", platform, username) DO UPDATE SET
+         "lastSyncedAt" = now(),
+         "updatedAt" = now()
+       RETURNING *`,
+      [
+        id(),
+        DEMO_USER_ID,
+        input.platform,
+        input.username,
+        input.displayName,
+        input.externalId,
+        input.profileUrl,
+      ],
+    );
+    return row!;
+  };
+
+  const mrbeast = await upsertChannel({
+    platform: "YOUTUBE",
+    username: "mrbeast",
+    displayName: "MrBeast",
+    externalId: "UCX6OQ3DkcsbYNE6H8uQQuVA",
+    profileUrl: "https://www.youtube.com/@mrbeast",
   });
 
-  const mrbeast = await prisma.channel.upsert({
-    where: { userId_platform_username: { userId: user.id, platform: "YOUTUBE", username: "mrbeast" } },
-    create: {
-      userId: user.id,
-      platform: "YOUTUBE",
-      username: "mrbeast",
-      displayName: "MrBeast",
-      externalId: "UCX6OQ3DkcsbYNE6H8uQQuVA",
-      profileUrl: "https://www.youtube.com/@mrbeast",
-      lastSyncedAt: new Date(),
-    },
-    update: { lastSyncedAt: new Date() },
-  });
-
-  await prisma.channelSnapshot.create({
-    data: {
-      channelId: mrbeast.id,
-      followers: 339_000_000,
-      following: 84,
-      totalPosts: 1_917,
-      totalViews: BigInt(78_500_000_000),
-      recordedAt: new Date(),
-    },
-  });
+  await query(
+    `INSERT INTO channel_snapshots (id, "channelId", followers, following, "totalPosts", "totalViews", "recordedAt")
+     VALUES ($1, $2, $3, $4, $5, $6, now())`,
+    [id(), mrbeast.id, 339_000_000, 84, 1_917, BigInt(78_500_000_000)],
+  );
   const demos = [
     { title: "Beast Games - $5,000,000 Episode", url: "https://www.youtube.com/watch?v=demo1" },
     { title: "I Gave Away $1,000,000", url: "https://www.youtube.com/watch?v=demo2" },
@@ -43,50 +64,40 @@ export async function seedDemo(): Promise<void> {
   ];
   for (let i = 0; i < demos.length; i++) {
     const { title, url } = demos[i];
-    const video = await prisma.video.upsert({
-      where: { channelId_externalId: { channelId: mrbeast.id, externalId: `demo-${i + 1}` } },
-      create: {
-        channelId: mrbeast.id,
-        externalId: `demo-${i + 1}`,
+    const video = await queryOne<{ id: string }>(
+      `INSERT INTO videos (id, "channelId", "externalId", title, url, "publishedAt", "createdAt", "updatedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, now(), now())
+       ON CONFLICT ("channelId", "externalId") DO UPDATE SET
+         title = $4, url = $5, "updatedAt" = now()
+       RETURNING id`,
+      [
+        id(),
+        mrbeast.id,
+        `demo-${i + 1}`,
         title,
         url,
-        publishedAt: new Date(Date.now() - (i + 1) * 86400_000),
-      },
-      update: {},
-    });
-    await prisma.videoSnapshot.create({
-      data: {
-        videoId: video.id,
-        views: BigInt(210_000_000 - i * 40_000_000),
-        likes: 8_500_000 - i * 900_000,
-        comments: 210_000 - i * 40_000,
-        recordedAt: new Date(),
-      },
-    });
+        new Date(Date.now() - (i + 1) * 86400_000),
+      ],
+    );
+    await query(
+      `INSERT INTO video_snapshots (id, "videoId", views, likes, comments, "recordedAt")
+       VALUES ($1, $2, $3, $4, $5, now())`,
+      [id(), video!.id, BigInt(210_000_000 - i * 40_000_000), 8_500_000 - i * 900_000, 210_000 - i * 40_000],
+    );
   }
 
-  const insta = await prisma.channel.upsert({
-    where: { userId_platform_username: { userId: user.id, platform: "INSTAGRAM", username: "mrbeast" } },
-    create: {
-      userId: user.id,
-      platform: "INSTAGRAM",
-      username: "mrbeast",
-      displayName: "MrBeast",
-      externalId: "mrbeast",
-      profileUrl: "https://www.instagram.com/mrbeast/",
-      lastSyncedAt: new Date(),
-    },
-    update: { lastSyncedAt: new Date() },
+  const insta = await upsertChannel({
+    platform: "INSTAGRAM",
+    username: "mrbeast",
+    displayName: "MrBeast",
+    externalId: "mrbeast",
+    profileUrl: "https://www.instagram.com/mrbeast/",
   });
-  await prisma.channelSnapshot.create({
-    data: {
-      channelId: insta.id,
-      followers: 44_000_000,
-      following: 350,
-      totalPosts: 620,
-      recordedAt: new Date(),
-    },
-  });
+  await query(
+    `INSERT INTO channel_snapshots (id, "channelId", followers, following, "totalPosts", "recordedAt")
+     VALUES ($1, $2, $3, $4, $5, now())`,
+    [id(), insta.id, 44_000_000, 350, 620],
+  );
 
   console.log(`[seed-demo] ready — user "${DEMO_USER_ID}" with 2 accounts`);
 }

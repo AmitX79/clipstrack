@@ -8,12 +8,13 @@ import {
 } from "@/lib/i18n";
 import { getPageContent } from "@/lib/i18n/pages";
 
-export function generateMetadata({
+export async function generateMetadata({
   params,
 }: {
-  params: { locale: string };
-}): Metadata {
-  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
+  params: Promise<{ locale: string }>;
+}): Promise<Metadata> {
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   const meta = getPageContent(locale).meta.privacy;
   const languages = Object.fromEntries(
     LOCALES.map((l) => [l, localizedHref(l, "/privacy")]),
@@ -31,12 +32,13 @@ export function generateMetadata({
   };
 }
 
-export default function PrivacyPage({
+export default async function PrivacyPage({
   params,
 }: {
-  params: { locale: string };
+  params: Promise<{ locale: string }>;
 }) {
-  const locale = isLocale(params.locale) ? params.locale : DEFAULT_LOCALE;
+  const { locale: raw } = await params;
+  const locale = isLocale(raw) ? raw : DEFAULT_LOCALE;
   const content = getPageContent(locale).privacy;
 
   return (
