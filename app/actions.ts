@@ -9,6 +9,7 @@ import {
   DAILY_LIMIT_MESSAGE,
   requestComboHash,
 } from "@/lib/credits";
+import { claimRefreshCooldown, pruneRefreshCooldowns, REFRESH_COOLDOWN_MESSAGE } from "@/lib/refreshcooldown";
 import {
   detectProfileUrl,
   isUrlLike,
@@ -306,7 +307,14 @@ export type EditChannelResult =
 // rolling Latest window), so no row is left on a stale timestamp while its
 // neighbours move. When a credit cap or pagination ceiling still cuts it
 // short, the shortfall is reported back so the UI can say so plainly.
-export async function refreshChannel(id: string): Promise<EditChannelResult> {
+//
+// `bypassCooldown` lets the add/edit flows (which already paid for an initial
+// sync and should never be slowed by the just-refreshed throttle) force
+// through the per-combo cooldown. Manual card refreshes keep the throttle.
+export async function refreshChannel(
+  id: string,
+  opts?: { bypassCooldown?: boolean },
+): Promise<EditChannelResult> {
   try {
     const channel = await queryOne<ChannelRow>(
       `SELECT * FROM channels WHERE id = $1`,
@@ -324,6 +332,12 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
       result = await syncChannel(channel, { refreshAll: true });
     } else {
       const combo = await requestComboHash(channel.userId);
+      const cooldown = opts?.bypassCooldown
+        ? true
+        : await claimRefreshCooldown(combo);
+      if (!cooldown) {
+        return { ok: false, error: REFRESH_COOLDOWN_MESSAGE };
+      }
       const { remaining } = await attributeAndBudget(channel.userId, combo);
       if (remaining <= 0) {
         return { ok: false, error: DAILY_LIMIT_MESSAGE };
@@ -335,6 +349,7 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
       });
     }
     const total = result.existing > 0 ? result.existing : result.wanted;
+    void pruneRefreshCooldowns();
     const partial =
       result.fetched < total
         ? {

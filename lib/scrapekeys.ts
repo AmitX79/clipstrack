@@ -16,6 +16,77 @@ export const SCRAPECREATORS_BALANCE_PATH = "/v1/account/credit-balance";
 // How stale a fetched balance may be before refreshKeyBalances refetches it.
 const BALANCE_TTL_MS = 15 * 60 * 1000;
 
+// In-flight cap per key. With `keys × cap` total slots, the provider never
+// sees a pile-up of dozens of concurrent feed walks (the 30s+ pathology), but
+// several keys still parallelize cleanly.
+export const PER_KEY_IN_FLIGHT_CAP = 2;
+
+// A request slot must never live longer than this; anything older is reset by
+// runScrapeSlotJanitor (a crashed/timed-out worker isolate can strand counts).
+const SLOT_STALE_MS = 90 * 1000;
+
+let slotsEnsured: Promise<void> | null = null;
+function ensureScrapeSlots(): Promise<void> {
+  if (!slotsEnsured) {
+    slotsEnsured = (async () => {
+      await query(
+        `ALTER TABLE scrape_keys
+           ADD COLUMN IF NOT EXISTS "inFlight" integer NOT NULL DEFAULT 0,
+           ADD COLUMN IF NOT EXISTS "inFlightAt" timestamptz`,
+        [],
+      ).catch((e) => console.error("[scrape] slot columns failed:", e));
+    })();
+  }
+  return slotsEnsured;
+}
+
+// Try to claim one in-flight slot on a key (atomic against every isolate).
+// Returns true when the key had capacity; false when at capacity (caller
+// should move on to the next key).
+export async function acquireScrapeSlot(keyId: string): Promise<boolean> {
+  await ensureScrapeSlots();
+  const rows = await query<{ id: string }>(
+    `UPDATE scrape_keys
+       SET "inFlight" = "inFlight" + 1,
+           "inFlightAt" = now(),
+           "lastUsedAt" = now(),
+           "updatedAt" = now()
+     WHERE id = $1
+       AND "active" = true
+       AND "quotaExhausted" = false
+       AND "inFlight" < $2
+     RETURNING id`,
+    [keyId, PER_KEY_IN_FLIGHT_CAP],
+  );
+  return rows.length > 0;
+}
+
+export async function releaseScrapeSlot(keyId: string): Promise<void> {
+  await query(
+    `UPDATE scrape_keys
+       SET "inFlight" = GREATEST("inFlight" - 1, 0), "updatedAt" = now()
+     WHERE id = $1`,
+    [keyId],
+  ).catch(() => {});
+}
+
+// Reset slot counts stranded by an isolate that died mid-request. Cheap and
+// idempotent; guarded to run at most ~once a minute per isolate.
+let janitorAt = 0;
+export async function runScrapeSlotJanitor(): Promise<void> {
+  const now = Date.now();
+  if (now - janitorAt < 60_000) return;
+  janitorAt = now;
+  await query(
+    `UPDATE scrape_keys
+       SET "inFlight" = 0, "updatedAt" = now()
+     WHERE "inFlight" > 0 AND "inFlightAt" < now() - interval '${Math.floor(
+       SLOT_STALE_MS / 1000,
+     )} seconds'`,
+    [],
+  ).catch(() => {});
+}
+
 type ScrapeKeyRow = {
   id: string;
   label: string;

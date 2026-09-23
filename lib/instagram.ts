@@ -14,7 +14,7 @@
 // collected. A profile call rounds out the follower counts; if it fails the
 // posts payload already carries identity, so the sync still succeeds.
 
-import { scrapeGet } from "./scrapecreators";
+import { scrapeGet, scrapeGetRaw, MAX_WALK_PAGES } from "./scrapecreators";
 import { selectNearest } from "./select";
 import type {
   AccountMeta,
@@ -125,8 +125,9 @@ export const fetchInstagramChannel: PlatformFetcher = async (username, limit) =>
 
   // The profile call is independent of the posts walk (identity + follower
   // counts) and is the one extra round trip on an already slow fan-out — fire
-  // it now and read the result when the walk settles, instead of after.
-  const profilePromise = scrapeGet<ProfileResponse>("/v1/instagram/profile", {
+  // it now and read the result when the walk settles, instead of after. It
+  // stays ungated so it truly overlaps the (serialized) walk.
+  const profilePromise = scrapeGetRaw<ProfileResponse>("/v1/instagram/profile", {
     handle: cleaned,
   }).catch(() => undefined);
 
@@ -141,7 +142,7 @@ export const fetchInstagramChannel: PlatformFetcher = async (username, limit) =>
     collected.filter((item) => item.media_type === 2).length < requestLimit &&
     cursor &&
     more &&
-    pages < 20
+    pages < MAX_WALK_PAGES
   ) {
     const next = await scrapeGet<PostsResponse>("/v2/instagram/user/posts", {
       handle: cleaned,

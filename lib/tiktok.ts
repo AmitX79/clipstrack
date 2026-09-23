@@ -9,7 +9,7 @@
 // needed. If a profile comes back empty, the API recommends retrying with
 // `region=US` (the default is GB).
 
-import { scrapeGet } from "./scrapecreators";
+import { scrapeGet, MAX_WALK_PAGES } from "./scrapecreators";
 import { selectNearest } from "./select";
 import type {
   AccountMeta,
@@ -165,7 +165,7 @@ export const fetchTikTokChannel: PlatformFetcher = async (username, limit) => {
     collected.filter(isVideoPost).length < requestLimit &&
     cursor != null &&
     more &&
-    pages < 20
+    pages < MAX_WALK_PAGES
   ) {
     const next = await scrapeGet<TtVideosResponse>(
       "/v3/tiktok/profile/videos",

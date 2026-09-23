@@ -70,6 +70,14 @@ export function AddChannelBar({
       return;
     }
 
+    // Instagram/TikTok are credit-locked today (daily limit reached): the tabs
+    // are already disabled, and this also stops a pasted IG/TikTok profile URL
+    // (which auto-selects its tab above) from being added until midnight.
+    if (exhausted && platform !== "YOUTUBE") {
+      setError(dict.credits.limitReached);
+      return;
+    }
+
     // Capture the form before awaiting — React nulls `event.currentTarget`
     // once the synchronous handler returns. Kept in a ref too so the pending
     // re-submit (after consent is granted) can still reset the fields.
@@ -96,7 +104,9 @@ export function AddChannelBar({
         window.dispatchEvent(
           new CustomEvent("clipstrack:sync", { detail: { ids, pending: true } }),
         );
-        void Promise.allSettled(ids.map((id) => refreshChannel(id))).then(() => {
+        void Promise.allSettled(
+          ids.map((id) => refreshChannel(id, { bypassCooldown: true })),
+        ).then(() => {
           window.dispatchEvent(
             new CustomEvent("clipstrack:sync", { detail: { ids: [], pending: false } }),
           );
@@ -112,40 +122,39 @@ export function AddChannelBar({
     "focus-visible:ring-2 focus-visible:ring-link focus-visible:ring-offset-2 " +
     "focus-visible:ring-offset-canvas focus-visible:border-link";
 
-  const pillClass = (active: boolean) =>
+  const pillClass = (active: boolean, locked = false) =>
     "h-11 rounded-[64px] border px-4 text-sm font-medium transition-colors sm:h-9 " +
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-link " +
     "focus-visible:ring-offset-2 focus-visible:ring-offset-elevated " +
-    (active
-      ? "border-ink bg-ink text-on-ink"
-      : "border-hairline bg-elevated text-body hover:border-ink hover:text-ink");
+    (locked
+      ? "cursor-not-allowed border-hairline bg-elevated text-faint"
+      : active
+        ? "border-ink bg-ink text-on-ink"
+        : "border-hairline bg-elevated text-body hover:border-ink hover:text-ink");
 
   return (
     <form onSubmit={onSubmit} className="flex flex-col gap-2">
-      {exhausted && (
-        <div
-          role="status"
-          className="rounded-md border border-error bg-elevated p-4 text-sm font-medium text-error"
-        >
-          {dict.credits.limitReached}
-        </div>
-      )}
       <fieldset>
         <legend className="mono-eyebrow mb-2 w-full text-mute">
           {dict.add.platform}
         </legend>
         <div className="flex flex-wrap items-center gap-2">
-          {PLATFORM_VALUES.map((value) => (
-            <button
-              key={value}
-              type="button"
-              aria-pressed={platform === value}
-              onClick={() => setPlatform(value)}
-              className={pillClass(platform === value)}
-            >
-              {PLATFORM_LABELS[value]}
-            </button>
-          ))}
+          {PLATFORM_VALUES.map((value) => {
+            const locked = exhausted && value !== "YOUTUBE";
+            return (
+              <button
+                key={value}
+                type="button"
+                aria-pressed={platform === value}
+                disabled={locked}
+                onClick={() => setPlatform(value)}
+                title={locked ? dict.credits.limitReached : undefined}
+                className={pillClass(platform === value, locked)}
+              >
+                {PLATFORM_LABELS[value]}
+              </button>
+            );
+          })}
         </div>
       </fieldset>
 
