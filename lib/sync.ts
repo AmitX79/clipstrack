@@ -41,6 +41,11 @@ export interface SyncOptions {
   comboHash?: string;
   // Credits still available for this combo in this batch (avoid re-reading).
   remaining?: number;
+  // Manual refresh: re-measure every currently tracked video (both buckets)
+  // plus a fresh-upload buffer, instead of only the rolling "Latest" window.
+  // This is what keeps a card's per-video "updated Xs ago" row from going
+  // stale while its neighbours move. Routed/scheduled syncs never set it.
+  refreshAll?: boolean;
 }
 
 export interface SyncResult {
@@ -48,6 +53,15 @@ export interface SyncResult {
   consumed: number;
   // True when a successful platform fetch actually stamped lastSyncedAt.
   synced: boolean;
+  // Videos actually fetched this run.
+  fetched: number;
+  // Refresh window a full run would have covered (before any credit cap).
+  wanted: number;
+  // Currently tracked videos this run set out to re-measure (only meaningful
+  // for `refreshAll` runs; the messaging target for a partial refresh).
+  existing: number;
+  // True when the IG/TikTok credit budget cut the fetch short of `wanted`.
+  creditCapped: boolean;
 }
 
 // Syncs one channel. `consumed` is the number of videos fetched (IG/TikTok
@@ -68,7 +82,24 @@ export async function syncChannel(
     ? channel.oldVideoCount
     : channel.latestVideoCount;
 
-  let wanted = trackVideos > 0 ? trackVideos : 0;
+  // A manual refresh re-visits every video the card already shows (so nothing
+  // is left on a stale "updated 19h ago" row) plus a buffer for new uploads.
+  // Scheduled/routed syncs keep the smaller rolling window. The 200 cap mirrors
+  // the fetchers' own pagination ceiling.
+  let requested = trackVideos > 0 ? trackVideos : 0;
+  let existingCount = 0;
+  if (opts.refreshAll) {
+    const counted = await query<{ n: number }>(
+      `SELECT count(*)::int AS n FROM videos WHERE "channelId" = $1`,
+      [channel.id],
+    );
+    existingCount = counted[0]?.n ?? 0;
+    const buffer = channel.latestVideoCount > 0 ? channel.latestVideoCount : 1;
+    requested = Math.min(200, Math.max(requested, existingCount + buffer));
+  }
+
+  let wanted = requested > 0 ? requested : 0;
+  let creditCapped = false;
   if (budgeted) {
     const status =
       opts.remaining != null
@@ -78,8 +109,16 @@ export async function syncChannel(
       console.log(
         `[sync] skip ${channel.platform} @${channel.username}: daily limit reached`,
       );
-      return { consumed: 0, synced: false };
+      return {
+        consumed: 0,
+        synced: false,
+        fetched: 0,
+        wanted: requested,
+        existing: existingCount,
+        creditCapped: true,
+      };
     }
+    creditCapped = status.remaining < wanted;
     wanted = Math.min(wanted, status.remaining);
   }
 
@@ -96,7 +135,14 @@ export async function syncChannel(
       `UPDATE channels SET "lastSyncError" = $1, "updatedAt" = now() WHERE id = $2`,
       [detail.slice(0, 500), channel.id],
     ).catch((e) => console.error("[sync] failed to store error:", e));
-    return { consumed: 0, synced: false };
+    return {
+      consumed: 0,
+      synced: false,
+      fetched: 0,
+      wanted: requested,
+      existing: existingCount,
+      creditCapped,
+    };
   }
 
   // Charge after a successful fetch: exactly as many credits as videos that
@@ -211,7 +257,6 @@ export async function syncChannel(
   // returned no media), so the next syncs track only the newest uploads. A
   // credit-capped partial run leaves it open so the remaining old videos are
   // backfilled on the next funded sync.
-  const creditCapped = budgeted && trackVideos > 0 && wanted < trackVideos;
   if (doingBackfill && !creditCapped) {
     statements.push({
       text: `UPDATE channels SET "backfilled" = true, "updatedAt" = now() WHERE id = $1`,
@@ -228,9 +273,17 @@ export async function syncChannel(
 
   console.log(
     `[sync] ok ${channel.platform} @${channel.username}: ` +
-      `${result.media.length} items, followers=${result.stats.followers}`,
+      `${result.media.length} items, followers=${result.stats.followers}` +
+      (creditCapped ? ` (credit-capped: ${result.media.length}/${requested})` : ""),
   );
-  return { consumed, synced: true };
+  return {
+    consumed,
+    synced: true,
+    fetched: result.media.length,
+    wanted: requested,
+    existing: existingCount,
+    creditCapped,
+  };
 }
 
 type ChannelWithUser = ChannelRow & {

@@ -230,6 +230,8 @@ export const dictionaries = {
       synced: "Synced {t} ago",
       notSynced: "Not synced yet",
       syncFailed: "Last sync failed: {error}",
+      partialUpdate:
+        "{fetched}/{total} videos updated - the rest will sync on the next scheduled run.",
       publishedOld: "{t} old",
       updated: "updated {t}",
       errCounts: "Counts must be whole numbers between 0 and 200.",
@@ -268,6 +270,8 @@ export const dictionaries = {
       left: "{left} credits left for Instagram/TikTok today",
       limitReached:
         "Instagram/TikTok daily limit reached. YouTube keeps working. Resumes at midnight IST.",
+      partialRefresh:
+        "{fetched}/{total} videos updated. Instagram/TikTok daily credit limit reached - the rest will sync on schedule.",
     },
     consent: {
       eyebrow: "Before you add channels",
@@ -498,6 +502,8 @@ export const dictionaries = {
       synced: "Sincronizado hace {t}",
       notSynced: "Aún sin sincronizar",
       syncFailed: "El último sync falló: {error}",
+      partialUpdate:
+        "{fetched}/{total} vídeos actualizados; el resto se sincronizará en la próxima ejecución programada.",
       publishedOld: "hace {t}",
       updated: "actualizado hace {t}",
       errCounts: "Los recuentos deben ser números enteros entre 0 y 200.",
@@ -537,6 +543,8 @@ export const dictionaries = {
       left: "Quedan {left} créditos para Instagram/TikTok hoy",
       limitReached:
         "Se alcanzó el límite diario de Instagram/TikTok. YouTube sigue funcionando. Se reanuda a medianoche (IST).",
+      partialRefresh:
+        "{fetched}/{total} vídeos actualizados. Se alcanzó el límite diario de Instagram/TikTok; el resto se sincronizará según lo programado.",
     },
     consent: {
       eyebrow: "Antes de añadir canales",
@@ -763,6 +771,8 @@ export const dictionaries = {
       synced: "{t}前に同期",
       notSynced: "未同期",
       syncFailed: "直近の同期に失敗: {error}",
+      partialUpdate:
+        "{fetched}/{total} 件の動画を更新しました。残りは次回のスケジュール同期で更新されます。",
       publishedOld: "{t}前",
       updated: "{t}前に更新",
       errCounts: "数は0〜200の整数でなければなりません。",
@@ -800,6 +810,8 @@ export const dictionaries = {
       left: "今日のInstagram/TikTokはあと {left} クレジット",
       limitReached:
         "Instagram/TikTokの1日の上限に達しました。YouTubeは引き続き動作します。深夜0時(IST)にリセットされます。",
+      partialRefresh:
+        "{fetched}/{total} 件の動画を更新しました。Instagram/TikTokの1日の上限に達したため、残りはスケジュールで同期されます。",
     },
     consent: {
       eyebrow: "チャンネルを追加する前に",
@@ -1027,6 +1039,8 @@ export const dictionaries = {
       synced: "Synchronisé il y a {t}",
       notSynced: "Non synchronisé",
       syncFailed: "Dernière sync échouée : {error}",
+      partialUpdate:
+        "{fetched}/{total} vidéos mises à jour ; le reste sera synchronisé lors du prochain passage planifié.",
       publishedOld: "il y a {t}",
       updated: "mis à jour il y a {t}",
       errCounts: "Les comptes doivent être des nombres entiers entre 0 et 200.",
@@ -1066,6 +1080,8 @@ export const dictionaries = {
       left: "Encore {left} crédits pour Instagram/TikTok aujourd'hui",
       limitReached:
         "Limite quotidienne d'Instagram/TikTok atteinte. YouTube continue de fonctionner. Reprend à minuit (IST).",
+      partialRefresh:
+        "{fetched}/{total} vidéos mises à jour. Limite quotidienne d'Instagram/TikTok atteinte ; le reste sera synchronisé à l'heure prévue.",
     },
     consent: {
       eyebrow: "Avant d'ajouter des chaînes",
@@ -1293,6 +1309,8 @@ export const dictionaries = {
       synced: "Vor {t} synchronisiert",
       notSynced: "Noch nicht synchronisiert",
       syncFailed: "Letzter Sync fehlgeschlagen: {error}",
+      partialUpdate:
+        "{fetched}/{total} Videos aktualisiert; der Rest folgt beim nächsten geplanten Lauf.",
       publishedOld: "vor {t}",
       updated: "aktualisiert vor {t}",
       errCounts: "Die Zahlen müssen ganze Werte zwischen 0 und 200 sein.",
@@ -1331,6 +1349,8 @@ export const dictionaries = {
       left: "Noch {left} Credits für Instagram/TikTok heute",
       limitReached:
         "Tageslimit für Instagram/TikTok erreicht. YouTube läuft weiter. Um Mitternacht (IST) geht es weiter.",
+      partialRefresh:
+        "{fetched}/{total} Videos aktualisiert. Tageslimit für Instagram/TikTok erreicht; der Rest wird planmäßig synchronisiert.",
     },
     consent: {
       eyebrow: "Bevor du Kanäle hinzufügst",
@@ -1558,6 +1578,8 @@ export const dictionaries = {
       synced: "Sincronizado há {t}",
       notSynced: "Ainda não sincronizado",
       syncFailed: "A última sincronização falhou: {error}",
+      partialUpdate:
+        "{fetched}/{total} vídeos atualizados; o restante será sincronizado na próxima execução programada.",
       publishedOld: "há {t}",
       updated: "atualizado há {t}",
       errCounts: "Os números devem ser inteiros entre 0 e 200.",
@@ -1597,6 +1619,8 @@ export const dictionaries = {
       left: "Restam {left} créditos para Instagram/TikTok hoje",
       limitReached:
         "Limite diário de Instagram/TikTok atingido. O YouTube continua funcionando. Retoma à meia-noite (IST).",
+      partialRefresh:
+        "{fetched}/{total} vídeos atualizados. Limite diário de Instagram/TikTok atingido; o restante será sincronizado no cronograma.",
     },
     consent: {
       eyebrow: "Antes de adicionar canais",
@@ -1823,6 +1847,8 @@ export const dictionaries = {
       synced: "{t} 전 동기화",
       notSynced: "아직 동기화 안 됨",
       syncFailed: "마지막 동기화 실패: {error}",
+      partialUpdate:
+        "{fetched}/{total}개 동영상을 업데이트했습니다. 나머지는 다음 예정된 동기화에서 처리됩니다.",
       publishedOld: "{t} 전",
       updated: "{t} 전 업데이트",
       errCounts: "수치는 0~200 사이의 정수여야 합니다.",
@@ -1860,6 +1886,8 @@ export const dictionaries = {
       left: "오늘 Instagram/TikTok에 쓸 수 있는 크레딧 {left}개",
       limitReached:
         "Instagram/TikTok 일일 한도에 도달했습니다. YouTube는 계속 작동합니다. 인도 표준시(IST) 자정에 재개됩니다.",
+      partialRefresh:
+        "{fetched}/{total}개 동영상을 업데이트했습니다. Instagram/TikTok 일일 한도에 도달해 나머지는 예정된 시간에 동기화됩니다.",
     },
     consent: {
       eyebrow: "채널을 추가하기 전에",
@@ -2087,6 +2115,8 @@ export const dictionaries = {
       synced: "Sincronizzato {t} fa",
       notSynced: "Non ancora sincronizzato",
       syncFailed: "Ultima sincronizzazione fallita: {error}",
+      partialUpdate:
+        "{fetched}/{total} video aggiornati; il resto verrà sincronizzato alla prossima esecuzione programmata.",
       publishedOld: "{t} fa",
       updated: "aggiornato {t} fa",
       errCounts: "I conteggi devono essere numeri interi tra 0 e 200.",
@@ -2126,6 +2156,8 @@ export const dictionaries = {
       left: "Rimangono {left} crediti per Instagram/TikTok oggi",
       limitReached:
         "Limite giornaliero di Instagram/TikTok raggiunto. YouTube continua a funzionare. Riprende a mezzanotte (IST).",
+      partialRefresh:
+        "{fetched}/{total} video aggiornati. Limite giornaliero di Instagram/TikTok raggiunto; il resto si sincronizzerà come da programma.",
     },
     consent: {
       eyebrow: "Prima di aggiungere canali",

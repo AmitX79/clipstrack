@@ -274,7 +274,7 @@ export async function addChannels(
           });
           remaining -= result.consumed;
         } else {
-          result = { consumed: 0, synced: false };
+          result = { consumed: 0, synced: false, fetched: 0, wanted: 0, existing: 0, creditCapped: true };
         }
         // syncChannel already stamped lastSyncedAt; count from its verdict
         // instead of re-querying the row.
@@ -313,10 +313,22 @@ export async function addChannels(
 }
 
 export type EditChannelResult =
-  | { ok: true; channel: string }
+  | {
+      ok: true;
+      channel: string;
+      // When the run could not cover the full tracked window, these counts let
+      // the card say "12/18 videos updated" instead of silently looking done.
+      // `capped` distinguishes an exhausted IG/TikTok credit budget from a
+      // platform shortfall beyond its own pagination ceiling.
+      partial?: { fetched: number; total: number; capped: boolean };
+    }
   | { ok: false; error: string };
 
 // Re-run a single channel's sync on demand (Refresh button on each card).
+// `refreshAll` covers every video the card already displays (not just the
+// rolling Latest window), so no row is left on a stale timestamp while its
+// neighbours move. When a credit cap or pagination ceiling still cuts it
+// short, the shortfall is reported back so the UI can say so plainly.
 export async function refreshChannel(id: string): Promise<EditChannelResult> {
   try {
     const channel = await queryOne<ChannelRow>(
@@ -330,21 +342,36 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
 
     // Instagram/TikTok refreshes cost credits against the visitor's daily
     // ScrapeCreators budget. YouTube is never credit-gated.
+    let result: SyncResult;
     if (channel.platform === "YOUTUBE") {
-      await syncChannel(channel);
+      result = await syncChannel(channel, { refreshAll: true });
     } else {
       const combo = await requestComboHash(channel.userId);
       const { remaining } = await attributeAndBudget(channel.userId, combo);
       if (remaining <= 0) {
         return { ok: false, error: DAILY_LIMIT_MESSAGE };
       }
-      await syncChannel(channel, {
+      result = await syncChannel(channel, {
         comboHash: combo,
         remaining,
+        refreshAll: true,
       });
     }
+    const total = result.existing > 0 ? result.existing : result.wanted;
+    const partial =
+      result.fetched < total
+        ? {
+            fetched: result.fetched,
+            total,
+            capped: result.creditCapped,
+          }
+        : undefined;
     revalidateAccountPages();
-    return { ok: true, channel: `@${channel.username}` };
+    return {
+      ok: true,
+      channel: `@${channel.username}`,
+      ...(partial ? { partial } : {}),
+    };
   } catch (err) {
     console.error("[refreshChannel]", err);
     return { ok: false, error: "Refresh failed - is the database reachable?" };

@@ -54,15 +54,14 @@ function ChannelActions({
   const router = useRouter();
   const [busy, setBusy] = useState<"refresh" | "edit" | "remove" | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [note, setNote] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
   const user = channel.username;
 
   function run(
     key: "refresh" | "edit" | "remove",
-    action: () => Promise<
-      { ok: true; channel: string } | { ok: false; error: string }
-    >,
+    action: () => Promise<{ ok: true; channel: string } | { ok: false; error: string }>,
   ) {
     setError(null);
     setBusy(key);
@@ -72,6 +71,33 @@ function ChannelActions({
       if (!result.ok) {
         setError(result.error);
         return;
+      }
+      router.refresh();
+    });
+  }
+
+  // Refresh has its own path so a partial run (credit cap or pagination
+  // ceiling) can explain the shortfall instead of looking like a full sync.
+  function onRefresh() {
+    setError(null);
+    setNote(null);
+    setBusy("refresh");
+    startTransition(async () => {
+      const result = await refreshChannel(channel.id);
+      setBusy(null);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      if (result.partial) {
+        setNote(
+          tpl(
+            result.partial.capped
+              ? dict.credits.partialRefresh
+              : dict.card.partialUpdate,
+            result.partial,
+          ),
+        );
       }
       router.refresh();
     });
@@ -91,7 +117,7 @@ function ChannelActions({
       <div className="flex flex-wrap items-center justify-end gap-1.5">
         <button
           type="button"
-          onClick={() => run("refresh", () => refreshChannel(channel.id))}
+          onClick={onRefresh}
           disabled={disabled || refreshDisabled}
           title={refreshDisabled ? dict.credits.limitReached : undefined}
           aria-label={
@@ -133,6 +159,7 @@ function ChannelActions({
         </button>
       </div>
       {error && <p className="text-xs text-error">{error}</p>}
+      {note && <p className="text-xs text-warning-deep">{note}</p>}
     </div>
   );
 }
