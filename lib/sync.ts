@@ -1,5 +1,6 @@
 // Shared sync orchestration, used by:
-//   1. the hourly VPS cron (scripts/sync.ts)
+//   1. the scheduled crons (/api/cron/sync via worker.ts -> runSync, optionally
+//      restricted to a platform group)
 //   2. the add-channel flow (app/actions.ts -> immediate first sync)
 //
 // A failing platform fetch or a single bad channel never aborts the rest.
@@ -13,7 +14,7 @@
 // 10,000 units/day quota (tracked in /admin) and never touches the per-IP
 // ScrapeCreators budget.
 
-import { id, query, queryOne, type ChannelRow } from "./db";
+import { id, query, tx, type ChannelRow } from "./db";
 import { fetchInstagramChannel } from "./instagram";
 import { fetchTikTokChannel } from "./tiktok";
 import { fetchYouTubeChannel } from "./youtube";
@@ -42,14 +43,20 @@ export interface SyncOptions {
   remaining?: number;
 }
 
-// Syncs one channel and returns the number of credits it consumed (the number
-// of videos fetched). Instagram/TikTok are charged against the visitor's daily
-// ScrapeCreators budget; YouTube never is. Returns 0 when skipped for reaching
-// the daily budget.
+export interface SyncResult {
+  // Videos fetched (credits consumed for IG/TikTok; 0 for a skip or failure).
+  consumed: number;
+  // True when a successful platform fetch actually stamped lastSyncedAt.
+  synced: boolean;
+}
+
+// Syncs one channel. `consumed` is the number of videos fetched (IG/TikTok
+// credits charged; YouTube never is). `synced` tells the caller whether the
+// fetch succeeded (so the UI can say "added and synced" without re-querying).
 export async function syncChannel(
   channel: ChannelRow,
   opts: SyncOptions = {},
-): Promise<number> {
+): Promise<SyncResult> {
   // YouTube uses the official YouTube Data API (its own 10,000 units/day
   // quota), so the per-IP ScrapeCreators budget only governs IG/TikTok.
   const budgeted = opts.comboHash != null && channel.platform !== "YOUTUBE";
@@ -71,7 +78,7 @@ export async function syncChannel(
       console.log(
         `[sync] skip ${channel.platform} @${channel.username}: daily limit reached`,
       );
-      return 0;
+      return { consumed: 0, synced: false };
     }
     wanted = Math.min(wanted, status.remaining);
   }
@@ -89,7 +96,7 @@ export async function syncChannel(
       `UPDATE channels SET "lastSyncError" = $1, "updatedAt" = now() WHERE id = $2`,
       [detail.slice(0, 500), channel.id],
     ).catch((e) => console.error("[sync] failed to store error:", e));
-    return 0;
+    return { consumed: 0, synced: false };
   }
 
   // Charge after a successful fetch: exactly as many credits as videos that
@@ -100,95 +107,104 @@ export async function syncChannel(
     await consumeCredits(opts.comboHash!, consumed);
   }
 
-  await query(
-    `UPDATE channels SET
-       "externalId" = $1, "displayName" = $2, "avatarUrl" = $3, "profileUrl" = $4,
-       "lastSyncedAt" = now(), "lastSyncError" = NULL, "updatedAt" = now()
-     WHERE id = $5`,
-    [
-      result.account.externalId,
-      result.account.displayName,
-      result.account.avatarUrl,
-      result.account.profileUrl,
-      channel.id,
-    ],
-  );
-
-  await query(
-    `INSERT INTO channel_snapshots (id, "channelId", followers, following, "totalPosts", "totalViews", "recordedAt")
-     VALUES ($1, $2, $3, $4, $5, $6, now())`,
-    [
-      id(),
-      channel.id,
-      result.stats.followers,
-      result.stats.following,
-      result.stats.totalPosts,
-      result.stats.totalViews == null
-        ? null
-        : BigInt(result.stats.totalViews),
-    ],
-  );
-
+  // Every write this sync needs is precomputed and sent to Neon as a single
+  // batched transaction (chunked for very large backfills). The HTTP driver
+  // costs one round trip per transaction, so backfilling 200 videos no longer
+  // serializes ~400 standalone queries.
+  //
   // Bucket membership is decided by publish date vs the channel's addedAt
   // (createdAt): videos published at/before addedAt belong to "Old" (backfilled
   // once); later uploads belong to "Latest". Membership is assigned only at
-  // creation and never changed on update — a video never moves buckets.
+  // creation and never changed on update — a video never moves buckets. The
+  // "Old" window is frozen after its one-time backfill: a routine sync must
+  // never (re)create pre-existing videos — they were backfilled once, or
+  // intentionally trimmed away by a count edit. Skipping them is what keeps a
+  // trim (4 -> 2) from being undone on the next sync.
   const addedAt = channel.createdAt;
-  const existing = await query<{ externalId: string }>(
-    `SELECT "externalId" FROM videos WHERE "channelId" = $1`,
+  const existing = await query<{ id: string; externalId: string }>(
+    `SELECT id, "externalId" FROM videos WHERE "channelId" = $1`,
     [channel.id],
   );
-  const existingExternal = new Set(
-    existing.map((video) => video.externalId),
-  );
+  const knownIds = new Map<string, string>();
+  for (const video of existing) knownIds.set(video.externalId, video.id);
+
+  const statements: { text: string; params: unknown[] }[] = [
+    {
+      text: `UPDATE channels SET
+         "externalId" = $1, "displayName" = $2, "avatarUrl" = $3, "profileUrl" = $4,
+         "lastSyncedAt" = now(), "lastSyncError" = NULL, "updatedAt" = now()
+       WHERE id = $5`,
+      params: [
+        result.account.externalId,
+        result.account.displayName,
+        result.account.avatarUrl,
+        result.account.profileUrl,
+        channel.id,
+      ],
+    },
+    {
+      text: `INSERT INTO channel_snapshots (id, "channelId", followers, following, "totalPosts", "totalViews", "recordedAt")
+       VALUES ($1, $2, $3, $4, $5, $6, now())`,
+      params: [
+        id(),
+        channel.id,
+        result.stats.followers,
+        result.stats.following,
+        result.stats.totalPosts,
+        result.stats.totalViews == null
+          ? null
+          : BigInt(result.stats.totalViews),
+      ],
+    },
+  ];
 
   for (const item of result.media) {
     const publishedAt = item.meta.publishedAt;
     const belongsLatest = publishedAt != null && publishedAt > addedAt;
-    const alreadyTracked = existingExternal.has(item.meta.externalId);
+    const alreadyTracked = knownIds.has(item.meta.externalId);
 
-    // The "Old" window is frozen after its one-time backfill. A routine sync
-    // must never (re)create pre-existing videos — they were backfilled once,
-    // or intentionally trimmed away by a count edit. Skipping them is what
-    // keeps a trim (4 -> 2) from being undone on the next sync.
     if (!alreadyTracked && !doingBackfill && !belongsLatest) continue;
 
-    const video = await queryOne<{ id: string }>(
-      `INSERT INTO videos (id, "channelId", "externalId", title, url, "thumbnailUrl", "publishedAt", "isBackfill", "updatedAt", "createdAt")
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
-       ON CONFLICT ("channelId", "externalId") DO UPDATE SET
-         title = EXCLUDED.title,
-         url = EXCLUDED.url,
-         "thumbnailUrl" = EXCLUDED."thumbnailUrl",
-         "publishedAt" = EXCLUDED."publishedAt",
-         "updatedAt" = now()
-       RETURNING id`,
-      [
-        id(),
-        channel.id,
-        item.meta.externalId,
-        item.meta.title,
-        item.meta.url,
-        item.meta.thumbnailUrl,
-        item.meta.publishedAt,
-        !belongsLatest,
-      ],
-    );
+    // Reuse a stable id for repeats (duplicate externalIds within the result,
+    // or already-known rows) so every snapshot lands on the same video row.
+    const videoId = knownIds.get(item.meta.externalId) ?? id();
+    knownIds.set(item.meta.externalId, videoId);
 
-    await query(
-      `INSERT INTO video_snapshots (id, "videoId", views, likes, comments, favorites, "recordedAt")
-       VALUES ($1, $2, $3, $4, $5, $6, now())`,
-      [
-        id(),
-        video!.id,
-        item.stats.views == null ? null : BigInt(item.stats.views),
-        item.stats.likes,
-        item.stats.comments,
-        item.stats.favorites,
-      ],
+    statements.push(
+      {
+        text: `INSERT INTO videos (id, "channelId", "externalId", title, url, "thumbnailUrl", "publishedAt", "isBackfill", "updatedAt", "createdAt")
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, now(), now())
+         ON CONFLICT ("channelId", "externalId") DO UPDATE SET
+           title = EXCLUDED.title,
+           url = EXCLUDED.url,
+           "thumbnailUrl" = EXCLUDED."thumbnailUrl",
+           "publishedAt" = EXCLUDED."publishedAt",
+           "updatedAt" = now()
+         RETURNING id`,
+        params: [
+          videoId,
+          channel.id,
+          item.meta.externalId,
+          item.meta.title,
+          item.meta.url,
+          item.meta.thumbnailUrl,
+          item.meta.publishedAt,
+          !belongsLatest,
+        ],
+      },
+      {
+        text: `INSERT INTO video_snapshots (id, "videoId", views, likes, comments, favorites, "recordedAt")
+         VALUES ($1, $2, $3, $4, $5, $6, now())`,
+        params: [
+          id(),
+          videoId,
+          item.stats.views == null ? null : BigInt(item.stats.views),
+          item.stats.likes,
+          item.stats.comments,
+          item.stats.favorites,
+        ],
+      },
     );
-
-    existingExternal.add(item.meta.externalId);
   }
 
   // Close the one-time backfill window once it has run (even if the platform
@@ -197,36 +213,79 @@ export async function syncChannel(
   // backfilled on the next funded sync.
   const creditCapped = budgeted && trackVideos > 0 && wanted < trackVideos;
   if (doingBackfill && !creditCapped) {
-    await query(
-      `UPDATE channels SET "backfilled" = true, "updatedAt" = now() WHERE id = $1`,
-      [channel.id],
-    );
+    statements.push({
+      text: `UPDATE channels SET "backfilled" = true, "updatedAt" = now() WHERE id = $1`,
+      params: [channel.id],
+    });
+  }
+
+  // Flush in chunks: Neon's HTTP transactions stay comfortably under request
+  // limits, and each chunk is a single round trip regardless of size.
+  const CHUNK = 120;
+  for (let i = 0; i < statements.length; i += CHUNK) {
+    await tx(statements.slice(i, i + CHUNK));
   }
 
   console.log(
     `[sync] ok ${channel.platform} @${channel.username}: ` +
       `${result.media.length} items, followers=${result.stats.followers}`,
   );
-  return consumed;
+  return { consumed, synced: true };
 }
 
 type ChannelWithUser = ChannelRow & {
   user: { comboHash: string | null };
 };
 
-// Hourly full sweep. Channels are grouped by their attribution combo (the
-// ip+ct_uid hash recorded when the channel was added); within each combo,
-// pending backfills run before routine refreshes so scarce credits go to new
-// channels first. A combo at 0 credits is skipped entirely ("pause").
-export async function runSync(): Promise<void> {
+// Platform groups a scheduled run may target. "IGTIKTOK" is a convenience
+// bundle that expands to INSTAGRAM + TIKTOK (they share the ScrapeCreators
+// budget and the same every-3-hours cron).
+export type SyncPlatformGroup =
+  | "YOUTUBE"
+  | "INSTAGRAM"
+  | "TIKTOK"
+  | "IGTIKTOK";
+
+// Scheduled full sweep, optionally restricted to a subset of platform groups:
+// the hourly cron passes ["YOUTUBE"], the every-3-hours cron ["IGTIKTOK"].
+// With no arg (manual runs, e2e) every channel is swept. Channels are grouped
+// by their attribution combo (the ip+ct_uid hash recorded when the channel was
+// added); within each combo, pending backfills run before routine refreshes so
+// scarce credits go to new channels first. A combo at 0 credits is skipped
+// entirely ("pause").
+export async function runSync(
+  platformGroups?: SyncPlatformGroup[],
+): Promise<void> {
+  const wanted = platformGroups?.length ? new Set<string>() : null;
+  if (wanted) {
+    for (const group of platformGroups!) {
+      if (group === "IGTIKTOK") {
+        wanted.add("INSTAGRAM");
+        wanted.add("TIKTOK");
+      } else {
+        wanted.add(group);
+      }
+    }
+  }
+
+  const params: unknown[] = [];
+  let where = "";
+  if (wanted && wanted.size > 0) {
+    const platforms = Array.from(wanted);
+    where = ` WHERE c.platform IN (${platforms
+      .map((_, i) => `$${i + 1}`)
+      .join(", ")})`;
+    params.push(...platforms);
+  }
+
   const raw = await query<
     ChannelRow & { comboHash: string | null }
   >(
     `SELECT c.*, u."comboHash" AS "comboHash"
      FROM channels c
-     LEFT JOIN users u ON u.id = c."userId"
+     LEFT JOIN users u ON u.id = c."userId"${where}
      ORDER BY c.id ASC`,
-    [],
+    params,
   );
   const channels: ChannelWithUser[] = raw.map((row) => ({
     ...row,
@@ -277,7 +336,7 @@ export async function runSync(): Promise<void> {
         comboHash: combo,
         remaining: left,
       });
-      left -= consumed;
+      left -= consumed.consumed;
     }
   }
   console.log("[sync] done");

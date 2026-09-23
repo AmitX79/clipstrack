@@ -1,4 +1,4 @@
-import { query, queryOne, type ChannelRow } from "@/lib/db";
+import { query, queryOne, tx, type ChannelRow } from "@/lib/db";
 import { PLATFORM_VALUES } from "@/lib/types";
 import type { PlatformValue } from "@/lib/types";
 
@@ -139,47 +139,68 @@ function serializeChannel(
   };
 }
 
-// A given visitor's tracked channels (for the /accounts page).
+// A given visitor's tracked channels (for the /accounts page). The three reads
+// are sent as ONE Neon HTTP transaction — a single round trip — instead of three
+// sequential queries (each would cost a full DB round trip from the Worker).
 export async function loadChannels(userId: string): Promise<LoadedChannel[]> {
-  const channels = await query<ChannelRow>(
-    `SELECT * FROM channels WHERE "userId" = $1 ORDER BY "createdAt" ASC`,
-    [userId],
-  );
+  const [channels, videos, snapshots] = await tx<
+    [ChannelRow[], VideoRow[], SnapshotRow[]]
+  >([
+    {
+      text: `SELECT * FROM channels WHERE "userId" = $1 ORDER BY "createdAt" ASC`,
+      params: [userId],
+    },
+    {
+      // Up to the 100 most recent videos per channel, on the same publish-date
+      // ordering the cards used before. Chainable CTE keeps this statement
+      // self-contained so the batch runs without awaiting prior results.
+      text: `WITH c AS (
+               SELECT id FROM channels WHERE "userId" = $1
+             ),
+             t AS (
+               SELECT v.*, row_number() OVER (
+                 PARTITION BY v."channelId" ORDER BY v."publishedAt" DESC
+               ) AS __rn
+               FROM videos v
+               WHERE v."channelId" IN (SELECT id FROM c)
+             )
+             SELECT t."id", t.title, t.url, t."thumbnailUrl", t."publishedAt",
+                    t."isBackfill", t."updatedAt", t."channelId"
+             FROM t
+             WHERE t.__rn <= 100`,
+      params: [userId],
+    },
+    {
+      // The 2 latest snapshots per video (only for the channels above).
+      text: `WITH c AS (
+               SELECT id FROM channels WHERE "userId" = $1
+             ),
+             v AS (
+               SELECT t."id"
+               FROM (
+                 SELECT v."id", row_number() OVER (
+                   PARTITION BY v."channelId" ORDER BY v."publishedAt" DESC
+                 ) AS __rn
+                 FROM videos v
+                 WHERE v."channelId" IN (SELECT id FROM c)
+               ) t
+               WHERE t.__rn <= 100
+             ),
+             s AS (
+               SELECT vs.*, row_number() OVER (
+                 PARTITION BY vs."videoId" ORDER BY vs."recordedAt" DESC
+               ) AS __rn
+               FROM video_snapshots vs
+               WHERE vs."videoId" IN (SELECT "id" FROM v)
+             )
+             SELECT s."id", s.views, s.likes, s.comments, s."recordedAt", s."videoId"
+             FROM s
+             WHERE s.__rn <= 2`,
+      params: [userId],
+    },
+  ]);
+
   if (channels.length === 0) return [];
-
-  const channelIds = channels.map((channel) => channel.id);
-
-  // Up to the 100 most recent videos per channel, on the same publish-date
-  // ordering the cards used before, with the 2 latest snapshots per video.
-  const videos = await query<VideoRow>(
-    `SELECT t."id", t.title, t.url, t."thumbnailUrl", t."publishedAt",
-            t."isBackfill", t."updatedAt", t."channelId"
-     FROM (
-       SELECT v.*, row_number() OVER (
-         PARTITION BY v."channelId" ORDER BY v."publishedAt" DESC
-       ) AS __rn
-       FROM videos v
-       WHERE v."channelId" = ANY($1)
-     ) t
-     WHERE t.__rn <= 100`,
-    [channelIds],
-  );
-  const videoIds = videos.map((video) => video.id);
-  const snapshots =
-    videoIds.length > 0
-      ? await query<SnapshotRow>(
-          `SELECT t."id", t.views, t.likes, t.comments, t."recordedAt", t."videoId"
-           FROM (
-             SELECT vs.*, row_number() OVER (
-               PARTITION BY vs."videoId" ORDER BY vs."recordedAt" DESC
-             ) AS __rn
-             FROM video_snapshots vs
-             WHERE vs."videoId" = ANY($1)
-           ) t
-           WHERE t.__rn <= 2`,
-          [videoIds],
-        )
-      : [];
 
   const videosByChannel = new Map<string, VideoRow[]>();
   for (const video of videos) {

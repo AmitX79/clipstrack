@@ -5,7 +5,7 @@ export const pt: PageContent = {
     about: {
       title: "Sobre nós",
       description:
-        "O que é o ClipsTrack e por que ele existe - números exatos e por hora dos clipes do YouTube Shorts, Instagram Reels e TikTok, sem planilhas.",
+        "O que é o ClipsTrack e por que ele existe - números exatos dos clipes do YouTube Shorts, Instagram Reels e TikTok no ritmo de cada plataforma (YouTube a cada hora, Instagram/TikTok a cada 3 horas), sem planilhas.",
     },
     privacy: {
       title: "Política de privacidade",
@@ -30,8 +30,8 @@ export const pt: PageContent = {
       "O ClipsTrack nasceu de um pequeno incômodo: todo painel de análise arredonda visualizações para “1,2M” e “400K”. Comparar um Short e um Reel com honestidade é comparar suposições.",
     sections: [
       {
-        h: "Números exatos, a cada hora",
-        p: "O ClipsTrack registra visualizações, curtidas, comentários e favoritos de cada clipe que você adiciona - de hora em hora, sempre no valor exato. Sem arredondamentos, sem “1,2M”. O número que você vê é o número que a plataforma publicou naquele momento.",
+        h: "Números exatos, em ritmo definido",
+        p: "O ClipsTrack registra visualizações, curtidas, comentários e favoritos de cada clipe que você adiciona - no ritmo de cada plataforma (YouTube a cada hora, Instagram/TikTok a cada 3 horas), sempre no valor exato. Sem arredondamentos, sem “1,2M”. O número que você vê é o número que a plataforma publicou naquele momento.",
       },
       {
         h: "Uma página para as três plataformas",
@@ -43,7 +43,7 @@ export const pt: PageContent = {
       },
       {
         h: "O que ele não é",
-        p: "O ClipsTrack não é um painel de anúncios, um agendador nem uma suíte completa de análise. Sem excessos de recursos, sem newsletters. Ele faz uma coisa - rastreamento exato e por hora de clipes - e faz isso em silêncio.",
+        p: "O ClipsTrack não é um painel de anúncios, um agendador nem uma suíte completa de análise. Sem excessos de recursos, sem newsletters. Ele faz uma coisa - rastreamento exato de clipes no ritmo de cada plataforma - e faz isso em silêncio.",
       },
     ],
     closing:
@@ -65,7 +65,7 @@ export const pt: PageContent = {
       },
       {
         h: "Somente dados públicos",
-        p: "As estatísticas que registramos são dados públicos das plataformas - os mesmos números que qualquer pessoa vê ao abrir o perfil. Nunca capturamos informações privadas, mensagens diretas nem nada que já não seja visível publicamente. O que acrescentamos é a organização: capturas por hora, em um só lugar.",
+        p: "As estatísticas que registramos são dados públicos das plataformas - os mesmos números que qualquer pessoa vê ao abrir o perfil. Nunca capturamos informações privadas, mensagens diretas nem nada que já não seja visível publicamente. O que acrescentamos é a organização: capturas em ritmo definido, em um só lugar.",
       },
       {
         h: "O que não fazemos",

@@ -12,13 +12,19 @@ import type { LoadedChannel } from "@/lib/channels";
 const VIDEO_LAYOUT_KEY = "clipstrack.videoLayout";
 
 function useVideoLayout(): [VideoLayout, (layout: VideoLayout) => void] {
-  // Lazy-initialize from localStorage (client-only hook; window is undefined
-  // during SSR, so fall back to the default). Avoids a post-mount effect.
-  const [layout, setLayout] = useState<VideoLayout>(() => {
-    if (typeof window === "undefined") return "horizontal";
+  // Start at the server-rendered default so hydration never mismatches, then
+  // pick up the saved preference after mount. Reading localStorage during the
+  // initial useState would compute a *different* first client render than the
+  // SSR HTML, and React keeps the server value — so the saved layout appeared
+  // lost on every reload.
+  const [layout, setLayout] = useState<VideoLayout>("horizontal");
+  useEffect(() => {
     const saved = window.localStorage.getItem(VIDEO_LAYOUT_KEY);
-    return saved === "vertical" ? "vertical" : "horizontal";
-  });
+    if (saved === "vertical" || saved === "horizontal") {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- reading the saved layout after mount is the intended fix for the hydration mismatch; doing it during render is what broke the toggle.
+      setLayout(saved);
+    }
+  }, []);
   const change = (next: VideoLayout) => {
     setLayout(next);
     window.localStorage.setItem(VIDEO_LAYOUT_KEY, next);

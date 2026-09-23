@@ -1,13 +1,12 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { id, query, queryOne, type ChannelRow } from "@/lib/db";
+import { id, query, queryOne, tx, type ChannelRow } from "@/lib/db";
 import { LOCALES } from "@/lib/i18n";
-import { syncChannel } from "@/lib/sync";
+import { syncChannel, type SyncResult } from "@/lib/sync";
 import {
+  attributeAndBudget,
   DAILY_LIMIT_MESSAGE,
-  getCreditsStatus,
-  recordAttribution,
   requestComboHash,
 } from "@/lib/credits";
 import {
@@ -20,7 +19,7 @@ import {
 import type { PlatformValue } from "@/lib/types";
 import { getVisitorId, setConsent, setVisitorId } from "@/lib/visitor";
 import { touchActivity } from "@/lib/usercode";
-import { getMaxChannelsPerUser } from "@/lib/channels";
+import { DEFAULT_MAX_CHANNELS, SETTING_MAX_CHANNELS } from "@/lib/channels";
 
 // Called when a visitor keeps cookies on (or refreshes the consent banner
 // mid-flow). Writes the ct_consent choice AND the ct_uid identity cookie so
@@ -169,12 +168,38 @@ export async function addChannels(
   const minLikeRatio = parseMinLikeRatio(formData.get("minLikeRatio"));
 
   // Per-visitor channel cap (scaling guard): only genuinely new channels count,
-  // since re-adding an existing handle/URL updates that row in place.
-  const maxChannels = await getMaxChannelsPerUser();
-  const tracked = await query<{ platform: string; username: string }>(
-    `SELECT platform, username FROM channels WHERE "userId" = $1`,
-    [userId],
-  );
+  // since re-adding an existing handle/URL updates that row in place. The cap
+  // read, its settings seed, and the existing-handles list are all independent
+  // — one batched transaction instead of two sequential queries.
+  const [limitRow, , tracked] = await tx<
+    [
+      { value: string }[],
+      unknown[],
+      { platform: string; username: string }[],
+    ]
+  >([
+    {
+      text: `SELECT value FROM settings WHERE key = $1`,
+      params: [SETTING_MAX_CHANNELS],
+    },
+    {
+      text: `INSERT INTO settings (key, value, "updatedAt", "createdAt")
+             VALUES ($1, $2, now(), now())
+             ON CONFLICT (key) DO NOTHING`,
+      params: [SETTING_MAX_CHANNELS, String(DEFAULT_MAX_CHANNELS)],
+    },
+    {
+      text: `SELECT platform, username FROM channels WHERE "userId" = $1`,
+      params: [userId],
+    },
+  ]);
+  const maxChannelsRow = limitRow[0];
+  const maxChannels =
+    maxChannelsRow !== undefined &&
+    Number.isInteger(Number(maxChannelsRow.value)) &&
+    Number(maxChannelsRow.value) > 0
+      ? Number(maxChannelsRow.value)
+      : DEFAULT_MAX_CHANNELS;
   const trackedKeys = new Set(tracked.map((c) => `${c.platform}:${c.username}`));
   const newChannels = handles.filter(
     (h) => !trackedKeys.has(`${h.platform}:${h.username}`),
@@ -187,79 +212,49 @@ export async function addChannels(
   }
 
   try {
-    await query(
-      `INSERT INTO users (id, "lastActive", "createdAt", "updatedAt")
-       VALUES ($1, now(), now(), now())
-       ON CONFLICT (id) DO NOTHING`,
-      [userId],
-    );
-
-    // Instagram/TikTok shares one per-IP ScrapeCreators budget; YouTube uses
-    // the official API and is never limited by it (or the mid-batch pause
-    // below — YouTube handles always sync immediately).
+    // Attribution + today's credit budget in a SINGLE HTTP transaction: the
+    // users/user_codes upserts write the combo first, then the reads inside
+    // the same static batch observe it, so no extra round trips.
     const combo = await requestComboHash(userId);
-    await recordAttribution(userId, combo);
-    const credits = await getCreditsStatus(combo);
-    let remaining = credits.remaining;
+    const budgetSnap = await attributeAndBudget(userId, combo);
+    let remaining = budgetSnap.remaining;
 
     const added: string[] = [];
     let syncedCount = 0;
 
     for (const { username, platform } of handles) {
-      // Re-adding the same handle on the SAME platform updates that row. A
+      // Re-adding the same handle on the SAME platform updates that row; a
       // different platform gets its own channel so both can be tracked (e.g.
-      // @mrbeast on Instagram and TikTok separately).
-      const existing = await queryOne<ChannelRow>(
-        `SELECT * FROM channels WHERE "userId" = $1 AND username = $2 AND platform = $3 LIMIT 1`,
-        [userId, username, platform],
-      );
-
-      let channel: ChannelRow;
-      if (existing) {
-        channel = (await queryOne<ChannelRow>(
-          `UPDATE channels SET
-             platform = $2, "profileUrl" = $3, "oldVideoCount" = $4,
-             "latestVideoCount" = $5, "minLikeRatio" = $6, "updatedAt" = now()
-           WHERE id = $1
-           RETURNING *`,
-          [
-            existing.id,
-            platform,
-            profileUrlFor(platform, username),
-            oldVideoCount,
-            latestVideoCount,
-            minLikeRatio,
-          ],
-        ))!;
-      } else {
-        channel = (await queryOne<ChannelRow>(
-          `INSERT INTO channels (
-             id, "userId", platform, username, "displayName", "externalId",
-             "profileUrl", "oldVideoCount", "latestVideoCount", "minLikeRatio",
-             "createdAt", "updatedAt"
-           )
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), now())
-           ON CONFLICT ("userId", platform, username) DO UPDATE SET
-             "profileUrl" = EXCLUDED."profileUrl",
-             "oldVideoCount" = EXCLUDED."oldVideoCount",
-             "latestVideoCount" = EXCLUDED."latestVideoCount",
-             "minLikeRatio" = EXCLUDED."minLikeRatio",
-             "updatedAt" = now()
-           RETURNING *`,
-          [
-            id(),
-            userId,
-            platform,
-            username,
-            username,
-            username,
-            profileUrlFor(platform, username),
-            oldVideoCount,
-            latestVideoCount,
-            minLikeRatio,
-          ],
-        ))!;
-      }
+      // @mrbeast on Instagram and TikTok separately). One upsert covers both
+      // cases, so a handle costs a single DB round trip instead of two.
+      const channel = (await queryOne<ChannelRow>(
+        `INSERT INTO channels (
+           id, "userId", platform, username, "displayName", "externalId",
+           "profileUrl", "oldVideoCount", "latestVideoCount", "minLikeRatio",
+           "createdAt", "updatedAt"
+         )
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, now(), now())
+         ON CONFLICT ("userId", platform, username) DO UPDATE SET
+           platform = EXCLUDED.platform,
+           "profileUrl" = EXCLUDED."profileUrl",
+           "oldVideoCount" = EXCLUDED."oldVideoCount",
+           "latestVideoCount" = EXCLUDED."latestVideoCount",
+           "minLikeRatio" = EXCLUDED."minLikeRatio",
+           "updatedAt" = now()
+         RETURNING *`,
+        [
+          id(),
+          userId,
+          platform,
+          username,
+          username,
+          username,
+          profileUrlFor(platform, username),
+          oldVideoCount,
+          latestVideoCount,
+          minLikeRatio,
+        ],
+      ))!;
 
       added.push(username);
 
@@ -269,20 +264,21 @@ export async function addChannels(
       // TikTok handles are saved for the cron instead of synced; YouTube
       // handles always sync (official API quota, not the credit budget).
       try {
+        let result: SyncResult;
         if (platform === "YOUTUBE") {
-          await syncChannel(channel);
+          result = await syncChannel(channel);
         } else if (remaining > 0) {
-          const consumed = await syncChannel(channel, {
+          result = await syncChannel(channel, {
             comboHash: combo,
             remaining,
           });
-          remaining -= consumed;
+          remaining -= result.consumed;
+        } else {
+          result = { consumed: 0, synced: false };
         }
-        const fresh = await queryOne<{ lastSyncedAt: Date | null }>(
-          `SELECT "lastSyncedAt" FROM channels WHERE id = $1`,
-          [channel.id],
-        );
-        if (fresh?.lastSyncedAt) syncedCount += 1;
+        // syncChannel already stamped lastSyncedAt; count from its verdict
+        // instead of re-querying the row.
+        if (result.synced) syncedCount += 1;
       } catch (err) {
         console.error(`[addChannels] sync @${username}:`, err);
       }
@@ -338,14 +334,13 @@ export async function refreshChannel(id: string): Promise<EditChannelResult> {
       await syncChannel(channel);
     } else {
       const combo = await requestComboHash(channel.userId);
-      await recordAttribution(channel.userId, combo);
-      const credits = await getCreditsStatus(combo);
-      if (credits.remaining <= 0) {
+      const { remaining } = await attributeAndBudget(channel.userId, combo);
+      if (remaining <= 0) {
         return { ok: false, error: DAILY_LIMIT_MESSAGE };
       }
       await syncChannel(channel, {
         comboHash: combo,
-        remaining: credits.remaining,
+        remaining,
       });
     }
     revalidateAccountPages();

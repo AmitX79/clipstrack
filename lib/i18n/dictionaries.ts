@@ -20,13 +20,13 @@ export const dictionaries = {
     meta: {
       title: "Clips Track - YouTube Shorts, Reels & TikTok Tracker",
       description:
-        "Clips Track is a clip performance tracker for YouTube Shorts, Instagram Reels and TikTok videos - views, likes and comments every hour, in full numbers.",
+        "Clips Track is a clip performance tracker for YouTube Shorts, Instagram Reels and TikTok videos - views, likes and comments on each platform's schedule (YouTube hourly, Instagram/TikTok every 3 hours), in full numbers.",
       ogTitle: "Clips Track - YouTube Shorts, Reels & TikTok Tracker",
       ogDescription:
-        "Track views, likes and comments for YouTube Shorts, Instagram Reels and TikTok videos - hourly, in full numbers.",
+        "Track views, likes and comments for YouTube Shorts, Instagram Reels and TikTok videos - on a platform schedule - YouTube hourly, Instagram/TikTok every 3 hours - in full numbers.",
       trackedTitle: "My Accounts",
       trackedDescription:
-        "Your tracked YouTube Shorts, Instagram Reels and TikTok video channels - private to you, updated hourly.",
+        "Your tracked YouTube Shorts, Instagram Reels and TikTok video channels - private to you, updated on each platform's schedule (YouTube hourly, Instagram/TikTok every 3 hours).",
       faqTitle: "FAQ - Frequently Asked Questions",
       faqDescription:
         "Quick answers about what Clips Track tracks, how often it updates, and how your data is handled.",
@@ -49,7 +49,7 @@ export const dictionaries = {
       subtitleBefore: "Add a YouTube, Instagram or TikTok handle - ",
       subtitleAccent: "Clips Track",
       subtitleAfter:
-        " snapshots every clip's views, likes and comments each hour, shown in full.",
+        " snapshots every clip's views, likes and comments on each platform's schedule - YouTube every hour, Instagram/TikTok every 3 hours - shown in full.",
       add: "Add a channel",
       view: "View my accounts",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -58,9 +58,9 @@ export const dictionaries = {
       eyebrow: "About",
       title: "What is Clips Track?",
       p1:
-        "Clips Track is a clip tracker built for short-form content. Add a YouTube Shorts channel, an Instagram creator or a TikTok account, and Clips Track records how each clip performs - views, likes, comments and favorites - on the hour, every hour. There is no spreadsheet to maintain and no manual export: you open a page and see exactly what a clip did yesterday and what it is doing right now, down to the exact number.",
+        "Clips Track is a clip tracker built for short-form content. Add a YouTube Shorts channel, an Instagram creator or a TikTok account, and Clips Track records how each clip performs - views, likes, comments and favorites - on each platform's schedule - YouTube hourly, Instagram/TikTok every 3 hours. There is no spreadsheet to maintain and no manual export: you open a page and see exactly what a clip did yesterday and what it is doing right now, down to the exact number.",
       p2:
-        "Most analytics dashboards round everything into \"1.2M\" and \"400K\". Clips Track deliberately goes the other way, storing each figure at its precise value so a genuine comparison is always possible. Whether you call it clip tracking, a video tracker, or a clip performance tracker, the idea is the same: deliberate, exact, hourly measurements of the short-form videos that move your channel.",
+        "Most analytics dashboards round everything into \"1.2M\" and \"400K\". Clips Track deliberately goes the other way, storing each figure at its precise value so a genuine comparison is always possible. Whether you call it clip tracking, a video tracker, or a clip performance tracker, the idea is the same: deliberate, exact, scheduled measurements of the short-form videos that move your channel.",
     },
     rules: {
       eyebrow: "Platform rules",
@@ -77,10 +77,10 @@ export const dictionaries = {
     },
     why: {
       eyebrow: "Why ClipsTrack",
-      title: "Full numbers, hourly",
-      f1Title: "Hourly snapshots",
+      title: "Full numbers, on a set schedule",
+      f1Title: "Automatic snapshots",
       f1Body:
-        "A background job captures stats on the hour, so you can watch clips climb - day by day, full number by full number, without lifting a finger.",
+        "A background job captures stats on each platform's schedule - YouTube hourly, Instagram/TikTok every 3 hours - so you can watch clips climb - day by day, full number by full number, without lifting a finger.",
       f2Title: "Full numbers",
       f2Body:
         "No 1.2M or 400K guesses. Views, likes and comments are stored and shown at their exact value, every time.",
@@ -88,16 +88,16 @@ export const dictionaries = {
       f3Body:
         "Set an optional min like-ratio per channel; clips that fall below the threshold are flagged with a warning, so weak performance stands out at a glance.",
       p1:
-        "To track video views reliably, Clips Track stores a time series - one measurement per clip per hour. Open a clip today and you can still see what it did a month ago: the first-hour leap on a new Reel, the slow morning crawl of a Short, a TikTok video that suddenly re-accelerates days later. Because the history is kept in exact numbers, the growth curve stays honest and comparable no matter when you look at it.",
+        "To track video views reliably, Clips Track stores a time series - one measurement per clip on each scheduled sync. Open a clip today and you can still see what it did a month ago: the first-sync leap on a new Reel, the slow morning crawl of a Short, a TikTok video that suddenly re-accelerates days later. Because the history is kept in exact numbers, the growth curve stays honest and comparable no matter when you look at it.",
       p2:
-        "The per-clip numbers pair with channel-level totals - followers, lifetime views and post counts, also snapshotted hourly. That is what turns raw counts into a real clip performance tracker: you can compare how a new upload performs against the channel's baseline, spot which formats keep their like-ratio, and decide where the next post deserves its momentum.",
+        "The per-clip numbers pair with channel-level totals - followers, lifetime views and post counts, also snapshotted on the same schedule. That is what turns raw counts into a real clip performance tracker: you can compare how a new upload performs against the channel's baseline, spot which formats keep their like-ratio, and decide where the next post deserves its momentum.",
     },
     buckets: {
       eyebrow: "Windows",
       title: "Old clips backfilled, new clips watched",
       sub1Title: "How buckets work",
       sub1Body:
-        "When you add a handle, Clips Track first backfills recent clips into an Old bucket - a one-time snapshot of the recent past. From then on, a Latest bucket keeps just the newest uploads, refreshed on every hourly sync. Which clips belong to which bucket is decided by publish date, never by guesswork, and clips never jump between buckets.",
+        "When you add a handle, Clips Track first backfills recent clips into an Old bucket - a one-time snapshot of the recent past. From then on, a Latest bucket keeps just the newest uploads, refreshed on every scheduled sync. Which clips belong to which bucket is decided by publish date, never by guesswork, and clips never jump between buckets.",
       sub2Title: "Counts you control",
       sub2Body:
         "The window sizes are yours to pick per channel: backfill the last eight clips and track the newest four, or any other combination that fits how you watch. Lower a count and the extras are trimmed immediately; raise it and the window re-opens and backfills to match. Targeted clips get removed cleanly, history and all, so the dashboard always reflects what you actually want to watch.",
@@ -111,16 +111,16 @@ export const dictionaries = {
       sub: "Quick answers about what Clips Track tracks, how often it updates, and how your data is handled.",
       q1: "What is ClipsTrack?",
       a1:
-        "ClipsTrack is a free clip tracker for short-form content. Add a YouTube, Instagram or TikTok handle and it records how each clip performs - views, likes and comments - every hour, always shown in full numbers. It keeps YouTube Shorts, Instagram Reels and TikTok videos together in one dashboard.",
+        "ClipsTrack is a free clip tracker for short-form content. Add a YouTube, Instagram or TikTok handle and it records how each clip performs - views, likes and comments - on each platform's schedule (YouTube hourly, Instagram/TikTok every 3 hours), always shown in full numbers. It keeps YouTube Shorts, Instagram Reels and TikTok videos together in one dashboard.",
       q2: "How does ClipsTrack track YouTube Shorts, Instagram Reels, and TikTok videos?",
       a2:
-        "ClipsTrack pulls YouTube Shorts straight from the official YouTube Data API and keeps only clips up to 60 seconds - long-form uploads never get mixed in. On Instagram it tracks Reels only, skipping photo posts and carousels. On TikTok, only plain videos are tracked, along with their digg, comment and favorite counts. Each platform's stats are snapshotted hourly into a per-clip time series.",
+        "ClipsTrack pulls YouTube Shorts straight from the official YouTube Data API and keeps only clips up to 60 seconds - long-form uploads never get mixed in. On Instagram it tracks Reels only, skipping photo posts and carousels. On TikTok, only plain videos are tracked, along with their digg, comment and favorite counts. Each platform's stats are snapshotted on its schedule - YouTube hourly, Instagram/TikTok every 3 hours - into a per-clip time series.",
       q3: "Is ClipsTrack free to use?",
       a3:
         "Yes - ClipsTrack is free. There's no paid plan, no per-channel fee and nothing is hidden behind a paywall.",
       q4: "How often does ClipsTrack update video stats?",
       a4:
-        "Stats update every hour. The first snapshot is taken as soon as you add a handle, then a background sync refreshes views, likes and comments hourly from then on.",
+        "YouTube stats update hourly and Instagram/TikTok every 3 hours. The first snapshot is taken as soon as you add a handle, then a background sync refreshes views, likes and comments on each platform's schedule from then on.",
       q5: "Can I track any public YouTube, Instagram, or TikTok account?",
       a5:
         "Yes - any public account on the three supported platforms can be tracked. Private or restricted accounts that require approval can't be read without authorization.",
@@ -136,9 +136,9 @@ export const dictionaries = {
       q9: "Is my tracked data private to me?",
       a9:
         "Yes - the dashboard shows only the channels you added. Each visitor sees their own data and account records are isolated per visitor.",
-      q10: "Can I see hourly growth of a video's views?",
+      q10: "Can I watch a video's views grow over time?",
       a10:
-        "Yes. Every hourly sync stores another measurement for each clip, building a time series of exact view counts. Open a clip's history later and you can see its growth hour by hour and day by day.",
+        "Yes. Every scheduled sync (YouTube hourly, Instagram/TikTok every 3 hours) stores another measurement for each clip, building a time series of exact view counts. Open a clip's history later and you can see its growth over time, sync by sync.",
       q11: "Does ClipsTrack support Twitter/X?",
       a11:
         "Not yet - ClipsTrack currently tracks YouTube Shorts, Instagram Reels and TikTok videos. Twitter/X isn't supported.",
@@ -166,7 +166,7 @@ export const dictionaries = {
       terms: "Terms & Conditions",
       contact: "Contact Us",
       bottomLeft: "© 2026 ClipsTrack. Self-hosted.",
-      bottomRight: "Data refreshed hourly via official and public sources",
+      bottomRight: "Data refreshed on a schedule - YouTube hourly, Instagram/TikTok every 3 hours - from official and public sources",
       lang: "Change language",
     },
     acct: {
@@ -174,7 +174,7 @@ export const dictionaries = {
       title: "The handles you track.",
       yourId: "Your ID: {id}",
       sub:
-        "Your tracked accounts - private to you. Video stats update on the hour, always shown in full, never abbreviated.",
+        "Your tracked accounts - private to you. Video stats update on each platform's schedule - YouTube hourly, Instagram/TikTok every 3 hours - always shown in full, never abbreviated.",
       dbError1: "Can't reach the database - check that ",
       dbError2: " points to a running Postgres, then reload.",
     },
@@ -193,7 +193,7 @@ export const dictionaries = {
       ratioTitle:
         "Optional: flag videos whose like-ratio (likes/views %) falls below this",
       helper:
-        "Separate handles with commas - each is added on the platform you pick, in one go. The first snapshot starts immediately, then one sits every hour. Re-adding a handle updates it instead of duplicating. A Ratio% set per handle flags videos with a lower like-ratio as a warning.",
+        "Separate handles with commas - each is added on the platform you pick, in one go. The first snapshot starts immediately, then one sits on each platform's schedule (YouTube hourly, Instagram/TikTok every 3 hours). Re-adding a handle updates it instead of duplicating. A Ratio% set per handle flags videos with a lower like-ratio as a warning.",
     },
     sort: {
       label: "Sort by",
@@ -290,13 +290,13 @@ export const dictionaries = {
     meta: {
       title: "Clips Track - Seguimiento de YouTube Shorts, Reels y TikTok",
       description:
-        "Clips Track es un rastreador de rendimiento de clips para YouTube Shorts, Reels de Instagram y vídeos de TikTok: vistas, likes y comentarios cada hora, con números exactos.",
+        "Clips Track es un rastreador de rendimiento de clips para YouTube Shorts, Reels de Instagram y vídeos de TikTok: vistas, likes y comentarios según el calendario de cada plataforma (YouTube cada hora, Instagram/TikTok cada 3 horas), con números exactos.",
       ogTitle: "Clips Track - Seguimiento de YouTube Shorts, Reels y TikTok",
       ogDescription:
-        "Sigue las vistas, likes y comentarios de YouTube Shorts, Reels de Instagram y vídeos de TikTok: cada hora, con números exactos.",
+        "Sigue las vistas, likes y comentarios de YouTube Shorts, Reels de Instagram y vídeos de TikTok: según el calendario de cada plataforma (YouTube cada hora, Instagram/TikTok cada 3 horas), con números exactos.",
       trackedTitle: "Mis cuentas",
       trackedDescription:
-        "Tus canales de YouTube Shorts, Reels de Instagram y TikTok rastreados: privados para ti y actualizados cada hora.",
+        "Tus canales de YouTube Shorts, Reels de Instagram y TikTok rastreados: privados para ti y actualizados con el calendario de cada plataforma (YouTube cada hora, Instagram/TikTok cada 3 horas).",
       faqTitle: "Preguntas frecuentes",
       faqDescription:
         "Respuestas breves sobre qué rastrea Clips Track, con qué frecuencia actualiza los datos y cómo se tratan.",
@@ -319,7 +319,7 @@ export const dictionaries = {
       subtitleBefore: "Añade una cuenta de YouTube, Instagram o TikTok - ",
       subtitleAccent: "Clips Track",
       subtitleAfter:
-        " registra cada hora las vistas, los likes y los comentarios de cada clip, mostrados en números exactos.",
+        " registra las vistas, likes y comentarios de cada clip según el calendario de cada plataforma - YouTube cada hora, Instagram/TikTok cada 3 horas - mostrados en números exactos.",
       add: "Añadir un canal",
       view: "Ver mis cuentas",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -328,9 +328,9 @@ export const dictionaries = {
       eyebrow: "Acerca de",
       title: "¿Qué es Clips Track?",
       p1:
-        "Clips Track es un rastreador de clips pensado para el contenido de formato corto. Añade un canal de YouTube Shorts, un creador de Instagram o una cuenta de TikTok, y Clips Track registra cada hora cómo rinde cada clip - vistas, likes, comentarios y favoritos - a la hora en punto. No hay hojas de cálculo que mantener ni exportaciones manuales: abres la página y ves exactamente qué hizo un clip ayer y qué está haciendo ahora mismo, hasta el número exacto.",
+        "Clips Track es un rastreador de clips pensado para el contenido de formato corto. Añade un canal de YouTube Shorts, un creador de Instagram o una cuenta de TikTok, y Clips Track registra cómo rinde cada clip - vistas, likes, comentarios y favoritos - según el calendario de cada plataforma (YouTube cada hora, Instagram/TikTok cada 3 horas). No hay hojas de cálculo que mantener ni exportaciones manuales: abres la página y ves exactamente qué hizo un clip ayer y qué está haciendo ahora mismo, hasta el número exacto.",
       p2:
-        "La mayoría de los paneles redondean todo a «1,2 M» o «400 K». Clips Track hace justo lo contrario: guarda cada cifra con su valor exacto para que la comparación sea siempre real. Lo llames seguimiento de clips, rastreador de vídeos o tracker de rendimiento de clips, la idea es la misma: mediciones deliberadas, exactas y por horas de los vídeos cortos que mueven tu canal.",
+        "La mayoría de los paneles redondean todo a «1,2 M» o «400 K». Clips Track hace justo lo contrario: guarda cada cifra con su valor exacto para que la comparación sea siempre real. Lo llames seguimiento de clips, rastreador de vídeos o tracker de rendimiento de clips, la idea es la misma: mediciones deliberadas, exactas y con calendario propio de los vídeos cortos que mueven tu canal.",
     },
     rules: {
       eyebrow: "Reglas por plataforma",
@@ -347,10 +347,10 @@ export const dictionaries = {
     },
     why: {
       eyebrow: "Por qué ClipsTrack",
-      title: "Números exactos, cada hora",
-      f1Title: "Capturas horarias",
+      title: "Números exactos, con un calendario fijo",
+      f1Title: "Capturas automáticas",
       f1Body:
-        "Un proceso en segundo plano captura las estadísticas a la hora en punto, para que puedas ver subir tus clips - día a día, número a número, sin mover un dedo.",
+        "Un proceso en segundo plano captura las estadísticas según el calendario de cada plataforma (YouTube cada hora, Instagram/TikTok cada 3 horas), para que puedas ver subir tus clips - día a día, número a número, sin mover un dedo.",
       f2Title: "Números exactos",
       f2Body:
         "Nada de 1,2M o 400K de ojo. Las vistas, los likes y los comentarios se guardan y se muestran con su valor exacto, siempre.",
@@ -358,16 +358,16 @@ export const dictionaries = {
       f3Body:
         "Define un ratio mínimo de likes opcional por canal; los clips que queden por debajo se marcan con una advertencia, así el bajo rendimiento salta a la vista.",
       p1:
-        "Para seguir las vistas de forma fiable, Clips Track guarda una serie temporal: una medición por clip y por hora. Abre un clip hoy y aún podrás ver qué hizo hace un mes: el salto de la primera hora en un Reel nuevo, el lento arranque de la mañana de un Short, un vídeo de TikTok que se acelera de golpe días después. Como el historial se conserva con números exactos, la curva de crecimiento se mantiene honesta y comparable sin importar cuándo la mires.",
+        "Para seguir las vistas de forma fiable, Clips Track guarda una serie temporal: una medición por clip en cada sincronización programada. Abre un clip hoy y aún podrás ver qué hizo hace un mes: el salto de la primera sincronización en un Reel nuevo, el lento arranque de la mañana de un Short, un vídeo de TikTok que se acelera de golpe días después. Como el historial se conserva con números exactos, la curva de crecimiento se mantiene honesta y comparable sin importar cuándo la mires.",
       p2:
-        "Los números por clip se combinan con los totales del canal - seguidores, vistas de por vida y número de publicaciones, también capturados cada hora. Eso es lo que convierte recuentos en bruto en un tracker real de rendimiento de clips: puedes comparar cómo rinde una publicación nueva frente a la base del canal, ver qué formatos mantienen su ratio de likes y decidir dónde merece empuje la próxima publicación.",
+        "Los números por clip se combinan con los totales del canal - seguidores, vistas de por vida y número de publicaciones, también capturados con ese mismo calendario. Eso es lo que convierte recuentos en bruto en un tracker real de rendimiento de clips: puedes comparar cómo rinde una publicación nueva frente a la base del canal, ver qué formatos mantienen su ratio de likes y decidir dónde merece empuje la próxima publicación.",
     },
     buckets: {
       eyebrow: "Ventanas",
       title: "Clips antiguos rellenados, clips nuevos vigilados",
       sub1Title: "Cómo funcionan las ventanas",
       sub1Body:
-        "Cuando añades una cuenta, Clips Track primero rellena los clips recientes en una ventana «Antiguos»: una foto única del pasado reciente. A partir de ahí, una ventana «Nuevos» mantiene solo los últimos contenidos, actualizada en cada sincronización horaria. Qué clips van a cada ventana lo decide la fecha de publicación, nunca la suposición, y los clips nunca saltan entre ventanas.",
+        "Cuando añades una cuenta, Clips Track primero rellena los clips recientes en una ventana «Antiguos»: una foto única del pasado reciente. A partir de ahí, una ventana «Nuevos» mantiene solo los últimos contenidos, actualizada en cada sincronización programada. Qué clips van a cada ventana lo decide la fecha de publicación, nunca la suposición, y los clips nunca saltan entre ventanas.",
       sub2Title: "Límites que controlas",
       sub2Body:
         "Los tamaños de ventana los eliges por canal: rellena los últimos ocho clips y sigue los cuatro más nuevos, o cualquier otra combinación que encaje con cómo miras. Si bajas un número, los sobrantes se recortan al momento; si lo subes, la ventana se reabre y se rellena para igualar. Los clips que se quitan se eliminan limpiamente, con todo su historial, para que el panel siempre refleje lo que quieres ver.",
@@ -381,16 +381,16 @@ export const dictionaries = {
       sub: "Respuestas rápidas sobre qué rastrea Clips Track, cada cuánto se actualiza y cómo se tratan tus datos.",
       q1: "¿Qué es ClipsTrack?",
       a1:
-        "ClipsTrack es un rastreador de clips gratuito para contenido corto. Añade una cuenta de YouTube, Instagram o TikTok y registra cómo rinde cada clip - vistas, likes y comentarios - cada hora, siempre en números exactos. Reúne YouTube Shorts, Reels de Instagram y vídeos de TikTok en un solo panel.",
+        "ClipsTrack es un rastreador de clips gratuito para contenido corto. Añade una cuenta de YouTube, Instagram o TikTok y registra cómo rinde cada clip - vistas, likes y comentarios - según el calendario de cada plataforma (YouTube cada hora, Instagram/TikTok cada 3 horas), siempre en números exactos. Reúne YouTube Shorts, Reels de Instagram y vídeos de TikTok en un solo panel.",
       q2: "¿Cómo rastrea ClipsTrack los YouTube Shorts, los Reels de Instagram y los vídeos de TikTok?",
       a2:
-        "ClipsTrack obtiene los YouTube Shorts directamente de la API de datos oficial de YouTube y guarda solo clips de hasta 60 segundos: los vídeos largos nunca se mezclan. En Instagram solo rastrea Reels, ignorando fotos y carruseles. En TikTok solo se siguen vídeos normales, con sus me gusta, comentarios y favoritos. Las estadísticas de cada plataforma se capturan cada hora en una serie temporal por clip.",
+        "ClipsTrack obtiene los YouTube Shorts directamente de la API de datos oficial de YouTube y guarda solo clips de hasta 60 segundos: los vídeos largos nunca se mezclan. En Instagram solo rastrea Reels, ignorando fotos y carruseles. En TikTok solo se siguen vídeos normales, con sus me gusta, comentarios y favoritos. Las estadísticas de cada plataforma se capturan según su calendario - YouTube cada hora, Instagram/TikTok cada 3 horas - en una serie temporal por clip.",
       q3: "¿ClipsTrack es gratuito?",
       a3:
         "Sí - ClipsTrack es gratuito. No hay plan de pago, ni tarifa por canal y nada está oculto tras un muro de pago.",
       q4: "¿Con qué frecuencia actualiza ClipsTrack las estadísticas?",
       a4:
-        "Las estadísticas se actualizan cada hora. La primera captura se toma en cuanto añades una cuenta; a partir de ahí, una sincronización en segundo plano refresca vistas, likes y comentarios cada hora.",
+        "La frecuencia de actualización depende de la plataforma: YouTube cada hora, Instagram y TikTok cada 3 horas. La primera captura se toma en cuanto añades una cuenta; a partir de ahí, una sincronización en segundo plano refresca vistas, likes y comentarios con el calendario de cada plataforma.",
       q5: "¿Puedo rastrear cualquier cuenta pública de YouTube, Instagram o TikTok?",
       a5:
         "Sí - cualquier cuenta pública de las tres plataformas compatibles se puede rastrear. Las cuentas privadas o restringidas que exigen aprobación no se pueden leer sin autorización.",
@@ -406,9 +406,9 @@ export const dictionaries = {
       q9: "¿Mis datos rastreados son privados?",
       a9:
         "Sí - el panel muestra solo los canales que tú añadiste. Cada visitante ve sus propios datos y los registros están aislados por visitante.",
-      q10: "¿Puedo ver el crecimiento por hora de las vistas de un vídeo?",
+      q10: "¿Puedo ver cómo crecen con el tiempo las vistas de un vídeo?",
       a10:
-        "Sí. Cada sincronización horaria guarda otra medición de cada clip, construyendo una serie temporal con recuentos exactos. Abre el historial de un clip más tarde y podrás ver su crecimiento hora a hora y día a día.",
+        "Sí. Cada sincronización programada (YouTube cada hora, Instagram/TikTok cada 3 horas) guarda otra medición de cada clip, construyendo una serie temporal con recuentos exactos. Abre el historial de un clip más tarde y verás su crecimiento con el tiempo, sincronización a sincronización.",
       q11: "¿ClipsTrack es compatible con Twitter/X?",
       a11:
         "Aún no - ClipsTrack actualmente rastrea YouTube Shorts, Reels de Instagram y vídeos de TikTok. Twitter/X no es compatible.",
@@ -434,7 +434,7 @@ export const dictionaries = {
       contact: "Contacto",
       bottomLeft: "© 2026 ClipsTrack. Self-hosted.",
       bottomRight:
-        "Datos actualizados cada hora mediante fuentes oficiales y públicas",
+        "Datos actualizados con un calendario definido - YouTube cada hora, Instagram/TikTok cada 3 horas - mediante fuentes oficiales y públicas",
       lang: "Cambiar idioma",
     },
     acct: {
@@ -442,7 +442,7 @@ export const dictionaries = {
       title: "Las cuentas que rastreas.",
       yourId: "Tu ID: {id}",
       sub:
-        "Tus cuentas rastreadas - privadas para ti. Las estadísticas se actualizan a la hora en punto, siempre en números exactos, nunca abreviados.",
+        "Tus cuentas rastreadas - privadas para ti. Las estadísticas se actualizan según el calendario de cada plataforma - YouTube cada hora, Instagram/TikTok cada 3 horas - siempre en números exactos, nunca abreviados.",
       dbError1: "No se puede acceder a la base de datos - comprueba que ",
       dbError2: " apunta a una instancia de Postgres en marcha y vuelve a cargar.",
     },
@@ -461,7 +461,7 @@ export const dictionaries = {
       ratioTitle:
         "Opcional: marca los vídeos cuyo ratio de likes (likes/visualizaciones %) quede por debajo de esto",
       helper:
-        "Separa las cuentas con comas - cada una se añade en la plataforma que elijas, de una vez. La primera captura empieza de inmediato y luego se repite cada hora. Volver a añadir una cuenta la actualiza en lugar de duplicarla. Un Ratio% fijado por cuenta marca los vídeos con menor ratio de likes como advertencia.",
+        "Separa las cuentas con comas - cada una se añade en la plataforma que elijas, de una vez. La primera captura empieza de inmediato y luego se repite con el calendario de cada plataforma (YouTube cada hora, Instagram/TikTok cada 3 horas). Volver a añadir una cuenta la actualiza en lugar de duplicarla. Un Ratio% fijado por cuenta marca los vídeos con menor ratio de likes como advertencia.",
     },
     sort: {
       label: "Ordenar por",
@@ -556,13 +556,13 @@ export const dictionaries = {
     meta: {
       title: "Clips Track - YouTubeショート・Reels・TikTokトラッカー",
       description:
-        "Clips TrackはYouTubeショート、Instagramリール、TikTok動画のパフォーマンスを追跡するツール。再生数・いいね・コメントを毎時間、省略なしの実数で記録します。",
+        "Clips TrackはYouTubeショート、Instagramリール、TikTok動画のパフォーマンスを追跡するツール。再生数・いいね・コメントをプラットフォームごとの頻度（YouTubeは毎時間、Instagram/TikTokは3時間ごと）で、省略なしの実数で記録します。",
       ogTitle: "Clips Track - YouTubeショート・Reels・TikTokトラッカー",
       ogDescription:
-        "YouTubeショート、Instagramリール、TikTok動画の再生数・いいね・コメントを毎時間、実数で追跡。",
+        "YouTubeショート、Instagramリール、TikTok動画の再生数・いいね・コメントをプラットフォームごとの頻度（YouTubeは毎時間、Instagram/TikTokは3時間ごと）で、実数で追跡。",
       trackedTitle: "マイアカウント",
       trackedDescription:
-        "追跡中のYouTubeショート、Instagramリール、TikTok動画のチャンネル。あなた専用、毎時間更新。",
+        "追跡中のYouTubeショート、Instagramリール、TikTok動画のチャンネル。あなた専用。プラットフォームごとの頻度で更新（YouTubeは毎時間、Instagram/TikTokは3時間ごと）。",
       faqTitle: "よくある質問",
       faqDescription:
         "Clips Trackが何を追跡するか、更新頻度、データの取り扱いについての簡単な回答です。",
@@ -585,7 +585,7 @@ export const dictionaries = {
       subtitleBefore: "YouTube、Instagram、TikTokのアカウントを追加 - ",
       subtitleAccent: "Clips Track",
       subtitleAfter:
-        " が各クリップの再生数・いいね・コメントを毎時間、省略せず完全な数字で記録します。",
+        " が各クリップの再生数・いいね・コメントをプラットフォームごとの頻度（YouTubeは毎時間、Instagram/TikTokは3時間ごと）で、省略せず完全な数字で記録します。",
       add: "チャンネルを追加",
       view: "マイアカウントを見る",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -594,9 +594,9 @@ export const dictionaries = {
       eyebrow: "概要",
       title: "Clips Trackとは？",
       p1:
-        "Clips Trackはショート動画向けのクリップ追跡ツールです。YouTubeショートのチャンネル、Instagramのクリエイター、TikTokのアカウントを追加すると、各クリップのパフォーマンス（再生数・いいね・コメント・お気に入り）を毎時間、正時に記録します。スプレッドシートの管理も手動エクスポートも不要。ページを開けば、昨日の数字も今の数字も、正確な値そのまま確認できます。",
+        "Clips Trackはショート動画向けのクリップ追跡ツールです。YouTubeショートのチャンネル、Instagramのクリエイター、TikTokのアカウントを追加すると、各クリップのパフォーマンス（再生数・いいね・コメント・お気に入り）を、プラットフォームごとの頻度（YouTubeは毎時間、Instagram/TikTokは3時間ごと）で記録します。スプレッドシートの管理も手動エクスポートも不要。ページを開けば、昨日の数字も今の数字も、正確な値そのまま確認できます。",
       p2:
-        "多くの分析ダッシュボードは「120万」「40万」と概数にしてしまいます。Clips Trackはあえて逆を行き、すべての数字を正確な値で保存するので、いつでも本当の比較ができます。クリップ追跡、動画トラッカー、クリップ分析ツール、呼び方は何でもかまいません。考え方は同じ-あなたのチャンネルを動かすショート動画を、意図的に、正確に、毎時間測ることです。",
+        "多くの分析ダッシュボードは「120万」「40万」と概数にしてしまいます。Clips Trackはあえて逆を行き、すべての数字を正確な値で保存するので、いつでも本当の比較ができます。クリップ追跡、動画トラッカー、クリップ分析ツール、呼び方は何でもかまいません。考え方は同じ-あなたのチャンネルを動かすショート動画を、意図的に、正確に、プラットフォームの頻度に沿って測ることです。",
     },
     rules: {
       eyebrow: "プラットフォームごとのルール",
@@ -613,10 +613,10 @@ export const dictionaries = {
     },
     why: {
       eyebrow: "ClipsTrackの特徴",
-      title: "実数を、毎時間",
-      f1Title: "毎時間のスナップショット",
+      title: "実数を、プラットフォームごとの頻度で",
+      f1Title: "自動スナップショット",
       f1Body:
-        "バックグラウンド処理が正時に統計を取得するので、クリップが伸びていく様子を日々、数字の一つひとつまで、何もせずに見られます。",
+        "バックグラウンド処理がプラットフォームごとの頻度（YouTubeは毎時間、Instagram/TikTokは3時間ごと）で統計を取得するので、クリップが伸びていく様子を日々、数字の一つひとつまで、何もせずに見られます。",
       f2Title: "実数そのまま",
       f2Body:
         "「120万」や「40万」のような推測値はありません。再生数・いいね・コメントは常に正確な値で保存・表示されます。",
@@ -624,16 +624,16 @@ export const dictionaries = {
       f3Body:
         "チャンネルごとに任意の最小いいね比率を設定できます。基準を下回るクリップには警告が付き、パフォーマンスの低さがひと目でわかります。",
       p1:
-        "再生数を確実に追跡するため、Clips Trackは時系列データを保存します-クリップごと、時間ごとの1測定です。今日クリップを開けば、1か月前の数字も見られます。新しいリールの初速、ショートのゆるやかな朝の伸び、数日経って再急伸するTikTok動画。履歴は正確な数値で保持されるため、成長曲線はいつ見ても正直で、比較可能なままです。",
+        "再生数を確実に追跡するため、Clips Trackは時系列データを保存します-クリップごと、同期ごとの1測定です。今日クリップを開けば、1か月前の数字も見られます。新しいリールの初速、ショートのゆるやかな朝の伸び、数日経って再急伸するTikTok動画。履歴は正確な数値で保持されるため、成長曲線はいつ見ても正直で、比較可能なままです。",
       p2:
-        "クリップごとの数字は、チャンネル全体の合計（フォロワー数、累計再生数、投稿数）と組み合わされます。こちらも毎時間スナップショットされます。それこそが、生のカウントを本物のクリップ分析ツールに変える仕組みです。新着投稿がチャンネルのベースラインと比べてどう伸びているか、どのフォーマットがいいね比率を保っているかを見極め、次の投稿の勢いをどこに注ぐべきか判断できます。",
+        "クリップごとの数字は、チャンネル全体の合計（フォロワー数、累計再生数、投稿数）と組み合わされます。こちらも同じ頻度でスナップショットされます。それこそが、生のカウントを本物のクリップ分析ツールに変える仕組みです。新着投稿がチャンネルのベースラインと比べてどう伸びているか、どのフォーマットがいいね比率を保っているかを見極め、次の投稿の勢いをどこに注ぐべきか判断できます。",
     },
     buckets: {
       eyebrow: "ウィンドウ",
       title: "過去の動画をバックフィル、新しい動画を監視",
       sub1Title: "ウィンドウの仕組み",
       sub1Body:
-        "アカウントを追加すると、Clips Trackはまず直近のクリップを「過去」ウィンドウにバックフィルします。これは過去の一括スナップショットです。以降、「最新」ウィンドウが新着動画だけを、毎時の同期で更新しながら保持します。どのクリップがどのウィンドウに属するかは公開日で判断され、推測は一切せず、クリップがウィンドウ間を移動することもありません。",
+        "アカウントを追加すると、Clips Trackはまず直近のクリップを「過去」ウィンドウにバックフィルします。これは過去の一括スナップショットです。以降、「最新」ウィンドウが新着動画だけを、定期的な同期で更新しながら保持します。どのクリップがどのウィンドウに属するかは公開日で判断され、推測は一切せず、クリップがウィンドウ間を移動することもありません。",
       sub2Title: "自由に選べる数",
       sub2Body:
         "ウィンドウのサイズはチャンネルごとに自由に選べます。直近8クリップをバックフィルして最新4件を追跡する、あるいは自分の見方に合う任意の組み合わせも可能です。数字を減らせば余分な分は即座にトリムされ、増やせばウィンドウが開き直されてそれに合わせてバックフィルされます。外したクリップは履歴ごとすっきり削除されるので、ダッシュボードには常に見たいものが反映されます。",
@@ -647,16 +647,16 @@ export const dictionaries = {
       sub: "Clips Trackが何を追跡するか、どのくらいの頻度で更新されるか、データがどう扱われるかを簡潔に説明します。",
       q1: "ClipsTrackとは？",
       a1:
-        "ClipsTrackはショート動画向けの無料のクリップ追跡ツールです。YouTube・Instagram・TikTokのアカウントを追加すると、各クリップのパフォーマンス（再生数・いいね・コメント）を毎時間、常に実数で記録します。YouTubeショート、Instagramリール、TikTok動画を1つのダッシュボードにまとめます。",
+        "ClipsTrackはショート動画向けの無料のクリップ追跡ツールです。YouTube・Instagram・TikTokのアカウントを追加すると、各クリップのパフォーマンス（再生数・いいね・コメント）をプラットフォームごとの頻度（YouTubeは毎時間、Instagram/TikTokは3時間ごと）で、常に実数で記録します。YouTubeショート、Instagramリール、TikTok動画を1つのダッシュボードにまとめます。",
       q2: "ClipsTrackはYouTubeショート、Instagramリール、TikTok動画をどうやって追跡するの？",
       a2:
-        "ClipsTrackはYouTubeの公式Data APIからショートを直接取得し、60秒までのクリップだけを保存します。長尺動画が混ざることは決してありません。Instagramではリールのみを追跡し、写真投稿やカルーセルはスキップします。TikTokでは通常の動画のみを、いいね・コメント・お気に入りと共に追跡します。各プラットフォームの統計は毎時間、クリップごとの時系列にスナップショットされます。",
+        "ClipsTrackはYouTubeの公式Data APIからショートを直接取得し、60秒までのクリップだけを保存します。長尺動画が混ざることは決してありません。Instagramではリールのみを追跡し、写真投稿やカルーセルはスキップします。TikTokでは通常の動画のみを、いいね・コメント・お気に入りと共に追跡します。各プラットフォームの統計は、プラットフォームごとの頻度（YouTubeは毎時間、Instagram/TikTokは3時間ごと）でクリップごとの時系列にスナップショットされます。",
       q3: "ClipsTrackは無料ですか？",
       a3:
         "はい、ClipsTrackは無料です。有料プランも、チャンネルごとの料金も、ペイウォールの裏に隠れた機能もありません。",
       q4: "ClipsTrackはどのくらいの頻度で統計を更新しますか？",
       a4:
-        "統計は毎時間更新されます。最初のスナップショットはアカウントを追加した直後に取られ、その後はバックグラウンド同期が再生数・いいね・コメントを毎時間更新します。",
+        "更新頻度はプラットフォームごとに異なります。YouTubeは毎時間、Instagram・TikTokは3時間ごとです。最初のスナップショットはアカウントを追加した直後に取られ、その後はバックグラウンド同期が各プラットフォームの頻度で再生数・いいね・コメントを更新します。",
       q5: "公開されているYouTube・Instagram・TikTokアカウントならどれでも追跡できますか？",
       a5:
         "はい。対応する3つのプラットフォームの公開アカウントならどれでも追跡できます。承認が必要な非公開アカウントや制限付きアカウントは、認可なしでは読み込めません。",
@@ -672,9 +672,9 @@ export const dictionaries = {
       q9: "追跡データは自分だけが見られますか？",
       a9:
         "はい。ダッシュボードには、あなたが追加したチャンネルだけが表示されます。各訪問者は自分のデータだけを見られ、アカウント記録は訪問者ごとに分離されています。",
-      q10: "動画の再生数の1時間ごとの伸びを見られますか？",
+      q10: "動画の再生数が時間とともに伸びていく様子を見られますか？",
       a10:
-        "はい。毎時の同期で各クリップの測定値がもう1つ保存され、正確な再生数の時系列ができていきます。後でクリップの履歴を開けば、時間ごと・日ごとの成長を見られます。",
+        "はい。同期のたび（YouTubeは毎時間、Instagram・TikTokは3時間ごと）に各クリップの測定値が1つ保存され、正確な再生数の時系列ができていきます。後でクリップの履歴を開けば、時間を追って成長を見られます。",
       q11: "ClipsTrackはTwitter/Xに対応していますか？",
       a11:
         "まだです。現在ClipsTrackが対応しているのはYouTubeショート、Instagramリール、TikTok動画のみです。Twitter/Xは未対応です。",
@@ -699,7 +699,7 @@ export const dictionaries = {
       terms: "利用規約",
       contact: "お問い合わせ",
       bottomLeft: "© 2026 ClipsTrack. Self-hosted.",
-      bottomRight: "データは公式および公開の情報源から毎時更新されます",
+      bottomRight: "データは公式および公開の情報源から決まった頻度（YouTubeは毎時間、Instagram/TikTokは3時間ごと）で更新されます",
       lang: "言語を変更",
     },
     acct: {
@@ -707,7 +707,7 @@ export const dictionaries = {
       title: "追跡中のハンドル。",
       yourId: "あなたのID: {id}",
       sub:
-        "追跡中のアカウント - あなた専用です。動画の統計は正時に更新され、常に実数で、省略されることはありません。",
+        "追跡中のアカウント - あなた専用です。動画の統計はプラットフォームごとの頻度（YouTubeは毎時間、Instagram/TikTokは3時間ごと）で更新され、常に実数で省略されません。",
       dbError1: "データベースに接続できません - ",
       dbError2: " が起動中のPostgresを指していることを確認して、再読み込みしてください。",
     },
@@ -726,7 +726,7 @@ export const dictionaries = {
       ratioTitle:
         "任意：いいね比率（いいね/再生数 ％）がこれを下回る動画に警告を付ける",
       helper:
-        "ハンドルをカンマ区切りで入力します。選択したプラットフォームで各アカウントがまとめて追加されます。最初のスナップショットは即座に記録され、以後毎時間実行されます。同じハンドルを再追加すると、重複ではなく更新になります。各ハンドルに設定した比率%を下回ると、その動画に警告が付きます。",
+        "ハンドルをカンマ区切りで入力します。選択したプラットフォームで各アカウントがまとめて追加されます。最初のスナップショットは即座に記録され、以後はプラットフォームごとの頻度（YouTubeは毎時間、Instagram/TikTokは3時間ごと）で実行されます。同じハンドルを再追加すると、重複ではなく更新になります。各ハンドルに設定した比率%を下回ると、その動画に警告が付きます。",
     },
     sort: {
       label: "並び替え",
@@ -819,13 +819,13 @@ export const dictionaries = {
     meta: {
       title: "Clips Track - Suivi de YouTube Shorts, Reels et TikTok",
       description:
-        "Clips Track est un outil de suivi des clips YouTube Shorts, Reels Instagram et vidéos TikTok - vues, likes et commentaires chaque heure, en chiffres exacts.",
+        "Clips Track est un outil de suivi des clips YouTube Shorts, Reels Instagram et vidéos TikTok - vues, likes et commentaires selon le rythme de chaque plateforme (YouTube toutes les heures, Instagram/TikTok toutes les 3 heures), en chiffres exacts.",
       ogTitle: "Clips Track - Suivi de YouTube Shorts, Reels et TikTok",
       ogDescription:
-        "Suivez les vues, likes et commentaires de vos YouTube Shorts, Reels Instagram et vidéos TikTok - chaque heure, en chiffres exacts.",
+        "Suivez les vues, likes et commentaires de vos YouTube Shorts, Reels Instagram et vidéos TikTok - selon le rythme de chaque plateforme (YouTube toutes les heures, Instagram/TikTok toutes les 3 heures), en chiffres exacts.",
       trackedTitle: "Mes comptes",
       trackedDescription:
-        "Vos chaînes YouTube Shorts, Reels Instagram et TikTok suivies - privées et mises à jour toutes les heures.",
+        "Vos chaînes YouTube Shorts, Reels Instagram et TikTok suivies - privées et mises à jour selon le rythme de chaque plateforme (YouTube toutes les heures, Instagram/TikTok toutes les 3 heures).",
       faqTitle: "Questions fréquentes",
       faqDescription:
         "Réponses rapides sur ce que suit Clips Track, à quelle fréquence il se met à jour et comment vos données sont traitées.",
@@ -848,7 +848,7 @@ export const dictionaries = {
       subtitleBefore: "Ajoutez un compte YouTube, Instagram ou TikTok - ",
       subtitleAccent: "Clips Track",
       subtitleAfter:
-        " enregistre chaque heure les vues, likes et commentaires de chaque clip, affichés en chiffres exacts.",
+        " enregistre les vues, likes et commentaires de chaque clip selon le rythme de chaque plateforme - YouTube toutes les heures, Instagram/TikTok toutes les 3 heures - affichés en chiffres exacts.",
       add: "Ajouter une chaîne",
       view: "Voir mes comptes",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -857,9 +857,9 @@ export const dictionaries = {
       eyebrow: "À propos",
       title: "C'est quoi, Clips Track ?",
       p1:
-        "Clips Track est un outil de suivi des clips conçu pour le contenu court. Ajoutez une chaîne YouTube Shorts, un créateur Instagram ou un compte TikTok, et Clips Track enregistre chaque heure la performance de chaque clip - vues, likes, commentaires et favoris, à l'heure pile. Pas de feuille de calcul à tenir, pas d'export manuel : vous ouvrez la page et voyez exactement ce qu'un clip a fait hier et ce qu'il fait à l'instant, jusqu'au chiffre près.",
+        "Clips Track est un outil de suivi des clips conçu pour le contenu court. Ajoutez une chaîne YouTube Shorts, un créateur Instagram ou un compte TikTok, et Clips Track enregistre la performance de chaque clip - vues, likes, commentaires et favoris - selon le rythme de chaque plateforme (YouTube toutes les heures, Instagram/TikTok toutes les 3 heures). Pas de feuille de calcul à tenir, pas d'export manuel : vous ouvrez la page et voyez exactement ce qu'un clip a fait hier et ce qu'il fait à l'instant, jusqu'au chiffre près.",
       p2:
-        "La plupart des tableaux de bord arrondissent tout en « 1,2 M » et « 400 K ». Clips Track fait délibérément l'inverse : il stocke chaque chiffre à sa valeur exacte pour que la comparaison reste toujours honnête. Peu importe comment vous l'appelez - suivi de clips, tracker vidéo ou outil de mesure de clips - l'idée est la même : des relevés horaires, précis et réguliers des vidéos courtes qui font bouger votre chaîne.",
+        "La plupart des tableaux de bord arrondissent tout en « 1,2 M » et « 400 K ». Clips Track fait délibérément l'inverse : il stocke chaque chiffre à sa valeur exacte pour que la comparaison reste toujours honnête. Peu importe comment vous l'appelez - suivi de clips, tracker vidéo ou outil de mesure de clips - l'idée est la même : des relevés précis et réguliers, selon le rythme de chaque plateforme des vidéos courtes qui font bouger votre chaîne.",
     },
     rules: {
       eyebrow: "Règles par plateforme",
@@ -876,10 +876,10 @@ export const dictionaries = {
     },
     why: {
       eyebrow: "Pourquoi ClipsTrack",
-      title: "Des chiffres exacts, chaque heure",
-      f1Title: "Relevés horaires",
+      title: "Des chiffres exacts, à un rythme défini",
+      f1Title: "Relevés automatiques",
       f1Body:
-        "Un processus en arrière-plan relève les statistiques à l'heure pile, pour que vous regardiez vos clips grimper - jour après jour, chiffre après chiffre, sans lever le petit doigt.",
+        "Un processus en arrière-plan relève les statistiques selon le rythme de chaque plateforme (YouTube toutes les heures, Instagram/TikTok toutes les 3 heures), pour que vous regardiez vos clips grimper - jour après jour, chiffre après chiffre, sans lever le petit doigt.",
       f2Title: "Des chiffres exacts",
       f2Body:
         "Pas de « 1,2M » ou « 400K » au doigt mouillé. Les vues, likes et commentaires sont stockés et affichés à leur valeur exacte, à chaque fois.",
@@ -887,16 +887,16 @@ export const dictionaries = {
       f3Body:
         "Définissez un ratio minimum de likes par chaîne ; les clips qui passent sous le seuil sont signalés, pour repérer d'un coup d'œil les performances faibles.",
       p1:
-        "Pour suivre les vues de façon fiable, Clips Track stocke une série temporelle : une mesure par clip et par heure. Ouvrez un clip aujourd'hui et vous verrez encore ce qu'il a fait il y a un mois : le bond de la première heure sur un nouveau Reel, la lente montée matinale d'un Short, une vidéo TikTok qui repart soudainement plusieurs jours après. Comme l'historique est conservé en chiffres exacts, la courbe de croissance reste honnête et comparable, quel que soit le moment où vous la regardez.",
+        "Pour suivre les vues de façon fiable, Clips Track stocke une série temporelle : une mesure par clip à chaque synchronisation programmée. Ouvrez un clip aujourd'hui et vous verrez encore ce qu'il a fait il y a un mois : le bond de la première synchronisation sur un nouveau Reel, la lente montée matinale d'un Short, une vidéo TikTok qui repart soudainement plusieurs jours après. Comme l'historique est conservé en chiffres exacts, la courbe de croissance reste honnête et comparable, quel que soit le moment où vous la regardez.",
       p2:
-        "Les chiffres par clip se couplent aux totaux de la chaîne - abonnés, vues cumulées et nombre de publications, relevés également chaque heure. C'est ce qui transforme des compteurs bruts en un vrai outil de suivi de clips : comparez la performance d'une nouvelle publication à la référence de la chaîne, repérez les formats qui gardent leur ratio de likes, et décidez où mérite d'aller la prochaine publication.",
+        "Les chiffres par clip se couplent aux totaux de la chaîne - abonnés, vues cumulées et nombre de publications, relevés également au même rythme. C'est ce qui transforme des compteurs bruts en un vrai outil de suivi de clips : comparez la performance d'une nouvelle publication à la référence de la chaîne, repérez les formats qui gardent leur ratio de likes, et décidez où mérite d'aller la prochaine publication.",
     },
     buckets: {
       eyebrow: "Fenêtres",
       title: "Anciens clips récupérés, nouveaux clips suivis",
       sub1Title: "Comment fonctionnent les fenêtres",
       sub1Body:
-        "Quand vous ajoutez un compte, Clips Track récupère d'abord les clips récents dans une fenêtre « Anciens » - un instantané unique du passé récent. Ensuite, une fenêtre « Récents » ne garde que les dernières publications, rafraîchie à chaque synchronisation horaire. L'appartenance d'un clip se décide par sa date de publication, jamais au hasard, et les clips ne changent jamais de fenêtre.",
+        "Quand vous ajoutez un compte, Clips Track récupère d'abord les clips récents dans une fenêtre « Anciens » - un instantané unique du passé récent. Ensuite, une fenêtre « Récents » ne garde que les dernières publications, rafraîchie à chaque synchronisation programmée. L'appartenance d'un clip se décide par sa date de publication, jamais au hasard, et les clips ne changent jamais de fenêtre.",
       sub2Title: "Des limites à votre main",
       sub2Body:
         "Les tailles de fenêtre sont à vous par chaîne : récupérez les huit derniers clips et suivez les quatre plus récents, ou toute autre combinaison qui colle à votre façon de regarder. Baissez un nombre et les surplus sont retirés immédiatement ; augmentez-le et la fenêtre se rouvre pour se réajuster. Les clips retirés disparaissent proprement, historique compris, pour que le tableau reflète toujours ce que vous voulez vraiment suivre.",
@@ -910,16 +910,16 @@ export const dictionaries = {
       sub: "Des réponses rapides sur ce que Clips Track suit, sa fréquence de mise à jour et la gestion de vos données.",
       q1: "Qu'est-ce que ClipsTrack ?",
       a1:
-        "ClipsTrack est un suivi de clips gratuit pour le contenu court. Ajoutez un compte YouTube, Instagram ou TikTok et il enregistre chaque heure la performance de chaque clip - vues, likes et commentaires - toujours en chiffres exacts. Il réunit YouTube Shorts, Reels Instagram et vidéos TikTok dans un seul tableau de bord.",
+        "ClipsTrack est un suivi de clips gratuit pour le contenu court. Ajoutez un compte YouTube, Instagram ou TikTok et il enregistre la performance de chaque clip - vues, likes et commentaires - selon le rythme de chaque plateforme (YouTube toutes les heures, Instagram/TikTok toutes les 3 heures), toujours en chiffres exacts. Il réunit YouTube Shorts, Reels Instagram et vidéos TikTok dans un seul tableau de bord.",
       q2: "Comment ClipsTrack suit-il les YouTube Shorts, les Reels Instagram et les vidéos TikTok ?",
       a2:
-        "ClipsTrack récupère les YouTube Shorts directement depuis l'API officielle YouTube Data et ne garde que les clips de 60 secondes maximum - les vidéos longues ne se mélangent jamais. Sur Instagram, il ne suit que les Reels, en ignorant photos et carrousels. Sur TikTok, seules les vidéos classiques sont suivies, avec leurs likes, commentaires et favoris. Les statistiques de chaque plateforme sont relevées toutes les heures dans une série temporelle par clip.",
+        "ClipsTrack récupère les YouTube Shorts directement depuis l'API officielle YouTube Data et ne garde que les clips de 60 secondes maximum - les vidéos longues ne se mélangent jamais. Sur Instagram, il ne suit que les Reels, en ignorant photos et carrousels. Sur TikTok, seules les vidéos classiques sont suivies, avec leurs likes, commentaires et favoris. Les statistiques de chaque plateforme sont relevées selon son rythme - YouTube toutes les heures, Instagram/TikTok toutes les 3 heures - dans une série temporelle par clip.",
       q3: "ClipsTrack est-il gratuit ?",
       a3:
         "Oui - ClipsTrack est gratuit. Pas de plan payant, pas de frais par chaîne et rien n'est caché derrière un paywall.",
       q4: "À quelle fréquence ClipsTrack met-il à jour les statistiques ?",
       a4:
-        "Les statistiques se mettent à jour toutes les heures. Le premier relevé est pris dès que vous ajoutez un compte, puis une synchro en arrière-plan rafraîchit vues, likes et commentaires toutes les heures.",
+        "La fréquence de mise à jour dépend de la plateforme : YouTube toutes les heures, Instagram et TikTok toutes les 3 heures. Le premier relevé est pris dès que vous ajoutez un compte, puis une synchro en arrière-plan rafraîchit vues, likes et commentaires selon le rythme de chaque plateforme.",
       q5: "Puis-je suivre n'importe quel compte public YouTube, Instagram ou TikTok ?",
       a5:
         "Oui - tout compte public sur les trois plateformes prises en charge peut être suivi. Les comptes privés ou restreints qui exigent une approbation ne peuvent pas être lus sans autorisation.",
@@ -935,9 +935,9 @@ export const dictionaries = {
       q9: "Mes données de suivi sont-elles privées ?",
       a9:
         "Oui - le tableau n'affiche que les chaînes que vous avez ajoutées. Chaque visiteur voit ses propres données et les comptes sont isolés par visiteur.",
-      q10: "Puis-je voir la croissance horaire des vues d'une vidéo ?",
+      q10: "Puis-je voir les vues d'une vidéo augmenter au fil du temps ?",
       a10:
-        "Oui. Chaque synchro horaire stocke une mesure de plus pour chaque clip, construisant une série temporelle de comptes précis. Ouvrez plus tard l'historique d'un clip et vous verrez sa croissance heure par heure et jour par jour.",
+        "Oui. Chaque synchro programmée (YouTube toutes les heures, Instagram/TikTok toutes les 3 heures) stocke une mesure de plus pour chaque clip, construisant une série temporelle de comptes précis. Ouvrez plus tard l'historique d'un clip et vous verrez sa croissance au fil du temps, synchro après synchro.",
       q11: "ClipsTrack prend-il en charge Twitter/X ?",
       a11:
         "Pas encore - ClipsTrack suit actuellement les YouTube Shorts, les Reels Instagram et les vidéos TikTok. Twitter/X n'est pas pris en charge.",
@@ -963,7 +963,7 @@ export const dictionaries = {
       contact: "Contact",
       bottomLeft: "© 2026 ClipsTrack. Self-hosted.",
       bottomRight:
-        "Données actualisées chaque heure à partir de sources officielles et publiques",
+        "Données actualisées à un rythme défini - YouTube toutes les heures, Instagram/TikTok toutes les 3 heures - à partir de sources officielles et publiques",
       lang: "Changer de langue",
     },
     acct: {
@@ -971,7 +971,7 @@ export const dictionaries = {
       title: "Les comptes que vous suivez.",
       yourId: "Votre ID : {id}",
       sub:
-        "Vos comptes suivis - privés. Les statistiques se mettent à jour à l'heure pile, toujours en chiffres exacts, jamais abrégés.",
+        "Vos comptes suivis - privés. Les statistiques se mettent à jour selon le rythme de chaque plateforme - YouTube toutes les heures, Instagram/TikTok toutes les 3 heures - toujours en chiffres exacts, jamais abrégés.",
       dbError1: "Impossible d'atteindre la base de données - vérifiez que ",
       dbError2: " pointe vers un Postgres en cours d'exécution, puis rechargez.",
     },
@@ -990,7 +990,7 @@ export const dictionaries = {
       ratioTitle:
         "Optionnel : marquer les vidéos dont le ratio de likes (likes/vues %) passe sous ce seuil",
       helper:
-        "Séparez les comptes par une virgule - chacun est ajouté sur la plateforme choisie, d'un coup. Le premier relevé démarre immédiatement, puis il est pris toutes les heures. Réajouter un compte le met à jour au lieu de le dupliquer. Un Ratio% défini par compte signale les vidéos à faible ratio de likes comme un avertissement.",
+        "Séparez les comptes par une virgule - chacun est ajouté sur la plateforme choisie, d'un coup. Le premier relevé démarre immédiatement, puis il est pris selon le rythme de chaque plateforme (YouTube toutes les heures, Instagram/TikTok toutes les 3 heures). Réajouter un compte le met à jour au lieu de le dupliquer. Un Ratio% défini par compte signale les vidéos à faible ratio de likes comme un avertissement.",
     },
     sort: {
       label: "Trier par",
@@ -1085,13 +1085,13 @@ export const dictionaries = {
     meta: {
       title: "Clips Track - Tracker für YouTube Shorts, Reels & TikTok",
       description:
-        "Clips Track ist ein Performance-Tracker für YouTube Shorts, Instagram Reels und TikTok-Videos - Aufrufe, Likes und Kommentare stündlich, in exakten Zahlen.",
+        "Clips Track ist ein Performance-Tracker für YouTube Shorts, Instagram Reels und TikTok-Videos - Aufrufe, Likes und Kommentare im Rhythmus der jeweiligen Plattform (YouTube stündlich, Instagram/TikTok alle 3 Stunden), in exakten Zahlen.",
       ogTitle: "Clips Track - Tracker für YouTube Shorts, Reels & TikTok",
       ogDescription:
-        "Verfolge Aufrufe, Likes und Kommentare von YouTube Shorts, Instagram Reels und TikTok-Videos - stündlich, in exakten Zahlen.",
+        "Verfolge Aufrufe, Likes und Kommentare von YouTube Shorts, Instagram Reels und TikTok-Videos - im Plattform-Rhythmus (YouTube stündlich, Instagram/TikTok alle 3 Stunden), in exakten Zahlen.",
       trackedTitle: "Meine Konten",
       trackedDescription:
-        "Deine verfolgten YouTube-Shorts-, Instagram-Reels- und TikTok-Kanäle - privat und stündlich aktualisiert.",
+        "Deine verfolgten YouTube-Shorts-, Instagram-Reels- und TikTok-Kanäle - privat und im Rhythmus der Plattform aktualisiert (YouTube stündlich, Instagram/TikTok alle 3 Stunden).",
       faqTitle: "Häufige Fragen",
       faqDescription:
         "Kurze Antworten dazu, was Clips Track verfolgt, wie oft es aktualisiert wird und wie deine Daten behandelt werden.",
@@ -1114,7 +1114,7 @@ export const dictionaries = {
       subtitleBefore: "Füge einen YouTube-, Instagram- oder TikTok-Account hinzu - ",
       subtitleAccent: "Clips Track",
       subtitleAfter:
-        " erfasst stündlich Aufrufe, Likes und Kommentare jedes Clips - in voller Zahl angezeigt.",
+        " erfasst Aufrufe, Likes und Kommentare jedes Clips im Rhythmus der jeweiligen Plattform - YouTube stündlich, Instagram/TikTok alle 3 Stunden - in voller Zahl angezeigt.",
       add: "Kanal hinzufügen",
       view: "Meine Konten ansehen",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -1123,9 +1123,9 @@ export const dictionaries = {
       eyebrow: "Über uns",
       title: "Was ist Clips Track?",
       p1:
-        "Clips Track ist ein Clip-Tracker für kurze Inhalte. Füge einen YouTube-Shorts-Kanal, einen Instagram-Creator oder ein TikTok-Konto hinzu, und Clips Track zeichnet stündlich, zur vollen Stunde, auf, wie sich jeder Clip entwickelt - Aufrufe, Likes, Kommentare und Favoriten. Keine Tabelle zum Pflegen, kein manueller Export: Du öffnest die Seite und siehst genau, was ein Clip gestern gemacht hat und was gerade jetzt passiert - bis auf die letzte Zahl.",
+        "Clips Track ist ein Clip-Tracker für kurze Inhalte. Füge einen YouTube-Shorts-Kanal, einen Instagram-Creator oder ein TikTok-Konto hinzu, und Clips Track zeichnet im Rhythmus der jeweiligen Plattform auf, wie sich jeder Clip entwickelt - YouTube stündlich, Instagram/TikTok alle 3 Stunden - Aufrufe, Likes, Kommentare und Favoriten. Keine Tabelle zum Pflegen, kein manueller Export: Du öffnest die Seite und siehst genau, was ein Clip gestern gemacht hat und was gerade jetzt passiert - bis auf die letzte Zahl.",
       p2:
-        "Die meisten Dashboards runden alles auf „1,2 Mio.“ und „400 K“. Clips Track geht bewusst den umgekehrten Weg und speichert jeden Wert exakt, damit ein echter Vergleich immer möglich ist. Ob du es Clip-Tracking, Video-Tracker oder Clip-Analyse nennst - die Idee ist dieselbe: bewusste, exakte, stündliche Messungen der kurzen Videos, die deinen Kanal voranbringen.",
+        "Die meisten Dashboards runden alles auf „1,2 Mio.“ und „400 K“. Clips Track geht bewusst den umgekehrten Weg und speichert jeden Wert exakt, damit ein echter Vergleich immer möglich ist. Ob du es Clip-Tracking, Video-Tracker oder Clip-Analyse nennst - die Idee ist dieselbe: bewusste, exakte Messungen im Rhythmus der Plattform der kurzen Videos, die deinen Kanal voranbringen.",
     },
     rules: {
       eyebrow: "Regeln je Plattform",
@@ -1142,10 +1142,10 @@ export const dictionaries = {
     },
     why: {
       eyebrow: "Warum ClipsTrack",
-      title: "Exakte Zahlen, stündlich",
-      f1Title: "Stündliche Snapshots",
+      title: "Exakte Zahlen, im festen Rhythmus",
+      f1Title: "Automatische Snapshots",
       f1Body:
-        "Ein Hintergrundjob erfasst die Statistiken zur vollen Stunde - so siehst du deine Clips Tag für Tag klettern, Zahl für Zahl, ohne einen Finger zu rühren.",
+        "Ein Hintergrundjob erfasst die Statistiken im Rhythmus der jeweiligen Plattform - YouTube stündlich, Instagram/TikTok alle 3 Stunden - so siehst du deine Clips Tag für Tag klettern, Zahl für Zahl, ohne einen Finger zu rühren.",
       f2Title: "Exakte Zahlen",
       f2Body:
         "Keine 1,2M- oder 400K-Rateei. Aufrufe, Likes und Kommentare werden immer auf ihren exakten Wert gespeichert und angezeigt.",
@@ -1153,16 +1153,16 @@ export const dictionaries = {
       f3Body:
         "Lege optional eine Mindest-Like-Quote pro Kanal fest; Clips darunter werden als Warnung markiert, sodass schwache Performance sofort auffällt.",
       p1:
-        "Um Aufrufe zuverlässig zu verfolgen, speichert Clips Track eine Zeitreihe - eine Messung pro Clip und Stunde. Öffne heute einen Clip und du siehst noch immer, was er vor einem Monat gemacht hat: den ersten-Stunden-Sprung eines neuen Reels, das langsame morgendliche Klettern eines Shorts, ein TikTok-Video, das Tage später plötzlich wieder anzieht. Da die Historie in exakten Zahlen bleibt, ist die Wachstumskurve immer ehrlich und vergleichbar - egal wann du sie anschaust.",
+        "Um Aufrufe zuverlässig zu verfolgen, speichert Clips Track eine Zeitreihe - eine Messung pro Clip bei jedem geplanten Sync. Öffne heute einen Clip und du siehst noch immer, was er vor einem Monat gemacht hat: den ersten-Sync-Sprung eines neuen Reels, das langsame morgendliche Klettern eines Shorts, ein TikTok-Video, das Tage später plötzlich wieder anzieht. Da die Historie in exakten Zahlen bleibt, ist die Wachstumskurve immer ehrlich und vergleichbar - egal wann du sie anschaust.",
       p2:
-        "Die Zahlen pro Clip verbinden sich mit den Kanal-Totals - Follower, Gesamtaufrufe und Anzahl der Posts, ebenfalls stündlich erfasst. Genau das macht aus Rohzahlen einen echten Clip-Tracker: Du kannst vergleichen, wie ein neuer Post gegenüber der Kanal-Basis abschneidet, erkennen, welche Formate ihre Like-Quote halten, und entscheiden, wohin der nächste Post seinen Schwung verdient.",
+        "Die Zahlen pro Clip verbinden sich mit den Kanal-Totals - Follower, Gesamtaufrufe und Anzahl der Posts, ebenfalls im selben Rhythmus erfasst. Genau das macht aus Rohzahlen einen echten Clip-Tracker: Du kannst vergleichen, wie ein neuer Post gegenüber der Kanal-Basis abschneidet, erkennen, welche Formate ihre Like-Quote halten, und entscheiden, wohin der nächste Post seinen Schwung verdient.",
     },
     buckets: {
       eyebrow: "Fenster",
       title: "Alte Clips nachgefüllt, neue Clips überwacht",
       sub1Title: "So funktionieren die Fenster",
       sub1Body:
-        "Wenn du ein Konto hinzufügst, füllt Clips Track zuerst kürzliche Clips in ein „Alt“-Fenster - einen einmaligen Snapshot der jüngsten Vergangenheit. Danach hält ein „Neu“-Fenster nur die neuesten Uploads, aktualisiert bei jedem stündlichen Sync. Welcher Clip in welches Fenster gehört, entscheidet das Veröffentlichungsdatum, nie das Raten - und Clips wechseln nie zwischen Fenstern.",
+        "Wenn du ein Konto hinzufügst, füllt Clips Track zuerst kürzliche Clips in ein „Alt“-Fenster - einen einmaligen Snapshot der jüngsten Vergangenheit. Danach hält ein „Neu“-Fenster nur die neuesten Uploads, aktualisiert bei jedem geplanten Sync. Welcher Clip in welches Fenster gehört, entscheidet das Veröffentlichungsdatum, nie das Raten - und Clips wechseln nie zwischen Fenstern.",
       sub2Title: "Zahlen, die du kontrollierst",
       sub2Body:
         "Die Fenstergrößen bestimmst du pro Kanal: fülle die letzten acht Clips nach und verfolge die neuesten vier - oder jede andere Kombination, die zu deiner Art zu schauen passt. Verringerst du eine Zahl, werden die Extras sofort entfernt; erhöhst du sie, öffnet sich das Fenster neu und füllt entsprechend nach. Entfernte Clips werden sauber gelöscht, inklusive Verlauf, sodass das Dashboard immer zeigt, was du wirklich sehen willst.",
@@ -1176,16 +1176,16 @@ export const dictionaries = {
       sub: "Schnelle Antworten dazu, was Clips Track verfolgt, wie oft es aktualisiert und wie deine Daten behandelt werden.",
       q1: "Was ist ClipsTrack?",
       a1:
-        "ClipsTrack ist ein kostenloser Clip-Tracker für kurze Inhalte. Füge einen YouTube-, Instagram- oder TikTok-Account hinzu und er zeichnet stündlich auf, wie sich jeder Clip entwickelt - Aufrufe, Likes und Kommentare - immer in exakten Zahlen. Shorts, Reels und TikTok-Videos in einem Dashboard.",
+        "ClipsTrack ist ein kostenloser Clip-Tracker für kurze Inhalte. Füge einen YouTube-, Instagram- oder TikTok-Account hinzu und er zeichnet im Rhythmus der jeweiligen Plattform auf, wie sich jeder Clip entwickelt - YouTube stündlich, Instagram und TikTok alle 3 Stunden - Aufrufe, Likes und Kommentare, immer in exakten Zahlen. Shorts, Reels und TikTok-Videos in einem Dashboard.",
       q2: "Wie verfolgt ClipsTrack YouTube Shorts, Instagram Reels und TikTok-Videos?",
       a2:
-        "ClipsTrack holt YouTube Shorts direkt aus der offiziellen YouTube Data API und behält nur Clips bis 60 Sekunden - lange Videos vermischen sich nie. Auf Instagram verfolgt es nur Reels und überspringt Foto-Posts und Karussells. Auf TikTok werden nur normale Videos samt Likes, Kommentaren und Favoriten verfolgt. Die Statistiken jeder Plattform werden stündlich in eine Zeitreihe pro Clip übernommen.",
+        "ClipsTrack holt YouTube Shorts direkt aus der offiziellen YouTube Data API und behält nur Clips bis 60 Sekunden - lange Videos vermischen sich nie. Auf Instagram verfolgt es nur Reels und überspringt Foto-Posts und Karussells. Auf TikTok werden nur normale Videos samt Likes, Kommentaren und Favoriten verfolgt. Die Statistiken jeder Plattform werden im eigenen Rhythmus übernommen - YouTube stündlich, Instagram/TikTok alle 3 Stunden - in eine Zeitreihe pro Clip.",
       q3: "Ist ClipsTrack kostenlos?",
       a3:
         "Ja - ClipsTrack ist kostenlos. Kein Bezahlplan, keine Gebühr pro Kanal und nichts steckt hinter einer Paywall.",
       q4: "Wie oft aktualisiert ClipsTrack die Statistiken?",
       a4:
-        "Die Statistiken aktualisieren sich stündlich. Der erste Snapshot wird sofort nach dem Hinzufügen eines Kontos aufgenommen, danach aktualisiert ein Hintergrund-Sync stündlich Aufrufe, Likes und Kommentare.",
+        "Die Aktualisierungsfrequenz hängt von der Plattform ab: YouTube stündlich, Instagram und TikTok alle 3 Stunden. Der erste Snapshot wird sofort nach dem Hinzufügen eines Kontos aufgenommen, danach aktualisiert ein Hintergrund-Sync Aufrufe, Likes und Kommentare im Rhythmus der jeweiligen Plattform.",
       q5: "Kann ich jedes öffentliche YouTube-, Instagram- oder TikTok-Konto verfolgen?",
       a5:
         "Ja - jedes öffentliche Konto auf den drei unterstützten Plattformen kann verfolgt werden. Private oder eingeschränkte Konten, die eine Genehmigung verlangen, sind ohne Autorisierung nicht lesbar.",
@@ -1201,9 +1201,9 @@ export const dictionaries = {
       q9: "Sind meine verfolgten Daten privat?",
       a9:
         "Ja - das Dashboard zeigt nur die Kanäle, die du hinzugefügt hast. Jeder Besucher sieht nur seine eigenen Daten und die Konten sind pro Besucher isoliert.",
-      q10: "Kann ich das stündliche Wachstum der Aufrufe eines Videos sehen?",
+      q10: "Kann ich sehen, wie die Aufrufe eines Videos im Laufe der Zeit wachsen?",
       a10:
-        "Ja. Jeder stündliche Sync speichert eine weitere Messung pro Clip und baut so eine Zeitreihe exakter Aufrufzahlen auf. Öffnest du später die Historie eines Clips, siehst du sein Wachstum Stunde für Stunde und Tag für Tag.",
+        "Ja. Jeder geplante Sync (YouTube stündlich, Instagram und TikTok alle 3 Stunden) speichert eine weitere Messung pro Clip und baut so eine Zeitreihe exakter Aufrufzahlen auf. Öffnest du später die Historie eines Clips, siehst du, wie er im Laufe der Zeit gewachsen ist - Sync für Sync.",
       q11: "Unterstützt ClipsTrack Twitter/X?",
       a11:
         "Noch nicht - ClipsTrack verfolgt derzeit YouTube Shorts, Instagram Reels und TikTok-Videos. Twitter/X wird nicht unterstützt.",
@@ -1229,7 +1229,7 @@ export const dictionaries = {
       contact: "Kontakt",
       bottomLeft: "© 2026 ClipsTrack. Self-hosted.",
       bottomRight:
-        "Daten werden stündlich über offizielle und öffentliche Quellen aktualisiert",
+        "Daten werden im festen Rhythmus aktualisiert - YouTube stündlich, Instagram und TikTok alle 3 Stunden - über offizielle und öffentliche Quellen",
       lang: "Sprache ändern",
     },
     acct: {
@@ -1237,7 +1237,7 @@ export const dictionaries = {
       title: "Die Accounts, die du verfolgst.",
       yourId: "Deine ID: {id}",
       sub:
-        "Deine verfolgten Konten - privat. Die Statistiken aktualisieren sich zur vollen Stunde, immer in voller Zahl, nie abgekürzt.",
+        "Deine verfolgten Konten - privat. Die Statistiken aktualisieren sich im Rhythmus der jeweiligen Plattform - YouTube stündlich, Instagram/TikTok alle 3 Stunden - immer in voller Zahl, nie abgekürzt.",
       dbError1: "Datenbank nicht erreichbar - prüfe, ob ",
       dbError2: " auf eine laufende Postgres-Instanz zeigt, und lade neu.",
     },
@@ -1256,7 +1256,7 @@ export const dictionaries = {
       ratioTitle:
         "Optional: Videos markieren, deren Like-Quote (Likes/Aufrufe %) darunter liegt",
       helper:
-        "Trenne Accounts mit Kommas - jeder wird auf der gewählten Plattform auf einen Schlag hinzugefügt. Der erste Snapshot startet sofort, danach läuft er stündlich. Einen Account erneut hinzuzufügen aktualisiert ihn statt zu duplizieren. Eine pro Account gesetzte Ratio% markiert Videos mit niedrigerer Like-Quote als Warnung.",
+        "Trenne Accounts mit Kommas - jeder wird auf der gewählten Plattform auf einen Schlag hinzugefügt. Der erste Snapshot startet sofort, danach läuft er im Rhythmus der jeweiligen Plattform (YouTube stündlich, Instagram/TikTok alle 3 Stunden). Einen Account erneut hinzuzufügen aktualisiert ihn statt zu duplizieren. Eine pro Account gesetzte Ratio% markiert Videos mit niedrigerer Like-Quote als Warnung.",
     },
     sort: {
       label: "Sortieren nach",
@@ -1350,13 +1350,13 @@ export const dictionaries = {
     meta: {
       title: "Clips Track - Rastreador de YouTube Shorts, Reels e TikTok",
       description:
-        "O Clips Track é um rastreador de desempenho de clipes para YouTube Shorts, Reels do Instagram e vídeos do TikTok - visualizações, curtidas e comentários a cada hora, em números exatos.",
+        "O Clips Track é um rastreador de desempenho de clipes para YouTube Shorts, Reels do Instagram e vídeos do TikTok - visualizações, curtidas e comentários no ritmo de cada plataforma (YouTube a cada hora, Instagram/TikTok a cada 3 horas), em números exatos.",
       ogTitle: "Clips Track - Rastreador de YouTube Shorts, Reels e TikTok",
       ogDescription:
-        "Acompanhe visualizações, curtidas e comentários de YouTube Shorts, Reels do Instagram e vídeos do TikTok - por hora, em números exatos.",
+        "Acompanhe visualizações, curtidas e comentários de YouTube Shorts, Reels do Instagram e vídeos do TikTok - no ritmo de cada plataforma (YouTube a cada hora, Instagram/TikTok a cada 3 horas), em números exatos.",
       trackedTitle: "Minhas contas",
       trackedDescription:
-        "Seus canais rastreados de YouTube Shorts, Reels do Instagram e TikTok - privados para você e atualizados a cada hora.",
+        "Seus canais rastreados de YouTube Shorts, Reels do Instagram e TikTok - privados para você e atualizados no ritmo de cada plataforma (YouTube a cada hora, Instagram/TikTok a cada 3 horas).",
       faqTitle: "Perguntas frequentes",
       faqDescription:
         "Respostas rápidas sobre o que o Clips Track rastreia, com que frequência ele atualiza e como seus dados são tratados.",
@@ -1379,7 +1379,7 @@ export const dictionaries = {
       subtitleBefore: "Adicione uma conta do YouTube, Instagram ou TikTok - ",
       subtitleAccent: "Clips Track",
       subtitleAfter:
-        " registra a cada hora as visualizações, curtidas e comentários de cada clipe, exibidos em números exatos.",
+        " registra as visualizações, curtidas e comentários de cada clipe no ritmo de cada plataforma - YouTube a cada hora, Instagram/TikTok a cada 3 horas - exibidos em números exatos.",
       add: "Adicionar um canal",
       view: "Ver minhas contas",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -1388,9 +1388,9 @@ export const dictionaries = {
       eyebrow: "Sobre",
       title: "O que é o Clips Track?",
       p1:
-        "O Clips Track é um rastreador de clipes feito para conteúdo curto. Adicione um canal de YouTube Shorts, um criador do Instagram ou uma conta do TikTok, e o Clips Track registra a cada hora, na hora certa, o desempenho de cada clipe - visualizações, curtidas, comentários e favoritos. Não há planilha para manter nem exportação manual: você abre a página e vê exatamente o que um clipe fez ontem e o que está fazendo agora, até o número exato.",
+        "O Clips Track é um rastreador de clipes feito para conteúdo curto. Adicione um canal de YouTube Shorts, um criador do Instagram ou uma conta do TikTok, e o Clips Track registra no ritmo de cada plataforma o desempenho de cada clipe - YouTube a cada hora, Instagram/TikTok a cada 3 horas - visualizações, curtidas, comentários e favoritos. Não há planilha para manter nem exportação manual: você abre a página e vê exatamente o que um clipe fez ontem e o que está fazendo agora, até o número exato.",
       p2:
-        "A maioria dos painéis arredonda tudo para \"1,2 mi\" e \"400 mil\". O Clips Track faz deliberadamente o oposto: guarda cada número com o valor exato para que a comparação seja sempre real. Chame de rastreamento de clipes, tracker de vídeos ou análise de clipes - a ideia é a mesma: medições deliberadas, exatas e de hora em hora dos vídeos curtos que movem o seu canal.",
+        "A maioria dos painéis arredonda tudo para \"1,2 mi\" e \"400 mil\". O Clips Track faz deliberadamente o oposto: guarda cada número com o valor exato para que a comparação seja sempre real. Chame de rastreamento de clipes, tracker de vídeos ou análise de clipes - a ideia é a mesma: medições deliberadas, exatas e em ritmo próprio dos vídeos curtos que movem o seu canal.",
     },
     rules: {
       eyebrow: "Regras por plataforma",
@@ -1407,10 +1407,10 @@ export const dictionaries = {
     },
     why: {
       eyebrow: "Por que o ClipsTrack",
-      title: "Números exatos, a cada hora",
-      f1Title: "Capturas a cada hora",
+      title: "Números exatos, em ritmo definido",
+      f1Title: "Capturas automáticas",
       f1Body:
-        "Um processo em segundo plano captura as estatísticas na hora certa, para você ver seus clipes subirem - dia após dia, número após número, sem esforço.",
+        "Um processo em segundo plano captura as estatísticas no ritmo de cada plataforma (YouTube a cada hora, Instagram/TikTok a cada 3 horas), para você ver seus clipes subirem - dia após dia, número após número, sem esforço.",
       f2Title: "Números exatos",
       f2Body:
         "Nada de chutar 1,2 mi ou 400 mil. Visualizações, curtidas e comentários são guardados e exibidos com o valor exato, sempre.",
@@ -1418,16 +1418,16 @@ export const dictionaries = {
       f3Body:
         "Defina uma proporção mínima opcional de curtidas por canal; clipes abaixo do limite são sinalizados, para o baixo desempenho saltar aos olhos.",
       p1:
-        "Para rastrear visualizações com confiabilidade, o Clips Track guarda uma série temporal: uma medição por clipe e por hora. Abra um clipe hoje e você ainda verá o que ele fez há um mês: o salto da primeira hora em um Reel novo, a lenta subida matinal de um Short, um vídeo do TikTok que dispara de novo dias depois. Como o histórico fica em números exatos, a curva de crescimento continua honesta e comparável, não importa quando você a consulte.",
+        "Para rastrear visualizações com confiabilidade, o Clips Track guarda uma série temporal: uma medição por clipe a cada sincronização programada. Abra um clipe hoje e você ainda verá o que ele fez há um mês: o salto da primeira sincronização em um Reel novo, a lenta subida matinal de um Short, um vídeo do TikTok que dispara de novo dias depois. Como o histórico fica em números exatos, a curva de crescimento continua honesta e comparável, não importa quando você a consulte.",
       p2:
-        "Os números por clipe se somam aos totais do canal - seguidores, visualizações acumuladas e número de publicações, também capturados a cada hora. É isso que transforma contagens brutas em um verdadeiro rastreador de desempenho de clipes: você compara como uma nova publicação performa em relação ao canal, identifica quais formatos mantêm a proporção de curtidas e decide para onde a próxima publicação merece ir.",
+        "Os números por clipe se somam aos totais do canal - seguidores, visualizações acumuladas e número de publicações, também capturados no mesmo ritmo. É isso que transforma contagens brutas em um verdadeiro rastreador de desempenho de clipes: você compara como uma nova publicação performa em relação ao canal, identifica quais formatos mantêm a proporção de curtidas e decide para onde a próxima publicação merece ir.",
     },
     buckets: {
       eyebrow: "Janelas",
       title: "Clipes antigos preenchidos, clipes novos acompanhados",
       sub1Title: "Como funcionam as janelas",
       sub1Body:
-        "Quando você adiciona uma conta, o Clips Track primeiro preenche os clipes recentes em uma janela \"Antigos\" - um instantâneo único do passado recente. Em seguida, uma janela \"Novos\" mantém apenas as publicações mais recentes, atualizada a cada sincronização horária. Qual clipe pertence a qual janela é decidido pela data de publicação, nunca por chute, e os clipes nunca pulam entre janelas.",
+        "Quando você adiciona uma conta, o Clips Track primeiro preenche os clipes recentes em uma janela \"Antigos\" - um instantâneo único do passado recente. Em seguida, uma janela \"Novos\" mantém apenas as publicações mais recentes, atualizada a cada sincronização programada. Qual clipe pertence a qual janela é decidido pela data de publicação, nunca por chute, e os clipes nunca pulam entre janelas.",
       sub2Title: "Limites que você controla",
       sub2Body:
         "Os tamanhos das janelas são escolhidos por canal: preencha os últimos oito clipes e acompanhe os quatro mais novos, ou qualquer combinação que combine com seu jeito de assistir. Se você reduzir um número, os extras são removidos na hora; se aumentar, a janela reabre e preenche para acompanhar. Clipes removidos são excluídos limpos, histórico junto, para o painel sempre refletir o que você realmente quer assistir.",
@@ -1441,16 +1441,16 @@ export const dictionaries = {
       sub: "Respostas rápidas sobre o que o Clips Track rastreia, com que frequência atualiza e como seus dados são tratados.",
       q1: "O que é o ClipsTrack?",
       a1:
-        "O ClipsTrack é um rastreador de clipes gratuito para conteúdo curto. Adicione uma conta do YouTube, Instagram ou TikTok e ele registra a cada hora o desempenho de cada clipe - visualizações, curtidas e comentários - sempre em números exatos. Ele reúne YouTube Shorts, Reels do Instagram e vídeos do TikTok em um só painel.",
+        "O ClipsTrack é um rastreador de clipes gratuito para conteúdo curto. Adicione uma conta do YouTube, Instagram ou TikTok e ele registra no ritmo de cada plataforma o desempenho de cada clipe - YouTube a cada hora, Instagram/TikTok a cada 3 horas - visualizações, curtidas e comentários, sempre em números exatos. Ele reúne YouTube Shorts, Reels do Instagram e vídeos do TikTok em um só painel.",
       q2: "Como o ClipsTrack rastreia YouTube Shorts, Reels do Instagram e vídeos do TikTok?",
       a2:
-        "O ClipsTrack puxa os YouTube Shorts direto da API oficial de dados do YouTube e guarda apenas clipes de até 60 segundos - vídeos longos nunca se misturam. No Instagram, ele rastreia apenas Reels, ignorando fotos e carrosséis. No TikTok, apenas vídeos comuns são rastreados, com suas curtidas, comentários e favoritos. As estatísticas de cada plataforma são capturadas de hora em hora em uma série temporal por clipe.",
+        "O ClipsTrack puxa os YouTube Shorts direto da API oficial de dados do YouTube e guarda apenas clipes de até 60 segundos - vídeos longos nunca se misturam. No Instagram, ele rastreia apenas Reels, ignorando fotos e carrosséis. No TikTok, apenas vídeos comuns são rastreados, com suas curtidas, comentários e favoritos. As estatísticas de cada plataforma são capturadas no próprio ritmo - YouTube a cada hora, Instagram/TikTok a cada 3 horas - em uma série temporal por clipe.",
       q3: "O ClipsTrack é gratuito?",
       a3:
         "Sim - o ClipsTrack é gratuito. Não há plano pago, nem taxa por canal e nada fica escondido atrás de um paywall.",
       q4: "Com que frequência o ClipsTrack atualiza as estatísticas?",
       a4:
-        "As estatísticas são atualizadas a cada hora. A primeira captura é tirada assim que você adiciona uma conta; depois, uma sincronização em segundo plano renova visualizações, curtidas e comentários de hora em hora.",
+        "A frequência de atualização depende da plataforma: YouTube a cada hora, Instagram e TikTok a cada 3 horas. A primeira captura é tirada assim que você adiciona uma conta; depois, uma sincronização em segundo plano renova visualizações, curtidas e comentários no ritmo de cada plataforma.",
       q5: "Posso rastrear qualquer conta pública do YouTube, Instagram ou TikTok?",
       a5:
         "Sim - qualquer conta pública nas três plataformas compatíveis pode ser rastreada. Contas privadas ou restritas que exigem aprovação não podem ser lidas sem autorização.",
@@ -1466,9 +1466,9 @@ export const dictionaries = {
       q9: "Meus dados rastreados são privados?",
       a9:
         "Sim - o painel mostra apenas os canais que você adicionou. Cada visitante vê seus próprios dados e os registros de conta são isolados por visitante.",
-      q10: "Posso ver o crescimento por hora das visualizações de um vídeo?",
+      q10: "Posso ver as visualizações de um vídeo crescerem ao longo do tempo?",
       a10:
-        "Sim. Cada sincronização horária guarda mais uma medição de cada clipe, construindo uma série temporal de contagens exatas. Abra o histórico de um clipe depois e veja seu crescimento hora a hora e dia a dia.",
+        "Sim. Cada sincronização programada (YouTube a cada hora, Instagram/TikTok a cada 3 horas) guarda mais uma medição de cada clipe, construindo uma série temporal de contagens exatas. Abra o histórico de um clipe depois e veja o crescimento ao longo do tempo, sync a sync.",
       q11: "O ClipsTrack é compatível com Twitter/X?",
       a11:
         "Ainda não - o ClipsTrack atualmente rastreia YouTube Shorts, Reels do Instagram e vídeos do TikTok. Twitter/X não é compatível.",
@@ -1494,7 +1494,7 @@ export const dictionaries = {
       contact: "Contato",
       bottomLeft: "© 2026 ClipsTrack. Self-hosted.",
       bottomRight:
-        "Dados atualizados a cada hora por meio de fontes oficiais e públicas",
+        "Dados atualizados em ritmo definido - YouTube a cada hora, Instagram/TikTok a cada 3 horas - por meio de fontes oficiais e públicas",
       lang: "Alterar idioma",
     },
     acct: {
@@ -1502,7 +1502,7 @@ export const dictionaries = {
       title: "As contas que você rastreia.",
       yourId: "Seu ID: {id}",
       sub:
-        "Suas contas rastreadas - privadas para você. As estatísticas são atualizadas na hora certa, sempre em números exatos, nunca abreviados.",
+        "Suas contas rastreadas - privadas para você. As estatísticas são atualizadas no ritmo de cada plataforma - YouTube a cada hora, Instagram/TikTok a cada 3 horas - sempre em números exatos, nunca abreviados.",
       dbError1: "Não foi possível acessar o banco de dados - verifique se ",
       dbError2: " aponta para um Postgres em execução e recarregue.",
     },
@@ -1521,7 +1521,7 @@ export const dictionaries = {
       ratioTitle:
         "Opcional: marca os vídeos cuja proporção de curtidas (curtidas/visualizações %) fique abaixo disso",
       helper:
-        "Separe as contas com vírgulas - cada uma é adicionada na plataforma escolhida, de uma vez. A primeira captura começa imediatamente e depois ocorre a cada hora. Re-adicionar uma conta a atualiza em vez de duplicar. Uma Proporção% definida por conta sinaliza vídeos com menor proporção de curtidas como um aviso.",
+        "Separe as contas com vírgulas - cada uma é adicionada na plataforma escolhida, de uma vez. A primeira captura começa imediatamente e depois ocorre no ritmo de cada plataforma (YouTube a cada hora, Instagram/TikTok a cada 3 horas). Re-adicionar uma conta a atualiza em vez de duplicar. Uma Proporção% definida por conta sinaliza vídeos com menor proporção de curtidas como um aviso.",
     },
     sort: {
       label: "Ordenar por",
@@ -1616,13 +1616,13 @@ export const dictionaries = {
     meta: {
       title: "Clips Track - YouTube Shorts·릴스·TikTok 트래커",
       description:
-        "Clips Track는 YouTube Shorts, Instagram Reels, TikTok 동영상의 성과를 추적하는 도구입니다. 조회수·좋아요·댓글을 매시간 온전한 숫자로 기록합니다.",
+        "Clips Track는 YouTube Shorts, Instagram Reels, TikTok 동영상의 성과를 추적하는 도구입니다. 조회수·좋아요·댓글을 플랫폼별 주기(YouTube는 매시간, Instagram·TikTok은 3시간마다)로 온전한 숫자로 기록합니다.",
       ogTitle: "Clips Track - YouTube Shorts·릴스·TikTok 트래커",
       ogDescription:
-        "YouTube Shorts, Instagram Reels, TikTok 동영상의 조회수·좋아요·댓글을 매시간 온전한 숫자로 추적하세요.",
+        "YouTube Shorts, Instagram Reels, TikTok 동영상의 조회수·좋아요·댓글을 플랫폼별 주기(YouTube는 매시간, Instagram·TikTok은 3시간마다)로 온전한 숫자로 추적하세요.",
       trackedTitle: "내 계정",
       trackedDescription:
-        "추적 중인 YouTube Shorts, Instagram Reels, TikTok 채널 - 나만 볼 수 있고 매시간 업데이트됩니다.",
+        "추적 중인 YouTube Shorts, Instagram Reels, TikTok 채널 - 나만 볼 수 있고 플랫폼별 주기로 업데이트됩니다(YouTube는 매시간, Instagram·TikTok은 3시간마다).",
       faqTitle: "자주 묻는 질문",
       faqDescription:
         "Clips Track가 무엇을 추적하는지, 얼마나 자주 업데이트되는지, 데이터가 어떻게 처리되는지에 대한 간단한 답변입니다.",
@@ -1645,7 +1645,7 @@ export const dictionaries = {
       subtitleBefore: "YouTube, Instagram, TikTok 계정을 추가하세요 - ",
       subtitleAccent: "Clips Track",
       subtitleAfter:
-        " 가 매시간 각 클립의 조회수·좋아요·댓글을 온전한 숫자로 기록합니다.",
+        " 가 각 클립의 조회수·좋아요·댓글을 플랫폼별 주기(YouTube는 매시간, Instagram·TikTok은 3시간마다)로 온전한 숫자로 기록합니다.",
       add: "채널 추가",
       view: "내 계정 보기",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -1654,9 +1654,9 @@ export const dictionaries = {
       eyebrow: "소개",
       title: "Clips Track란 무엇인가요?",
       p1:
-        "Clips Track는 숏폼 콘텐츠를 위한 클립 트래커입니다. YouTube Shorts 채널, Instagram 크리에이터, TikTok 계정을 추가하면 각 클립의 성과(조회수·좋아요·댓글·즐겨찾기)를 매시간 정시에 기록합니다. 스프레드시트 관리도, 수동 내보내기도 필요 없습니다. 페이지를 열면 어제의 성과와 지금의 성과를 정확한 숫자 그대로 확인할 수 있습니다.",
+        "Clips Track는 숏폼 콘텐츠를 위한 클립 트래커입니다. YouTube Shorts 채널, Instagram 크리에이터, TikTok 계정을 추가하면 각 클립의 성과(조회수·좋아요·댓글·즐겨찾기)를 플랫폼별 주기(YouTube는 매시간, Instagram·TikTok은 3시간마다)로 기록합니다. 스프레드시트 관리도, 수동 내보내기도 필요 없습니다. 페이지를 열면 어제의 성과와 지금의 성과를 정확한 숫자 그대로 확인할 수 있습니다.",
       p2:
-        "대부분의 분석 대시보드는 모든 숫자를 '120만', '40만'처럼 반올림합니다. Clips Track는 의도적으로 정반대 방향을 택해 모든 수치를 정확한 값 그대로 저장하므로, 언제나 진짜 비교가 가능합니다. 클립 추적, 동영상 트래커, 클립 성과 분석 - 무엇이라 불러도 아이디어는 같습니다. 채널을 성장시키는 숏폼 동영상을 꼼꼼하고 정확하게, 매시간 측정하는 것입니다.",
+        "대부분의 분석 대시보드는 모든 숫자를 '120만', '40만'처럼 반올림합니다. Clips Track는 의도적으로 정반대 방향을 택해 모든 수치를 정확한 값 그대로 저장하므로, 언제나 진짜 비교가 가능합니다. 클립 추적, 동영상 트래커, 클립 성과 분석 - 무엇이라 불러도 아이디어는 같습니다. 채널을 성장시키는 숏폼 동영상을 꼼꼼하고 정확하게, 플랫폼 주기에 맞춰 측정하는 것입니다.",
     },
     rules: {
       eyebrow: "플랫폼별 규칙",
@@ -1673,10 +1673,10 @@ export const dictionaries = {
     },
     why: {
       eyebrow: "ClipsTrack를 선택하는 이유",
-      title: "매시간, 온전한 숫자로",
-      f1Title: "매시간 스냅샷",
+      title: "정해진 주기로, 온전한 숫자로",
+      f1Title: "자동 스냅샷",
       f1Body:
-        "백그라운드 작업이 정시에 통계를 기록하므로, 별다른 노력 없이 클립이 날마다 숫자로 성장하는 모습을 지켜볼 수 있습니다.",
+        "백그라운드 작업이 플랫폼별 주기(YouTube는 매시간, Instagram·TikTok은 3시간마다)로 통계를 기록하므로, 별다른 노력 없이 클립이 날마다 숫자로 성장하는 모습을 지켜볼 수 있습니다.",
       f2Title: "온전한 숫자",
       f2Body:
         "120만, 40만 같은 어림수가 없습니다. 조회수·좋아요·댓글은 언제나 정확한 값 그대로 저장되고 표시됩니다.",
@@ -1684,16 +1684,16 @@ export const dictionaries = {
       f3Body:
         "채널별로 최소 좋아요 비율을 선택적으로 설정할 수 있습니다. 기준을 밑도는 클립은 경고로 표시되어 부진한 성과가 한눈에 드러납니다.",
       p1:
-        "조회수를 신뢰성 있게 추적하기 위해 Clips Track는 시계열을 저장합니다 - 클립당 매시간 한 번씩 측정합니다. 오늘 클립을 열어도 한 달 전의 기록을 볼 수 있습니다. 새 릴스의 첫 시간 급등, Shorts의 아침 느린 성장, 며칠 뒤 갑자기 다시 빨라지는 TikTok 동영상까지. 기록이 정확한 숫자로 보존되므로 성장 곡선은 언제 보든 솔직하고 비교 가능합니다.",
+        "조회수를 신뢰성 있게 추적하기 위해 Clips Track는 시계열을 저장합니다 - 클립당 동기화마다 한 번씩 측정합니다. 오늘 클립을 열어도 한 달 전의 기록을 볼 수 있습니다. 새 릴스의 첫 동기화 급등, Shorts의 아침 느린 성장, 며칠 뒤 갑자기 다시 빨라지는 TikTok 동영상까지. 기록이 정확한 숫자로 보존되므로 성장 곡선은 언제 보든 솔직하고 비교 가능합니다.",
       p2:
-        "클립별 수치가 채널 전체 합계(팔로워, 누적 조회수, 게시물 수)와 함께 표시되며, 이것도 매시간 스냅샷됩니다. 이것이야말로 단순 수치를 진짜 클립 성과 트래커로 바꾸는 요소입니다. 새 게시물이 채널 기준선 대비 어떻게 성과를 내는지 비교하고, 어떤 형식이 좋아요 비율을 유지하는지 파악한 뒤, 다음 게시물의 무게를 어디에 둘지 결정할 수 있습니다.",
+        "클립별 수치가 채널 전체 합계(팔로워, 누적 조회수, 게시물 수)와 함께 표시되며, 이것도 같은 주기로 스냅샷됩니다. 이것이야말로 단순 수치를 진짜 클립 성과 트래커로 바꾸는 요소입니다. 새 게시물이 채널 기준선 대비 어떻게 성과를 내는지 비교하고, 어떤 형식이 좋아요 비율을 유지하는지 파악한 뒤, 다음 게시물의 무게를 어디에 둘지 결정할 수 있습니다.",
     },
     buckets: {
       eyebrow: "윈도우",
       title: "오래된 클립은 채우고, 새 클립은 지켜보기",
       sub1Title: "윈도우는 어떻게 작동하나요?",
       sub1Body:
-        "계정을 추가하면 Clips Track는 먼저 최근 클립을 '이전' 윈도우에 백필합니다 - 최근 과거의 일회성 스냅샷입니다. 이후에는 '최신' 윈도우가 최신 게시물만 매시간 동기화로 갱신하며 유지합니다. 어떤 클립이 어느 윈도우에 속할지는 추측이 아닌 게시 날짜로 결정되며, 클립이 윈도우 사이를 옮겨 다니는 일은 없습니다.",
+        "계정을 추가하면 Clips Track는 먼저 최근 클립을 '이전' 윈도우에 백필합니다 - 최근 과거의 일회성 스냅샷입니다. 이후에는 '최신' 윈도우가 최신 게시물만 정기 동기화로 갱신하며 유지합니다. 어떤 클립이 어느 윈도우에 속할지는 추측이 아닌 게시 날짜로 결정되며, 클립이 윈도우 사이를 옮겨 다니는 일은 없습니다.",
       sub2Title: "내가 정하는 수치",
       sub2Body:
         "윈도우 크기는 채널별로 직접 정합니다. 최근 8개의 클립을 백필하고 최신 4개를 추적하든, 자신의 시청 방식에 맞는 어떤 조합이든 가능합니다. 숫자를 낮추면 초과분이 즉시 제거되고, 올리면 윈도우가 다시 열려 그에 맞게 백필됩니다. 제외된 클립은 기록까지 깔끔하게 삭제되므로 대시보드는 항상 실제로 보고 싶은 내용만 반영합니다.",
@@ -1707,16 +1707,16 @@ export const dictionaries = {
       sub: "Clips Track가 무엇을 추적하는지, 얼마나 자주 업데이트되는지, 데이터가 어떻게 처리되는지에 대한 빠른 답변입니다.",
       q1: "ClipsTrack란 무엇인가요?",
       a1:
-        "ClipsTrack는 숏폼 콘텐츠를 위한 무료 클립 트래커입니다. YouTube, Instagram, TikTok 계정을 추가하면 각 클립의 성과(조회수·좋아요·댓글)를 매시간, 항상 온전한 숫자로 기록합니다. YouTube Shorts, Instagram Reels, TikTok 동영상을 하나의 대시보드로 모아줍니다.",
+        "ClipsTrack는 숏폼 콘텐츠를 위한 무료 클립 트래커입니다. YouTube, Instagram, TikTok 계정을 추가하면 각 클립의 성과(조회수·좋아요·댓글)를 플랫폼별 주기(YouTube는 매시간, Instagram·TikTok은 3시간마다)로, 항상 온전한 숫자로 기록합니다. YouTube Shorts, Instagram Reels, TikTok 동영상을 하나의 대시보드로 모아줍니다.",
       q2: "ClipsTrack는 YouTube Shorts, Instagram Reels, TikTok 동영상을 어떻게 추적하나요?",
       a2:
-        "ClipsTrack는 YouTube 공식 Data API에서 Shorts를 직접 가져와 최대 60초 클립만 저장합니다. 긴 영상이 섞일 일은 없습니다. Instagram에서는 사진 게시물과 캐러셀을 건너뛰고 릴스만 추적합니다. TikTok에서는 좋아요·댓글·즐겨찾기와 함께 일반 동영상만 추적합니다. 각 플랫폼의 통계는 매시간 클립별 시계열로 스냅샷됩니다.",
+        "ClipsTrack는 YouTube 공식 Data API에서 Shorts를 직접 가져와 최대 60초 클립만 저장합니다. 긴 영상이 섞일 일은 없습니다. Instagram에서는 사진 게시물과 캐러셀을 건너뛰고 릴스만 추적합니다. TikTok에서는 좋아요·댓글·즐겨찾기와 함께 일반 동영상만 추적합니다. 각 플랫폼의 통계는 각자의 주기(YouTube는 매시간, Instagram·TikTok은 3시간마다)에 맞춰 클립별 시계열로 스냅샷됩니다.",
       q3: "ClipsTrack는 무료인가요?",
       a3:
         "네, ClipsTrack는 무료입니다. 유료 요금제도, 채널당 요금도 없고 페이월 뒤에 숨겨진 것도 없습니다.",
       q4: "ClipsTrack는 통계를 얼마나 자주 업데이트하나요?",
       a4:
-        "통계는 매시간 업데이트됩니다. 첫 스냅샷은 계정을 추가하는 즉시 기록되며, 이후 백그라운드 동기화가 매시간 조회수·좋아요·댓글을 갱신합니다.",
+        "업데이트 주기는 플랫폼별로 다릅니다. YouTube는 매시간, Instagram과 TikTok은 3시간마다입니다. 첫 스냅샷은 계정을 추가하는 즉시 기록되며, 이후 백그라운드 동기화가 각 플랫폼의 주기로 조회수·좋아요·댓글을 갱신합니다.",
       q5: "공개된 YouTube, Instagram, TikTok 계정은 모두 추적할 수 있나요?",
       a5:
         "네. 지원되는 세 플랫폼의 공개 계정은 모두 추적할 수 있습니다. 승인이 필요한 비공개 또는 제한 계정은 인증 없이는 읽을 수 없습니다.",
@@ -1732,9 +1732,9 @@ export const dictionaries = {
       q9: "추적 데이터는 나만 볼 수 있나요?",
       a9:
         "네. 대시보드에는 직접 추가한 채널만 표시됩니다. 각 방문자는 자신의 데이터만 볼 수 있으며 계정 기록은 방문자별로 분리됩니다.",
-      q10: "동영상 조회수의 시간별 증가를 볼 수 있나요?",
+      q10: "동영상 조회수가 시간이 지남에 따라 늘어나는 모습을 볼 수 있나요?",
       a10:
-        "네. 매시간 동기화가 각 클립의 측정값을 하나씩 더 저장하며 정확한 조회수의 시계열을 만듭니다. 나중에 클립 기록을 열면 시간별, 날짜별 성장을 볼 수 있습니다.",
+        "네. 동기화가 이뤄질 때마다(YouTube는 매시간, Instagram·TikTok은 3시간마다) 각 클립의 측정값을 하나씩 더 저장하며 정확한 조회수의 시계열을 만듭니다. 나중에 클립 기록을 열면 시간이 지남에 따른 성장을 볼 수 있습니다.",
       q11: "ClipsTrack는 Twitter/X를 지원하나요?",
       a11:
         "아직입니다. ClipsTrack는 현재 YouTube Shorts, Instagram Reels, TikTok 동영상을 추적합니다. Twitter/X는 지원하지 않습니다.",
@@ -1759,7 +1759,7 @@ export const dictionaries = {
       terms: "이용약관",
       contact: "문의하기",
       bottomLeft: "© 2026 ClipsTrack. Self-hosted.",
-      bottomRight: "데이터는 공식 및 공개 소스를 통해 매시간 갱신됩니다",
+      bottomRight: "데이터는 공식 및 공개 소스를 통해 정해진 주기(YouTube는 매시간, Instagram·TikTok은 3시간마다)로 갱신됩니다",
       lang: "언어 변경",
     },
     acct: {
@@ -1767,7 +1767,7 @@ export const dictionaries = {
       title: "추적 중인 계정들.",
       yourId: "내 ID: {id}",
       sub:
-        "추적 중인 계정 - 나만 볼 수 있습니다. 동영상 통계는 정시에 업데이트되며, 항상 온전한 숫자로, 줄임말 없이 표시됩니다.",
+        "추적 중인 계정 - 나만 볼 수 있습니다. 동영상 통계는 플랫폼별 주기(YouTube는 매시간, Instagram·TikTok은 3시간마다)로 업데이트되며, 항상 온전한 숫자로, 줄임말 없이 표시됩니다.",
       dbError1: "데이터베이스에 연결할 수 없습니다 - ",
       dbError2: " 가 실행 중인 Postgres를 가리키는지 확인하고 새로고침하세요.",
     },
@@ -1786,7 +1786,7 @@ export const dictionaries = {
       ratioTitle:
         "선택 사항: 좋아요 비율(좋아요/조회수 %)이 이 값 미만인 동영상에 경고 표시",
       helper:
-        "계정을 쉼표로 구분하면 선택한 플랫폼에 한 번에 모두 추가됩니다. 첫 스냅샷은 즉시 시작되고 이후 매시간 실행됩니다. 같은 계정을 다시 추가하면 중복이 아니라 업데이트됩니다. 계정별 비율%를 설정하면 좋아요 비율이 낮은 동영상이 경고로 표시됩니다.",
+        "계정을 쉼표로 구분하면 선택한 플랫폼에 한 번에 모두 추가됩니다. 첫 스냅샷은 즉시 시작되고 이후에는 플랫폼별 주기(YouTube는 매시간, Instagram·TikTok은 3시간마다)로 실행됩니다. 같은 계정을 다시 추가하면 중복이 아니라 업데이트됩니다. 계정별 비율%를 설정하면 좋아요 비율이 낮은 동영상이 경고로 표시됩니다.",
     },
     sort: {
       label: "정렬 기준",
@@ -1879,13 +1879,13 @@ export const dictionaries = {
     meta: {
       title: "Clips Track - Tracker per YouTube Shorts, Reels e TikTok",
       description:
-        "Clips Track è un tracker delle performance di YouTube Shorts, Reels di Instagram e video TikTok: visualizzazioni, like e commenti ogni ora, in numeri esatti.",
+        "Clips Track è un tracker delle performance di YouTube Shorts, Reels di Instagram e video TikTok: visualizzazioni, like e commenti secondo il ritmo di ogni piattaforma (YouTube ogni ora, Instagram/TikTok ogni 3 ore), in numeri esatti.",
       ogTitle: "Clips Track - Tracker per YouTube Shorts, Reels e TikTok",
       ogDescription:
-        "Tieni traccia di visualizzazioni, like e commenti di YouTube Shorts, Reels di Instagram e video TikTok - ogni ora, in numeri esatti.",
+        "Tieni traccia di visualizzazioni, like e commenti di YouTube Shorts, Reels di Instagram e video TikTok - secondo il ritmo di ogni piattaforma (YouTube ogni ora, Instagram/TikTok ogni 3 ore), in numeri esatti.",
       trackedTitle: "I miei account",
       trackedDescription:
-        "I tuoi canali YouTube Shorts, Instagram Reels e TikTok tracciati - privati e aggiornati ogni ora.",
+        "I tuoi canali YouTube Shorts, Instagram Reels e TikTok tracciati - privati e aggiornati secondo il ritmo di ogni piattaforma (YouTube ogni ora, Instagram/TikTok ogni 3 ore).",
       faqTitle: "Domande frequenti",
       faqDescription:
         "Risposte brevi su cosa traccia Clips Track, con quale frequenza si aggiorna e come vengono gestiti i tuoi dati.",
@@ -1908,7 +1908,7 @@ export const dictionaries = {
       subtitleBefore: "Aggiungi un account YouTube, Instagram o TikTok - ",
       subtitleAccent: "Clips Track",
       subtitleAfter:
-        " registra ogni ora visualizzazioni, like e commenti di ogni clip, mostrati in numeri esatti.",
+        " registra visualizzazioni, like e commenti di ogni clip secondo il ritmo di ogni piattaforma - YouTube ogni ora, Instagram/TikTok ogni 3 ore - mostrati in numeri esatti.",
       add: "Aggiungi un canale",
       view: "Vedi i miei account",
       platforms: "YouTube Shorts · Instagram Reels · TikTok",
@@ -1917,9 +1917,9 @@ export const dictionaries = {
       eyebrow: "Chi siamo",
       title: "Cos'è Clips Track?",
       p1:
-        "Clips Track è un tracker di clip pensato per i contenuti brevi. Aggiungi un canale YouTube Shorts, un creator Instagram o un account TikTok, e Clips Track registra ogni ora, allo scoccare dell'ora, le performance di ogni clip - visualizzazioni, like, commenti e preferiti. Nessun foglio di calcolo da aggiornare, nessun export manuale: apri la pagina e vedi esattamente cosa ha fatto un clip ieri e cosa sta facendo adesso, fino al numero esatto.",
+        "Clips Track è un tracker di clip pensato per i contenuti brevi. Aggiungi un canale YouTube Shorts, un creator Instagram o un account TikTok, e Clips Track registra secondo il ritmo di ogni piattaforma le performance di ogni clip - YouTube ogni ora, Instagram/TikTok ogni 3 ore - visualizzazioni, like, commenti e preferiti. Nessun foglio di calcolo da aggiornare, nessun export manuale: apri la pagina e vedi esattamente cosa ha fatto un clip ieri e cosa sta facendo adesso, fino al numero esatto.",
       p2:
-        "La maggior parte delle dashboard arrotonda tutto in \"1,2M\" e \"400K\". Clips Track fa deliberatamente l'opposto: salva ogni cifra al suo valore esatto, così il confronto resta sempre reale. Lo chiami clip tracking, video tracker o tracker di performance - l'idea è la stessa: misurazioni costanti, esatte e orarie dei video brevi che muovono il tuo canale.",
+        "La maggior parte delle dashboard arrotonda tutto in \"1,2M\" e \"400K\". Clips Track fa deliberatamente l'opposto: salva ogni cifra al suo valore esatto, così il confronto resta sempre reale. Lo chiami clip tracking, video tracker o tracker di performance - l'idea è la stessa: misurazioni costanti, esatte e a ritmo di piattaforma dei video brevi che muovono il tuo canale.",
     },
     rules: {
       eyebrow: "Regole per piattaforma",
@@ -1936,10 +1936,10 @@ export const dictionaries = {
     },
     why: {
       eyebrow: "Perché ClipsTrack",
-      title: "Numeri esatti, ogni ora",
-      f1Title: "Snapshot orari",
+      title: "Numeri esatti, a ritmo definito",
+      f1Title: "Snapshot automatici",
       f1Body:
-        "Un processo in background cattura le statistiche allo scoccare dell'ora, così puoi guardare i tuoi clip crescere - giorno dopo giorno, numero dopo numero, senza muovere un dito.",
+        "Un processo in background cattura le statistiche secondo il ritmo di ogni piattaforma (YouTube ogni ora, Instagram/TikTok ogni 3 ore), così puoi guardare i tuoi clip crescere - giorno dopo giorno, numero dopo numero, senza muovere un dito.",
       f2Title: "Numeri esatti",
       f2Body:
         "Niente 1,2M o 400K per approssimazione. Visualizzazioni, like e commenti vengono salvati e mostrati al loro valore esatto, ogni volta.",
@@ -1947,16 +1947,16 @@ export const dictionaries = {
       f3Body:
         "Imposta un rapporto minimo di like opzionale per canale; i clip sotto la soglia vengono segnalati, così le performance deboli si notano subito.",
       p1:
-        "Per tracciare le visualizzazioni in modo affidabile, Clips Track salva una serie temporale: una misurazione per clip e per ora. Apri oggi un clip e vedrai ancora cosa ha fatto un mese fa: il balzo della prima ora su un nuovo Reel, la lenta salita mattutina di uno Short, un video TikTok che riaccelerare all'improvviso giorni dopo. Poiché lo storico resta in numeri esatti, la curva di crescita rimane onesta e confrontabile, in qualunque momento la guardi.",
+        "Per tracciare le visualizzazioni in modo affidabile, Clips Track salva una serie temporale: una misurazione per clip a ogni sincronizzazione programmata. Apri oggi un clip e vedrai ancora cosa ha fatto un mese fa: il balzo della prima sincronizzazione su un nuovo Reel, la lenta salita mattutina di uno Short, un video TikTok che riaccelerare all'improvviso giorni dopo. Poiché lo storico resta in numeri esatti, la curva di crescita rimane onesta e confrontabile, in qualunque momento la guardi.",
       p2:
-        "I numeri di ogni clip si uniscono ai totali del canale - follower, visualizzazioni complessive e numero di post, anch'essi catturati ogni ora. È questo che trasforma dei conteggi grezzi in un vero tracker di performance: puoi confrontare come un nuovo post performa rispetto alla base del canale, individuare i formati che tengono il rapporto di like e decidere dove merita di andare la spinta del prossimo post.",
+        "I numeri di ogni clip si uniscono ai totali del canale - follower, visualizzazioni complessive e numero di post, anch'essi catturati allo stesso ritmo. È questo che trasforma dei conteggi grezzi in un vero tracker di performance: puoi confrontare come un nuovo post performa rispetto alla base del canale, individuare i formati che tengono il rapporto di like e decidere dove merita di andare la spinta del prossimo post.",
     },
     buckets: {
       eyebrow: "Finestre",
       title: "Clip vecchi riempiti, clip nuovi seguiti",
       sub1Title: "Come funzionano le finestre",
       sub1Body:
-        "Quando aggiungi un account, Clips Track riempie prima i clip recenti in una finestra \"Vecchi\" - uno snapshot unico del passato recente. Da lì, una finestra \"Nuovi\" tiene solo gli ultimi caricamenti, aggiornata a ogni sync orario. Quale clip appartiene a quale finestra è deciso dalla data di pubblicazione, mai a caso, e i clip non saltano mai tra le finestre.",
+        "Quando aggiungi un account, Clips Track riempie prima i clip recenti in una finestra \"Vecchi\" - uno snapshot unico del passato recente. Da lì, una finestra \"Nuovi\" tiene solo gli ultimi caricamenti, aggiornata a ogni sync programmato. Quale clip appartiene a quale finestra è deciso dalla data di pubblicazione, mai a caso, e i clip non saltano mai tra le finestre.",
       sub2Title: "Limiti che controlli",
       sub2Body:
         "Le dimensioni delle finestre le scegli tu, per canale: riempi gli ultimi otto clip e segui i quattro più nuovi, o qualsiasi altra combinazione che si adatti a come guardi. Abbassa un numero e gli extra vengono tagliati subito; alzalo e la finestra si riapre e si riallinea. I clip esclusi vengono rimossi in modo pulito, storico compreso, così la dashboard riflette sempre ciò che vuoi davvero vedere.",
@@ -1970,16 +1970,16 @@ export const dictionaries = {
       sub: "Risposte rapide su cosa traccia Clips Track, con che frequenza si aggiorna e come vengono gestiti i tuoi dati.",
       q1: "Cos'è ClipsTrack?",
       a1:
-        "ClipsTrack è un tracker di clip gratuito per i contenuti brevi. Aggiungi un account YouTube, Instagram o TikTok e registra ogni ora la performance di ogni clip - visualizzazioni, like e commenti - sempre in numeri esatti. Riunisce YouTube Shorts, Reels Instagram e video TikTok in un'unica dashboard.",
+        "ClipsTrack è un tracker di clip gratuito per i contenuti brevi. Aggiungi un account YouTube, Instagram o TikTok e registra la performance di ogni clip - visualizzazioni, like e commenti - secondo il ritmo di ogni piattaforma (YouTube ogni ora, Instagram/TikTok ogni 3 ore), sempre in numeri esatti. Riunisce YouTube Shorts, Reels Instagram e video TikTok in un'unica dashboard.",
       q2: "Come fa ClipsTrack a tracciare YouTube Shorts, Reels Instagram e video TikTok?",
       a2:
-        "ClipsTrack prende gli YouTube Shorts direttamente dall'API ufficiale di YouTube e conserva solo clip fino a 60 secondi - i video lunghi non si mescolano mai. Su Instagram traccia solo i Reels, saltando foto e caroselli. Su TikTok vengono tracciati solo i video normali, con like, commenti e preferiti. Le statistiche di ogni piattaforma vengono catturate ogni ora in una serie temporale per clip.",
+        "ClipsTrack prende gli YouTube Shorts direttamente dall'API ufficiale di YouTube e conserva solo clip fino a 60 secondi - i video lunghi non si mescolano mai. Su Instagram traccia solo i Reels, saltando foto e caroselli. Su TikTok vengono tracciati solo i video normali, con like, commenti e preferiti. Le statistiche di ogni piattaforma vengono catturate secondo il proprio ritmo - YouTube ogni ora, Instagram/TikTok ogni 3 ore - in una serie temporale per clip.",
       q3: "ClipsTrack è gratuito?",
       a3:
         "Sì - ClipsTrack è gratuito. Nessun piano a pagamento, nessuna tariffa per canale e nulla è nascosto dietro un paywall.",
       q4: "Con che frequenza ClipsTrack aggiorna le statistiche?",
       a4:
-        "Le statistiche si aggiornano ogni ora. Il primo snapshot viene preso appena aggiungi un account, poi una sync in background aggiorna visualizzazioni, like e commenti ogni ora.",
+        "La frequenza di aggiornamento dipende dalla piattaforma: YouTube ogni ora, Instagram e TikTok ogni 3 ore. Il primo snapshot viene preso appena aggiungi un account, poi una sync in background aggiorna visualizzazioni, like e commenti secondo il ritmo di ogni piattaforma.",
       q5: "Posso tracciare qualsiasi account pubblico YouTube, Instagram o TikTok?",
       a5:
         "Sì - qualsiasi account pubblico sulle tre piattaforme supportate può essere tracciato. Gli account privati o ristretti che richiedono approvazione non possono essere letti senza autorizzazione.",
@@ -1995,9 +1995,9 @@ export const dictionaries = {
       q9: "I miei dati tracciati sono privati?",
       a9:
         "Sì - la dashboard mostra solo i canali che hai aggiunto. Ogni visitatore vede i propri dati e i record degli account sono isolati per visitatore.",
-      q10: "Posso vedere la crescita oraria delle visualizzazioni di un video?",
+      q10: "Posso vedere crescere nel tempo le visualizzazioni di un video?",
       a10:
-        "Sì. Ogni sync orario salva un'altra misurazione per ogni clip, costruendo una serie temporale di conteggi esatti. Apri più tardi lo storico di un clip e vedrai la sua crescita ora per ora e giorno per giorno.",
+        "Sì. Ogni sync programmato (YouTube ogni ora, Instagram/TikTok ogni 3 ore) salva un'altra misurazione per ogni clip, costruendo una serie temporale di conteggi esatti. Apri più tardi lo storico di un clip e vedrai la crescita nel tempo, sync dopo sync.",
       q11: "ClipsTrack supporta Twitter/X?",
       a11:
         "Non ancora - ClipsTrack attualmente traccia YouTube Shorts, Reels Instagram e video TikTok. Twitter/X non è supportato.",
@@ -2023,7 +2023,7 @@ export const dictionaries = {
       contact: "Contatti",
       bottomLeft: "© 2026 ClipsTrack. Self-hosted.",
       bottomRight:
-        "Dati aggiornati ogni ora tramite fonti ufficiali e pubbliche",
+        "Dati aggiornati a un ritmo definito - YouTube ogni ora, Instagram/TikTok ogni 3 ore - tramite fonti ufficiali e pubbliche",
       lang: "Cambia lingua",
     },
     acct: {
@@ -2031,7 +2031,7 @@ export const dictionaries = {
       title: "Gli account che tracci.",
       yourId: "Il tuo ID: {id}",
       sub:
-        "I tuoi account tracciati - privati. Le statistiche si aggiornano allo scoccare dell'ora, sempre in numeri esatti, mai abbreviate.",
+        "I tuoi account tracciati - privati. Le statistiche si aggiornano secondo il ritmo di ogni piattaforma - YouTube ogni ora, Instagram/TikTok ogni 3 ore - sempre in numeri esatti, mai abbreviate.",
       dbError1: "Impossibile raggiungere il database - verifica che ",
       dbError2: " punti a un Postgres in esecuzione, poi ricarica.",
     },
@@ -2050,7 +2050,7 @@ export const dictionaries = {
       ratioTitle:
         "Facoltativo: segnala i video il cui rapporto like (like/visualizzazioni %) scende sotto questa soglia",
       helper:
-        "Separa gli account con le virgole - ognuno viene aggiunto sulla piattaforma scelta, in un colpo solo. Il primo snapshot parte subito, poi viene preso ogni ora. Riaaggiungere un account lo aggiorna invece di duplicarlo. Un Rapporto% impostato per account segnala come avviso i video con rapporto like più basso.",
+        "Separa gli account con le virgole - ognuno viene aggiunto sulla piattaforma scelta, in un colpo solo. Il primo snapshot parte subito, poi viene preso secondo il ritmo di ogni piattaforma (YouTube ogni ora, Instagram/TikTok ogni 3 ore). Riaaggiungere un account lo aggiorna invece di duplicarlo. Un Rapporto% impostato per account segnala come avviso i video con rapporto like più basso.",
     },
     sort: {
       label: "Ordina per",

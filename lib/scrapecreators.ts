@@ -34,24 +34,61 @@ export function isScrapeRetryableError(status: number, message: string): boolean
   );
 }
 
+// Transient failures worth one or two immediate retries: mid-stream origin
+// disconnects and truncated/corrupt JSON bodies are connection-level, not
+// account-level — large feeds intermittently arrive cut short and succeed on
+// the very next request. API-key/quota failures are never retried here (they
+// rotate keys in scrapeGet instead).
+const TRANSIENT_RETRIES = 2;
+const TRANSIENT_DELAY_MS = 200;
+
 async function request<T>(
   url: URL,
   apiKey: string,
   path: string,
 ): Promise<T> {
-  const res = await fetch(url, {
-    headers: { "x-api-key": apiKey },
-    cache: "no-store",
-  });
-  const data = (await res.json()) as { success?: boolean; message?: string };
-  if (!res.ok || data.success === false) {
-    const message = data.message ?? `HTTP ${res.status}`;
-    if (isScrapeRetryableError(res.status, message)) {
-      throw new ApiKeyError(`ScrapeCreators ${path}: ${message}`);
+  let lastErr: Error | null = null;
+  for (let attempt = 0; attempt <= TRANSIENT_RETRIES; attempt++) {
+    if (attempt > 0) {
+      await new Promise((resolve) => setTimeout(resolve, TRANSIENT_DELAY_MS * attempt));
     }
-    throw new Error(`ScrapeCreators ${path}: ${message}`);
+    try {
+      const res = await fetch(url, {
+        headers: { "x-api-key": apiKey },
+        cache: "no-store",
+      });
+      const data = (await res.json()) as { success?: boolean; message?: string };
+      if (!res.ok || data.success === false) {
+        const message = data.message ?? `HTTP ${res.status}`;
+        if (isScrapeRetryableError(res.status, message)) {
+          throw new ApiKeyError(`ScrapeCreators ${path}: ${message}`);
+        }
+        throw new Error(`ScrapeCreators ${path}: ${message}`);
+      }
+      return data as T;
+    } catch (err) {
+      if (err instanceof ApiKeyError) throw err;
+      if (err instanceof SyntaxError) {
+        // res.json() failed — origin body was truncated or corrupt mid-stream.
+        if (attempt < TRANSIENT_RETRIES) {
+          console.log(
+            `[scrape] ${path} truncated response (attempt ${attempt + 1}) - retrying…`,
+          );
+          lastErr = new Error(
+            `ScrapeCreators ${path}: invalid JSON response (truncated mid-stream)`,
+          );
+          continue;
+        }
+        throw new Error(`ScrapeCreators ${path}: invalid JSON response`);
+      }
+      if (attempt < TRANSIENT_RETRIES) {
+        lastErr = err instanceof Error ? err : new Error(String(err));
+        continue;
+      }
+      throw err;
+    }
   }
-  return data as T;
+  throw lastErr ?? new Error(`ScrapeCreators ${path}: request failed`);
 }
 
 class ApiKeyError extends Error {}

@@ -5,7 +5,7 @@ export const en: PageContent = {
     about: {
       title: "About Us",
       description:
-        "What ClipsTrack is and why it exists - exact, hourly clip numbers for YouTube Shorts, Instagram Reels and TikTok, without spreadsheets.",
+        "What ClipsTrack is and why it exists - exact clip numbers for YouTube Shorts, Instagram Reels and TikTok on each platform's schedule (YouTube hourly, Instagram/TikTok every 3 hours), without spreadsheets.",
     },
     privacy: {
       title: "Privacy Policy",
@@ -30,8 +30,8 @@ export const en: PageContent = {
       "ClipsTrack started with a small annoyance: every analytics dashboard rounds views to “1.2M” and “400K”. Compare a Short and a Reel honestly and you're comparing guesswork.",
     sections: [
       {
-        h: "Exact numbers, every hour",
-        p: "ClipsTrack snapshots views, likes, comments and favorites for every clip you add - on the hour, every hour, kept at their exact value. No rounding, no “1.2M”. The number you see is the number the platform published at that moment.",
+        h: "Exact numbers, on a schedule",
+        p: "ClipsTrack snapshots views, likes, comments and favorites for every clip you add - on each platform's schedule (YouTube hourly, Instagram/TikTok every 3 hours), kept at their exact value. No rounding, no “1.2M”. The number you see is the number the platform published at that moment.",
       },
       {
         h: "One page for all three platforms",
@@ -43,7 +43,7 @@ export const en: PageContent = {
       },
       {
         h: "What it isn't",
-        p: "ClipsTrack isn't an ads dashboard, a scheduler or a full analytics suite. No feature bloat, no newsletters. It does one thing - exact, hourly clip tracking - and does it quietly.",
+        p: "ClipsTrack isn't an ads dashboard, a scheduler or a full analytics suite. No feature bloat, no newsletters. It does one thing - exact clip tracking on each platform's schedule - and does it quietly.",
       },
     ],
     closing:
@@ -65,7 +65,7 @@ export const en: PageContent = {
       },
       {
         h: "Public data only",
-        p: "The statistics we record are public platform data - the same numbers anyone can see by opening the profile. We never capture private information, direct messages, or anything that isn't already publicly visible. What we add is the organization: hourly snapshots, in one place.",
+        p: "The statistics we record are public platform data - the same numbers anyone can see by opening the profile. We never capture private information, direct messages, or anything that isn't already publicly visible. What we add is the organization: automatic snapshots on each platform's schedule, in one place.",
       },
       {
         h: "What we don't do",

@@ -15,7 +15,7 @@
 import { createHash } from "crypto";
 import { headers } from "next/headers";
 import { id, query, queryOne, tx } from "./db";
-import { ensureUserCode } from "./usercode";
+import { deriveUserCode } from "./usercode";
 
 export const DAILY_LIMIT_MESSAGE =
   "Instagram/TikTok daily limit reached - YouTube keeps working. Resumes at midnight IST.";
@@ -56,25 +56,6 @@ export function comboHash(ip: string | undefined, uid: string): string {
 // visitor).
 export async function requestComboHash(uid: string): Promise<string> {
   return comboHash(await getClientIp(), uid);
-}
-
-// Record the request-time combo on the User row so the hourly cron (which has
-// no request IP) can attribute background syncs to the same budget. The upsert
-// also guarantees the row exists. The visitor's UserCode row is created/kept
-// in sync so admin grants (bonus top-up, permanent daily limit) always resolve
-// against the current identity.
-export async function recordAttribution(
-  userId: string,
-  combo: string,
-): Promise<void> {
-  await query(
-    `INSERT INTO users (id, "comboHash", "lastActive", "createdAt", "updatedAt")
-     VALUES ($1, $2, now(), now(), now())
-     ON CONFLICT (id) DO UPDATE SET
-       "comboHash" = $2, "lastActive" = now(), "updatedAt" = now()`,
-    [userId, combo],
-  );
-  await ensureUserCode(userId, combo);
 }
 
 // Resolve the combo to charge for a channel: the request-time combo, else the
@@ -128,27 +109,129 @@ function budgetFromUserCode(
   return base + (userCode?.bonusCredits ?? 0);
 }
 
+// The global daily limit row (editable on /admin), self-seeding on first read.
+// The seed is an idempotent INSERT, so it can live inside the same batched
+// transaction as the SELECT — no extra round trip.
+function dailyLimitReadAndSeedStatement(): {
+  text: string;
+  params: unknown[];
+}[] {
+  return [
+    {
+      text: `SELECT value FROM settings WHERE key = $1`,
+      params: [SETTING_DAILY_LIMIT],
+    },
+    {
+      text: `INSERT INTO settings (key, value, "updatedAt", "createdAt")
+             VALUES ($1, $2, now(), now())
+             ON CONFLICT (key) DO NOTHING`,
+      params: [SETTING_DAILY_LIMIT, String(DEFAULT_DAILY_LIMIT)],
+    },
+  ];
+}
+
+function dailyLimitFromRow(row: { value: string } | undefined): number {
+  if (!row) return DEFAULT_DAILY_LIMIT;
+  const n = Number(row.value);
+  return Number.isInteger(n) && n > 0 ? n : DEFAULT_DAILY_LIMIT;
+}
+
 export async function getCreditsStatus(
   combo: string | null,
 ): Promise<CreditsStatus> {
   const date = istDateKey();
-  const globalLimit = await getDailyLimit();
   if (!combo) {
+    const globalLimit = await getDailyLimit();
     return { date, used: 0, limit: globalLimit, remaining: globalLimit };
   }
-  const [userCode, row] = await Promise.all([
-    queryOne<{ dailyOverride: number | null; bonusCredits: number }>(
-      `SELECT "dailyOverride", "bonusCredits" FROM user_codes WHERE "comboHash" = $1 LIMIT 1`,
-      [combo],
-    ),
-    queryOne<{ creditsUsed: number }>(
-      `SELECT "creditsUsed" FROM credit_usage WHERE "comboHash" = $1 AND date = $2`,
-      [combo, date],
-    ),
+  // All reads in one HTTP transaction (single round trip): the global daily
+  // limit (+ its seed) alongside the visitor's override/bonus and today's use.
+  const [limitRows, , userCodeRows, usageRows] = await tx<
+    [
+      { value: string }[],
+      unknown[],
+      { dailyOverride: number | null; bonusCredits: number }[],
+      { creditsUsed: number }[],
+    ]
+  >([
+    ...dailyLimitReadAndSeedStatement(),
+    {
+      text: `SELECT "dailyOverride", "bonusCredits" FROM user_codes WHERE "comboHash" = $1 LIMIT 1`,
+      params: [combo],
+    },
+    {
+      text: `SELECT "creditsUsed" FROM credit_usage WHERE "comboHash" = $1 AND date = $2`,
+      params: [combo, date],
+    },
   ]);
-  const limit = budgetFromUserCode(globalLimit, userCode);
-  const used = row?.creditsUsed ?? 0;
+  const globalLimit = dailyLimitFromRow(limitRows[0]);
+  const limit = budgetFromUserCode(globalLimit, userCodeRows[0]);
+  const used = usageRows[0]?.creditsUsed ?? 0;
   return { date, used, limit, remaining: Math.max(0, limit - used) };
+}
+
+export interface BudgetSnapshot {
+  used: number;
+  limit: number;
+  remaining: number;
+}
+
+// Attach a visitor's request-time combo AND read their effective daily budget
+// in ONE HTTP transaction. The static batch orders the writes before the
+// reads, so the reads observe the freshly upserted comboHash/bonus row in the
+// same round trip — no separate attribution step to pay for.
+export async function attributeAndBudget(
+  userId: string,
+  combo: string,
+): Promise<BudgetSnapshot> {
+  const date = istDateKey();
+  const [, , , limitRows, , userCodeRows, usageRows] = await tx<
+    [
+      unknown[], // users ensure
+      unknown[], // users combo upsert
+      unknown[], // user_codes upsert
+      { value: string }[], // settings daily limit
+      unknown[], // settings seed
+      { dailyOverride: number | null; bonusCredits: number }[],
+      { creditsUsed: number }[],
+    ]
+  >([
+    {
+      text: `INSERT INTO users (id, "lastActive", "createdAt", "updatedAt")
+             VALUES ($1, now(), now(), now())
+             ON CONFLICT (id) DO NOTHING`,
+      params: [userId],
+    },
+    {
+      text: `INSERT INTO users (id, "comboHash", "lastActive", "createdAt", "updatedAt")
+             VALUES ($1, $2, now(), now(), now())
+             ON CONFLICT (id) DO UPDATE SET
+               "comboHash" = $2, "lastActive" = now(), "updatedAt" = now()`,
+      params: [userId, combo],
+    },
+    {
+      text: `INSERT INTO user_codes (id, "userId", code, "comboHash", "updatedAt")
+             VALUES ($1, $2, $3, $4, now())
+             ON CONFLICT ("userId") DO UPDATE SET
+               "comboHash" = COALESCE(EXCLUDED."comboHash", user_codes."comboHash"),
+               "updatedAt" = now()`,
+      params: [id(), userId, deriveUserCode(userId), combo],
+    },
+    ...dailyLimitReadAndSeedStatement(),
+    {
+      text: `SELECT "dailyOverride", "bonusCredits" FROM user_codes WHERE "comboHash" = $1 LIMIT 1`,
+      params: [combo],
+    },
+    {
+      text: `SELECT "creditsUsed" FROM credit_usage WHERE "comboHash" = $1 AND date = $2`,
+      params: [combo, date],
+    },
+  ]);
+  const globalLimit = dailyLimitFromRow(limitRows[0]);
+  const userCode = userCodeRows[0];
+  const used = usageRows[0]?.creditsUsed ?? 0;
+  const limit = budgetFromUserCode(globalLimit, userCode);
+  return { used, limit, remaining: Math.max(0, limit - used) };
 }
 
 // Atomically-ish deduct up to `count` credits from a combo's remaining budget.
@@ -165,27 +248,39 @@ export async function consumeCredits(
   if (count <= 0) return 0;
   const date = istDateKey();
 
-  // Ensure the daily row exists so it can be updated in the batch below.
-  await query(
-    `INSERT INTO credit_usage (id, "comboHash", date, "updatedAt")
-     VALUES ($1, $2, $3, now())
-     ON CONFLICT ("comboHash", date) DO NOTHING`,
-    [id(), combo, date],
-  );
-
-  const [globalLimit, userCode, row] = await Promise.all([
-    getDailyLimit(),
-    queryOne<{ id: string; dailyOverride: number | null; bonusCredits: number }>(
-      `SELECT id, "dailyOverride", "bonusCredits" FROM user_codes WHERE "comboHash" = $1 LIMIT 1`,
-      [combo],
-    ),
-    queryOne<{ creditsUsed: number }>(
-      `SELECT "creditsUsed" FROM credit_usage WHERE "comboHash" = $1 AND date = $2`,
-      [combo, date],
-    ),
+  // Ensure the daily row exists and read the current budget in ONE HTTP
+  // transaction: the credit_usage seed, the global limit (+ seed), the
+  // visitor's override/bonus, and today's usage are all independent, so they
+  // batch into a single round trip.
+  const [, limitRows, , userCodeRows, usageRows] = await tx<
+    [
+      unknown[], // credit_usage ensure
+      { value: string }[], // settings SELECT
+      unknown[], // settings seed
+      { id: string; dailyOverride: number | null; bonusCredits: number }[],
+      { creditsUsed: number }[],
+    ]
+  >([
+    {
+      text: `INSERT INTO credit_usage (id, "comboHash", date, "updatedAt")
+             VALUES ($1, $2, $3, now())
+             ON CONFLICT ("comboHash", date) DO NOTHING`,
+      params: [id(), combo, date],
+    },
+    ...dailyLimitReadAndSeedStatement(),
+    {
+      text: `SELECT id, "dailyOverride", "bonusCredits" FROM user_codes WHERE "comboHash" = $1 LIMIT 1`,
+      params: [combo],
+    },
+    {
+      text: `SELECT "creditsUsed" FROM credit_usage WHERE "comboHash" = $1 AND date = $2`,
+      params: [combo, date],
+    },
   ]);
+  const globalLimit = dailyLimitFromRow(limitRows[0]);
+  const userCode = userCodeRows[0];
+  const used = usageRows[0]?.creditsUsed ?? 0;
   const limit = budgetFromUserCode(globalLimit, userCode);
-  const used = row?.creditsUsed ?? 0;
   const granted = Math.min(count, Math.max(0, limit - used));
   if (granted <= 0) return 0;
 

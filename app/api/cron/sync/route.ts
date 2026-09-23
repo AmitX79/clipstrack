@@ -1,10 +1,13 @@
-import { runSync } from "@/lib/sync";
+import { runSync, type SyncPlatformGroup } from "@/lib/sync";
 
 export const dynamic = "force-dynamic";
 
-// Hourly full sweep (Cloudflare Cron Trigger -> custom worker's scheduled
-// handler dispatches here with a Bearer CRON_SECRET). Also manually invocable:
-// curl -X POST https://<site>/api/cron/sync -H "Authorization: Bearer $CRON_SECRET"
+// Scheduled sync (Cloudflare Cron Trigger -> custom worker's scheduled handler
+// dispatches here with a Bearer CRON_SECRET). The 3-hourly worker run only
+// touches Instagram/TikTok and the hourly run only YouTube, via ?platform=.
+// Also manually invocable without the param (full sweep):
+// curl -X POST https://<site>/api/cron/sync?platform=YOUTUBE \
+//   -H "Authorization: Bearer $CRON_SECRET"
 function authorized(request: Request): boolean {
   const secret = process.env.CRON_SECRET;
   if (!secret) return false;
@@ -15,8 +18,20 @@ async function run(request: Request): Promise<Response> {
   if (!authorized(request)) {
     return new Response("Unauthorized", { status: 401 });
   }
+  const platform = new URL(request.url).searchParams.get("platform");
+  let groups: SyncPlatformGroup[] | undefined;
+  if (platform) {
+    if (platform === "YOUTUBE") groups = ["YOUTUBE"];
+    else if (platform === "IGTIKTOK") groups = ["IGTIKTOK"];
+    else {
+      return Response.json(
+        { ok: false, error: `unknown platform group: ${platform}` },
+        { status: 400 },
+      );
+    }
+  }
   try {
-    await runSync();
+    await runSync(groups);
     return Response.json({ ok: true });
   } catch (err) {
     console.error("[cron/sync]", err);

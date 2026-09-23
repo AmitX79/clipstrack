@@ -29,7 +29,7 @@ function webAppSchema(locale: Locale) {
     alternateName: "ClipsTrack",
     url: `${siteUrl()}${localizedHref(locale, "")}`,
     description:
-      "A clip tracker for YouTube Shorts, Instagram Reels and TikTok videos. Snapshots views, likes and comments every hour, shown in full numbers, so you can track video views over time.",
+      "A clip tracker for YouTube Shorts, Instagram Reels and TikTok videos. Snapshots views, likes and comments on each platform's schedule - YouTube every hour, Instagram/TikTok every 3 hours - shown in full numbers, so you can track video views over time.",
     applicationCategory: "UtilitiesApplication",
     operatingSystem: "Any",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },

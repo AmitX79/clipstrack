@@ -63,11 +63,18 @@ export default async function TrackedPage({
   let userCode: string | null = null;
   if (userId) {
     try {
-      channels = await loadChannels(userId);
-      userCode = await ensureUserCode(userId, comboHash(await getClientIp(), userId));
-      credits = await getCreditsStatus(comboHash(await getClientIp(), userId));
-      // Loading /accounts counts as activity for the inactivity cleanup.
-      await touchActivity(userId);
+      // All four reads key only off the identity, so they run concurrently
+      // (each logs its own batched round trip; the page stops waiting on the
+      // slowest rather than the sum).
+      const ip = await getClientIp();
+      const combo = comboHash(ip, userId);
+      [channels, userCode, credits] = await Promise.all([
+        loadChannels(userId),
+        ensureUserCode(userId, combo),
+        getCreditsStatus(combo),
+        // Loading /accounts counts as activity for the inactivity cleanup.
+        touchActivity(userId).then(() => null),
+      ]);
     } catch (err) {
       console.error("[accounts] db query failed:", err);
       dbError = true;

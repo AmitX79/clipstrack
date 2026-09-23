@@ -5,7 +5,7 @@ export const es: PageContent = {
     about: {
       title: "Sobre nosotros",
       description:
-        "Qué es ClipsTrack y por qué existe - números exactos y por horas de clips de YouTube Shorts, Reels de Instagram y TikTok, sin hojas de cálculo.",
+        "Qué es ClipsTrack y por qué existe - números exactos de clips de YouTube Shorts, Reels de Instagram y TikTok con el calendario de cada plataforma (YouTube cada hora, Instagram/TikTok cada 3 horas), sin hojas de cálculo.",
     },
     privacy: {
       title: "Política de privacidad",
@@ -30,8 +30,8 @@ export const es: PageContent = {
       "ClipsTrack nació de una pequeña molestia: todos los paneles de análisis redondean las visitas a «1,2M» y «400K». Comparar un Short y un Reel con honestidad es comparar suposiciones.",
     sections: [
       {
-        h: "Números exactos, cada hora",
-        p: "ClipsTrack guarda visitas, likes, comentarios y favoritos de cada clip que añades - a la hora en punto, cada hora, con su valor exacto. Sin redondeos, sin «1,2M». El número que ves es el que la plataforma publicó en ese momento.",
+        h: "Números exactos, con un calendario fijo",
+        p: "ClipsTrack guarda visitas, likes, comentarios y favoritos de cada clip que añades - con el calendario de cada plataforma (YouTube cada hora, Instagram/TikTok cada 3 horas), con su valor exacto. Sin redondeos, sin «1,2M». El número que ves es el que la plataforma publicó en ese momento.",
       },
       {
         h: "Una sola página para las tres plataformas",
@@ -43,7 +43,7 @@ export const es: PageContent = {
       },
       {
         h: "Lo que no es",
-        p: "ClipsTrack no es un panel de anuncios, un programador ni una suite completa de análisis. Sin funciones de relleno, sin boletines. Hace una sola cosa - rastreo exacto y por horas de clips - y lo hace en silencio.",
+        p: "ClipsTrack no es un panel de anuncios, un programador ni una suite completa de análisis. Sin funciones de relleno, sin boletines. Hace una sola cosa - rastreo exacto de clips con el calendario de cada plataforma - y lo hace en silencio.",
       },
     ],
     closing:
@@ -65,7 +65,7 @@ export const es: PageContent = {
       },
       {
         h: "Solo datos públicos",
-        p: "Las estadísticas que registramos son datos públicos de las plataformas - los mismos números que cualquiera puede ver abriendo el perfil. Nunca captamos información privada, mensajes directos ni nada que no sea ya visible públicamente. Lo que aportamos es la organización: capturas cada hora, en un solo lugar.",
+        p: "Las estadísticas que registramos son datos públicos de las plataformas - los mismos números que cualquiera puede ver abriendo el perfil. Nunca captamos información privada, mensajes directos ni nada que no sea ya visible públicamente. Lo que aportamos es la organización: capturas con un calendario fijo, en un solo lugar.",
       },
       {
         h: "Lo que no hacemos",

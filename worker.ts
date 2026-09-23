@@ -7,7 +7,6 @@
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore `.open-next/worker.js` is generated at build time
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { default as handler } from "./.open-next/worker.js";
 
 interface CronEnv {
@@ -47,7 +46,11 @@ export default {
   ): Promise<void> {
     const cron = controller.cron;
     if (cron === "0 * * * *") {
-      await dispatchCron(env, ctx, "/api/cron/sync");
+      // Hourly: YouTube only (official Data API quota).
+      await dispatchCron(env, ctx, "/api/cron/sync?platform=YOUTUBE");
+    } else if (cron === "0 */3 * * *") {
+      // Every 3 hours: Instagram + TikTok only (ScrapeCreators budget).
+      await dispatchCron(env, ctx, "/api/cron/sync?platform=IGTIKTOK");
     } else if (cron === "0 2 * * *") {
       await dispatchCron(env, ctx, "/api/cron/cleanup");
     } else {

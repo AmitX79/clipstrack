@@ -5,7 +5,7 @@ export const de: PageContent = {
     about: {
       title: "Über uns",
       description:
-        "Was ClipsTrack ist und warum es existiert - exakte, stündliche Clip-Zahlen für YouTube Shorts, Instagram Reels und TikTok, ohne Tabellenkalkulation.",
+        "Was ClipsTrack ist und warum es existiert - exakte Clip-Zahlen für YouTube Shorts, Instagram Reels und TikTok im Rhythmus der jeweiligen Plattform (YouTube stündlich, Instagram/TikTok alle 3 Stunden), ohne Tabellenkalkulation.",
     },
     privacy: {
       title: "Datenschutzerklärung",
@@ -30,8 +30,8 @@ export const de: PageContent = {
       "ClipsTrack entstand aus einem kleinen Ärgernis: Jedes Analyse-Dashboard rundet Aufrufe auf „1,2 Mio.“ und „400 Tsd.“. Wer Shorts und Reels ehrlich vergleichen will, vergleicht Schätzungen.",
     sections: [
       {
-        h: "Exakte Zahlen, jede Stunde",
-        p: "ClipsTrack erfasst Aufrufe, Likes, Kommentare und Favoriten für jeden Clip, den du hinzufügst - stündlich, in jedem Fall in exakter Höhe. Kein Runden, kein „1,2 Mio.“. Die Zahl, die du siehst, ist die Zahl, die die Plattform in diesem Moment veröffentlicht hat.",
+        h: "Exakte Zahlen, im festen Rhythmus",
+        p: "ClipsTrack erfasst Aufrufe, Likes, Kommentare und Favoriten für jeden Clip, den du hinzufügst - im Rhythmus der jeweiligen Plattform (YouTube stündlich, Instagram/TikTok alle 3 Stunden), in jedem Fall in exakter Höhe. Kein Runden, kein „1,2 Mio.“. Die Zahl, die du siehst, ist die Zahl, die die Plattform in diesem Moment veröffentlicht hat.",
       },
       {
         h: "Eine Seite für alle drei Plattformen",
@@ -43,7 +43,7 @@ export const de: PageContent = {
       },
       {
         h: "Was es nicht ist",
-        p: "ClipsTrack ist kein Ads-Dashboard, kein Scheduler und keine vollwertige Analyse-Suite. Kein Feature-Ballast, keine Newsletter. Es macht eine Sache - exaktes, stündliches Clip-Tracking - und das leise.",
+        p: "ClipsTrack ist kein Ads-Dashboard, kein Scheduler und keine vollwertige Analyse-Suite. Kein Feature-Ballast, keine Newsletter. Es macht eine Sache - exaktes Clip-Tracking im Rhythmus der jeweiligen Plattform - und das leise.",
       },
     ],
     closing:
@@ -65,7 +65,7 @@ export const de: PageContent = {
       },
       {
         h: "Nur öffentliche Daten",
-        p: "Die von uns erfassten Statistiken sind öffentliche Plattform-Daten - dieselben Zahlen, die jeder beim Öffnen des Profils sehen kann. Wir erfassen niemals private Informationen, Direktnachrichten oder etwas, das nicht ohnehin öffentlich sichtbar ist. Was wir hinzufügen, ist die Organisation: stündliche Snapshots an einem Ort.",
+        p: "Die von uns erfassten Statistiken sind öffentliche Plattform-Daten - dieselben Zahlen, die jeder beim Öffnen des Profils sehen kann. Wir erfassen niemals private Informationen, Direktnachrichten oder etwas, das nicht ohnehin öffentlich sichtbar ist. Was wir hinzufügen, ist die Organisation: Snapshots im festen Rhythmus an einem Ort.",
       },
       {
         h: "Was wir nicht tun",

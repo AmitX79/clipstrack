@@ -5,7 +5,7 @@ export const fr: PageContent = {
     about: {
       title: "À propos",
       description:
-        "Ce qu'est ClipsTrack et pourquoi il existe - des chiffres exacts et horaires pour YouTube Shorts, Instagram Reels et TikTok, sans feuilles de calcul.",
+        "Ce qu'est ClipsTrack et pourquoi il existe - des chiffres exacts pour YouTube Shorts, Instagram Reels et TikTok selon le rythme de chaque plateforme (YouTube toutes les heures, Instagram/TikTok toutes les 3 heures), sans feuilles de calcul.",
     },
     privacy: {
       title: "Politique de confidentialité",
@@ -30,8 +30,8 @@ export const fr: PageContent = {
       "ClipsTrack est né d'une petite frustration : tous les tableaux de bord arrondissent les vues à « 1,2 M » et « 400 K ». Comparer honnêtement un Short et une Reel, c'est comparer des approximations.",
     sections: [
       {
-        h: "Des chiffres exacts, chaque heure",
-        p: "ClipsTrack enregistre les vues, j'aime, commentaires et favoris de chaque clip que vous ajoutez - à chaque heure, à la valeur exacte. Pas d'arrondi, pas de « 1,2 M ». Le nombre que vous voyez est celui publié par la plateforme à cet instant.",
+        h: "Des chiffres exacts, à un rythme défini",
+        p: "ClipsTrack enregistre les vues, j'aime, commentaires et favoris de chaque clip que vous ajoutez - selon le rythme de chaque plateforme (YouTube toutes les heures, Instagram/TikTok toutes les 3 heures), à la valeur exacte. Pas d'arrondi, pas de « 1,2 M ». Le nombre que vous voyez est celui publié par la plateforme à cet instant.",
       },
       {
         h: "Une seule page pour les trois plateformes",
@@ -43,7 +43,7 @@ export const fr: PageContent = {
       },
       {
         h: "Ce que ce n'est pas",
-        p: "ClipsTrack n'est ni un tableau de bord publicitaire, ni un planificateur, ni une suite d'analyse complète. Pas de superflu, pas de newsletter. Il fait une seule chose - le suivi exact et horaire de clips - et le fait en silence.",
+        p: "ClipsTrack n'est ni un tableau de bord publicitaire, ni un planificateur, ni une suite d'analyse complète. Pas de superflu, pas de newsletter. Il fait une seule chose - le suivi exact de clips au rythme de chaque plateforme - et le fait en silence.",
       },
     ],
     closing:
@@ -65,7 +65,7 @@ export const fr: PageContent = {
       },
       {
         h: "Des données publiques uniquement",
-        p: "Les statistiques que nous enregistrons sont des données publiques de plateformes - les mêmes chiffres que n'importe qui peut voir en ouvrant le profil. Nous ne capturons jamais d'informations privées, de messages directs, ni quoi que ce soit qui ne soit pas déjà visible publiquement. Ce que nous apportons, c'est l'organisation : des instantanés horaires, au même endroit.",
+        p: "Les statistiques que nous enregistrons sont des données publiques de plateformes - les mêmes chiffres que n'importe qui peut voir en ouvrant le profil. Nous ne capturons jamais d'informations privées, de messages directs, ni quoi que ce soit qui ne soit pas déjà visible publiquement. Ce que nous apportons, c'est l'organisation : des instantanés à un rythme défini, au même endroit.",
       },
       {
         h: "Ce que nous ne faisons pas",

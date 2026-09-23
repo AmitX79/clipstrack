@@ -5,7 +5,7 @@ export const it: PageContent = {
     about: {
       title: "Chi siamo",
       description:
-        "Cos'è ClipsTrack e perché esiste - numeri esatti e orari per YouTube Shorts, Instagram Reels e TikTok, senza fogli di calcolo.",
+        "Cos'è ClipsTrack e perché esiste - numeri esatti per YouTube Shorts, Instagram Reels e TikTok secondo il ritmo di ogni piattaforma (YouTube ogni ora, Instagram/TikTok ogni 3 ore), senza fogli di calcolo.",
     },
     privacy: {
       title: "Informativa sulla privacy",
@@ -30,8 +30,8 @@ export const it: PageContent = {
       "ClipsTrack è nato da un piccolo fastidio: ogni dashboard di analisi arrotonda le visualizzazioni a «1,2M» e «400K». Confrontare onestamente uno Short e una Reel significa confrontare supposizioni.",
     sections: [
       {
-        h: "Numeri esatti, ogni ora",
-        p: "ClipsTrack registra visualizzazioni, like, commenti e preferiti per ogni clip che aggiungi - ogni ora, al loro valore esatto. Niente arrotondamenti, niente «1,2M». Il numero che vedi è quello pubblicato dalla piattaforma in quel momento.",
+        h: "Numeri esatti, a ritmo definito",
+        p: "ClipsTrack registra visualizzazioni, like, commenti e preferiti per ogni clip che aggiungi - secondo il ritmo di ogni piattaforma (YouTube ogni ora, Instagram/TikTok ogni 3 ore), al loro valore esatto. Niente arrotondamenti, niente «1,2M». Il numero che vedi è quello pubblicato dalla piattaforma in quel momento.",
       },
       {
         h: "Una pagina per tutte e tre le piattaforme",
@@ -43,7 +43,7 @@ export const it: PageContent = {
       },
       {
         h: "Cosa non è",
-        p: "ClipsTrack non è una dashboard pubblicitaria, non è un pianificatore e non è una suite completa di analisi. Niente funzioni inutili, niente newsletter. Fa una sola cosa - il monitoraggio esatto e orario dei clip - e lo fa in silenzio.",
+        p: "ClipsTrack non è una dashboard pubblicitaria, non è un pianificatore e non è una suite completa di analisi. Niente funzioni inutili, niente newsletter. Fa una sola cosa - il monitoraggio esatto dei clip secondo il ritmo di ogni piattaforma - e lo fa in silenzio.",
       },
     ],
     closing:
@@ -65,7 +65,7 @@ export const it: PageContent = {
       },
       {
         h: "Solo dati pubblici",
-        p: "Le statistiche che registriamo sono dati pubblici delle piattaforme - gli stessi numeri che chiunque può vedere aprendo il profilo. Non catturiamo mai informazioni private, messaggi diretti o nulla che non sia già visibile pubblicamente. Ciò che aggiungiamo è l'organizzazione: snapshot orari, in un unico posto.",
+        p: "Le statistiche che registriamo sono dati pubblici delle piattaforme - gli stessi numeri che chiunque può vedere aprendo il profilo. Non catturiamo mai informazioni private, messaggi diretti o nulla che non sia già visibile pubblicamente. Ciò che aggiungiamo è l'organizzazione: snapshot a un ritmo definito, in un unico posto.",
       },
       {
         h: "Cosa non facciamo",
