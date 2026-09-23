@@ -45,6 +45,21 @@ export function TrackedAccounts({
   const [sortBy, setSortBy] = useState<SortKey>("published");
   const [layout, setLayout] = useVideoLayout();
 
+  // Channels whose first sync is still in flight (triggered by AddChannelBar
+  // right after a fast add). Cards keep a "Syncing…" label until the batch
+  // dispatch clears.
+  const [syncingIds, setSyncingIds] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    const onSync = (event: Event) => {
+      const detail = (event as CustomEvent<{ ids: string[]; pending: boolean }>).detail;
+      const ids = (detail?.ids ?? []).filter(Boolean).map(String);
+      const next = new Set(ids);
+      setSyncingIds(detail?.pending === false && ids.length === 0 ? new Set() : next);
+    };
+    window.addEventListener("clipstrack:sync", onSync);
+    return () => window.removeEventListener("clipstrack:sync", onSync);
+  }, []);
+
   // Below `sm` (640px) video lists always render vertically: horizontal
   // carousels are cramped on phones and the layout toggle is hidden there.
   const [isSmall, setIsSmall] = useState(false);
@@ -125,6 +140,7 @@ export function TrackedAccounts({
           sortBy={sortBy}
           layout={effectiveLayout}
           locale={locale}
+          syncingIds={syncingIds}
           refreshDisabled={
             refreshDisabled && group.platform !== "YOUTUBE"
           }

@@ -123,6 +123,13 @@ export const fetchInstagramChannel: PlatformFetcher = async (username, limit) =>
     handle: cleaned,
   });
 
+  // The profile call is independent of the posts walk (identity + follower
+  // counts) and is the one extra round trip on an already slow fan-out — fire
+  // it now and read the result when the walk settles, instead of after.
+  const profilePromise = scrapeGet<ProfileResponse>("/v1/instagram/profile", {
+    handle: cleaned,
+  }).catch(() => undefined);
+
   // Reels only: keep VIDEO items (media_type 2). Walk additional pages until
   // enough reels are collected — photos/carousels are dropped immediately and
   // never counted toward the limit.
@@ -156,17 +163,10 @@ export const fetchInstagramChannel: PlatformFetcher = async (username, limit) =>
     (item) => item.media_type === 2,
   );
 
-  // Profile call rounds out follower/following/post totals. Tolerated if it
-  // fails — identity already comes from the posts payload.
-  let profileUser: NonNullable<ProfileResponse["data"]>["user"];
-  try {
-    const profile = await scrapeGet<ProfileResponse>("/v1/instagram/profile", {
-      handle: cleaned,
-    });
-    profileUser = profile.data?.user;
-  } catch {
-    // fall through with posts-only metadata
-  }
+  // Await the profile that has been running in parallel with the walk.
+  // Tolerated if it failed — identity already comes from the posts payload.
+  const profile = await profilePromise;
+  const profileUser = profile?.data?.user;
 
   const pu = first.user ?? {};
   const account: AccountMeta = {

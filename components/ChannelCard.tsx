@@ -340,12 +340,14 @@ export function ChannelCard({
   sortBy,
   layout,
   locale,
+  syncing = false,
   refreshDisabled = false,
 }: {
   channel: LoadedChannel;
   sortBy: SortKey;
   layout: VideoLayout;
   locale: Locale;
+  syncing?: boolean;
   refreshDisabled?: boolean;
 }) {
   const dict = getDictionary(locale);
@@ -440,7 +442,12 @@ export function ChannelCard({
       )}
 
       <p className="mt-auto flex items-center gap-2 pt-5 text-xs text-mute">
-        {channel.lastSyncError ? (
+        {syncing ? (
+          <span className="inline-flex items-center gap-1.5 font-medium text-link">
+            <Spinner label={dict.card.syncing} />
+            {dict.card.syncing}
+          </span>
+        ) : channel.lastSyncError ? (
           <span className="font-medium text-error">
             {tpl(dict.card.syncFailed, { error: channel.lastSyncError })}
           </span>
@@ -702,6 +709,7 @@ export function ChannelGroupSection({
   sortBy,
   layout,
   locale,
+  syncingIds = new Set<string>(),
   refreshDisabled = false,
 }: {
   platform: PlatformValue;
@@ -709,6 +717,7 @@ export function ChannelGroupSection({
   sortBy: SortKey;
   layout: VideoLayout;
   locale: Locale;
+  syncingIds?: Set<string>;
   refreshDisabled?: boolean;
 }) {
   return (
@@ -728,6 +737,7 @@ export function ChannelGroupSection({
             sortBy={sortBy}
             layout={layout}
             locale={locale}
+            syncing={syncingIds.has(channel.id)}
             refreshDisabled={refreshDisabled}
           />
         ))}

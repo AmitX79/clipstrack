@@ -33,7 +33,14 @@ export async function allowConsent(): Promise<void> {
 }
 
 export type AddChannelsResult =
-  | { ok: true; added: string[]; message: string }
+  | {
+      ok: true;
+      added: string[];
+      // The upserted rows so the client can kick off each card's first sync
+      // (refreshChannel) immediately, in parallel, without another round trip.
+      channels: { id: string; platform: PlatformValue }[];
+      message: string;
+    }
   | { ok: false; error: string };
 
 // revalidatePath matches the actual rendered route path, and every page renders
@@ -212,23 +219,15 @@ export async function addChannels(
   }
 
   try {
-    // Attribution + today's credit budget in a SINGLE HTTP transaction: the
-    // users/user_codes upserts write the combo first, then the reads inside
-    // the same static batch observe it, so no extra round trips.
-    const combo = await requestComboHash(userId);
-    const budgetSnap = await attributeAndBudget(userId, combo);
-    let remaining = budgetSnap.remaining;
-
+    // Fast path: insert/upsert every row in ONE transaction (a single round
+    // trip no matter how many handles) and return immediately. The first sync
+    // runs from the client per card (refreshChannel, in parallel), so adding
+    // never blocks the page on the slowest platform scrape (~11s Instagram).
+    // Channels whose scrape fails stay queued for the scheduled cron.
     const added: string[] = [];
-    let syncedCount = 0;
-
-    for (const { username, platform } of handles) {
-      // Re-adding the same handle on the SAME platform updates that row; a
-      // different platform gets its own channel so both can be tracked (e.g.
-      // @mrbeast on Instagram and TikTok separately). One upsert covers both
-      // cases, so a handle costs a single DB round trip instead of two.
-      const channel = (await queryOne<ChannelRow>(
-        `INSERT INTO channels (
+    const statements: { text: string; params: unknown[] }[] = handles.map(
+      (h) => ({
+        text: `INSERT INTO channels (
            id, "userId", platform, username, "displayName", "externalId",
            "profileUrl", "oldVideoCount", "latestVideoCount", "minLikeRatio",
            "createdAt", "updatedAt"
@@ -242,61 +241,39 @@ export async function addChannels(
            "minLikeRatio" = EXCLUDED."minLikeRatio",
            "updatedAt" = now()
          RETURNING *`,
-        [
+        params: [
           id(),
           userId,
-          platform,
-          username,
-          username,
-          username,
-          profileUrlFor(platform, username),
+          h.platform,
+          h.username,
+          h.username,
+          h.username,
+          profileUrlFor(h.platform, h.username),
           oldVideoCount,
           latestVideoCount,
           minLikeRatio,
         ],
-      ))!;
-
-      added.push(username);
-
-      // Attempt an immediate first sync. Failures (e.g. missing YouTube key)
-      // leave the channel queued for the hourly cron — adding must not error.
-      // When the IG/TikTok budget runs dry mid-batch, remaining Instagram and
-      // TikTok handles are saved for the cron instead of synced; YouTube
-      // handles always sync (official API quota, not the credit budget).
-      try {
-        let result: SyncResult;
-        if (platform === "YOUTUBE") {
-          result = await syncChannel(channel);
-        } else if (remaining > 0) {
-          result = await syncChannel(channel, {
-            comboHash: combo,
-            remaining,
-          });
-          remaining -= result.consumed;
-        } else {
-          result = { consumed: 0, synced: false, fetched: 0, wanted: 0, existing: 0, creditCapped: true };
-        }
-        // syncChannel already stamped lastSyncedAt; count from its verdict
-        // instead of re-querying the row.
-        if (result.synced) syncedCount += 1;
-      } catch (err) {
-        console.error(`[addChannels] sync @${username}:`, err);
-      }
-    }
+      }),
+    );
+    const rowsByHandle = await tx<ChannelRow[][]>(statements);
+    for (const h of handles) added.push(h.username);
 
     revalidateHomePages();
     revalidateAccountPages();
+
+    const channels = handles.map((h, i) => ({
+      id: rowsByHandle[i][0].id,
+      platform: h.platform,
+    }));
 
     // Snapshot the user-visible result, including when a pasted URL resolved
     // to a platform other than the selected tab ("Detected as Instagram - ...").
     const plain = handles.filter((h) => !h.detected);
     const detected = handles.filter((h) => h.detected);
-    const suffix =
-      syncedCount === added.length ? " added and synced." : " added - syncing shortly.";
 
     const parts: string[] = [];
     if (plain.length > 0) {
-      parts.push(`${plain.map((h) => `@${h.username}`).join(", ")}${suffix}`);
+      parts.push(`${plain.map((h) => `@${h.username}`).join(", ")} added - syncing.`);
     }
     parts.push(
       ...detected.map(
@@ -304,7 +281,7 @@ export async function addChannels(
       ),
     );
     const message = parts.join(" ");
-    return { ok: true, added, message };
+    return { ok: true, added, channels, message };
   } catch (err) {
     console.error("[addChannels]", err);
     const detail = err instanceof Error ? err.message : String(err);

@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useRef, useState, useTransition } from "react";
-import { addChannels } from "@/app/actions";
+import { addChannels, refreshChannel } from "@/app/actions";
 import { useConsent } from "@/components/ConsentGate";
 import {
   detectProfileUrl,
@@ -86,6 +86,22 @@ export function AddChannelBar({
         formRef.current?.reset();
         setMessage(result.message);
         router.refresh();
+
+        // Kick off each new card's first sync immediately — parallel server
+        // actions, one per channel — so the page stays interactive while the
+        // (ScrapeCreators/YouTube) fetches run. The cards show a "Syncing…"
+        // state via the clipstrack:sync event and clear it when every channel
+        // in the batch has settled.
+        const ids = result.channels.map((c) => c.id);
+        window.dispatchEvent(
+          new CustomEvent("clipstrack:sync", { detail: { ids, pending: true } }),
+        );
+        void Promise.allSettled(ids.map((id) => refreshChannel(id))).then(() => {
+          window.dispatchEvent(
+            new CustomEvent("clipstrack:sync", { detail: { ids: [], pending: false } }),
+          );
+          router.refresh();
+        });
       });
     });
   }
