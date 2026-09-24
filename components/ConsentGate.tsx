@@ -75,7 +75,6 @@ export function ConsentGate({
       setStatus("declined");
     } else {
       setStatus("untouched");
-      setMode("first");
     }
   }, []);
 
@@ -88,6 +87,11 @@ export function ConsentGate({
     };
   }, [mode]);
 
+  // The modal only ever surfaces HERE, from the add-channel action — never on
+  // page load, navigation or a visit. An agreed visitor (ct_consent cookie)
+  // never sees it again and the action just runs. A declined visitor who
+  // retries gets the "please agree to continue" framing; a fresh visitor gets
+  // the plain consent explainer.
   const requestConsent = useCallback(
     (run: () => void) => {
       if (status === "granted") {
@@ -95,7 +99,7 @@ export function ConsentGate({
         return;
       }
       pendingRef.current = run;
-      setMode("blocked");
+      setMode(status === "declined" ? "blocked" : "first");
     },
     [status],
   );
