@@ -60,10 +60,10 @@ Known quirks:
 ## 6. Verification (all green after the final deploy)
 
 - Type check `npx tsc --noEmit`, lint `npm run lint` (0 errors), `npm run build`, opennext build, deploy.
-- Route matrix on `https://clipstrack.clipstrack.workers.dev`: `/`, locale pages, marketing pages, `/accounts`, `/admin` (DB panel: 21 channels tracked, 45 users, YouTube quota 180/10000 units, grant history rendered) → 200; `/en` → 308; bad paths → 404; `/admin/login` → 307.
+- Route matrix on `https://clipstrack.com`: `/`, locale pages, marketing pages, `/accounts`, `/admin` (DB panel: 21 channels tracked, 45 users, YouTube quota 180/10000 units, grant history rendered) → 200; `/en` → 308; bad paths → 404; `/admin/login` → 307.
 - `POST /api/cron/cleanup` with `Authorization: Bearer $CRON_SECRET` → `{"ok":true,"deletedUsers":0,"deletedChannels":0}`.
-- `SITE_URL`-baked HTML: JSON-LD and all origins resolve to the workers.dev URL (checked with cache-busting params).
-- Full Playwright suite `E2E_BASE=https://clipstrack.clipstrack.workers.dev node scripts/e2e_features.mjs` → **ALL PASS** (consent, badge/credits, admin grant flow incl. bonus + daily override + grant history, decline flow).
+- `SITE_URL`-baked HTML: JSON-LD and all origins resolve to the clipstrack.com URL (checked with cache-busting params).
+- Full Playwright suite `E2E_BASE=https://clipstrack.com node scripts/e2e_features.mjs` → **ALL PASS** (consent, badge/credits, admin grant flow incl. bonus + daily override + grant history, decline flow).
 - Admin dashboard proved end-to-end DB reads + the `bonus`/`override` `tx` writes (grant history shows the grants).
 
 ## 8. Hardening added after first verification
@@ -90,7 +90,7 @@ Re-verified after deploying: contact companion integration test (`checkContactLi
 requests 21+ denied, exact threshold), route matrix served secrets scan (all 0 hits), and the
 full Playwright suite → ALL PASS.
 
-- Cloudflare Worker `clipstrack` on `clipstrack.clipstrack.workers.dev` — production (verified, e2e green).
+- Cloudflare Worker `clipstrack`, served at `https://clipstrack.com` — production (verified, e2e green).
 - Vercel: project `clipstrack` (79xamit) **deleted**; `https://clipstrack.vercel.app` returns 404. No projects remain under the account.
 - VPS: **still running — needs manual teardown** (Playwright bits, Redis, systemd units). Not reached from this session because there are no SSH keys / host / inventory records in the repo or environment. Requires host + credentials from the operator.
 - Prisma: generator in `prisma/schema.prisma` reverted to the default (no `runtime = "workerd"`); the webpack WASM rule was removed from `next.config.mjs`; no runtime imports of `app/generated/prisma` remain. `prisma generate` still runs in postinstall as the schema's DDL is the source of truth.

@@ -29,13 +29,13 @@ jobs:
 
       # .env is gitignored. SITE_URL must exist as a file at build time: next
       # build's prerender workers do not inherit shell env vars, but they do
-      # load .env. Defaults to the workers.dev origin; override via a repo
+      # load .env. Defaults to the clipstrack.com origin; override via a repo
       # "variable" named SITE_URL if the domain ever changes.
       - name: Prepare .env for build
         env:
           SITE_URL: ${{ vars.SITE_URL }}
         run: |
-          printf 'SITE_URL=%s\n' "${SITE_URL:-https://clipstrack.clipstrack.workers.dev}" > .env
+          printf 'SITE_URL=%s\n' "${SITE_URL:-https://clipstrack.com}" > .env
 
       - name: Verify Cloudflare secrets
         env:
@@ -68,7 +68,7 @@ jobs:
 
       - name: Smoke test
         run: |
-          code=$(curl -s -o /dev/null -w '%{http_code}' https://clipstrack.clipstrack.workers.dev/)
+          code=$(curl -s -o /dev/null -w '%{http_code}' https://clipstrack.com/)
           test "$code" = "200" \
             && echo "smoke OK ($code)" \
             || { echo "::error::smoke test failed (HTTP $code)"; exit 1; }

@@ -12,7 +12,7 @@
     "enabled": true
   },
   "vars": {
-    "SITE_URL": "https://clipstrack.clipstrack.workers.dev"
+    "SITE_URL": "https://clipstrack.com"
   },
   "triggers": {
     "crons": [
