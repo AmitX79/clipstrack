@@ -123,23 +123,8 @@ export const en: PageContent = {
   },
   contact: {
     eyebrow: "Contact",
-    title: "Contact Us",
-    sub: "A question, a deletion request, a broken tracker - send us a note and we'll get back to you.",
+    title: "Contact",
+    sub: "Questions, bug reports, deletion requests — send us a note and we'll get back to you.",
     email: "support@clipstrack.com",
-    form: {
-      name: "Name",
-      email: "Email",
-      message: "Message",
-      namePlaceholder: "Your name",
-      emailPlaceholder: "you@example.com",
-      messagePlaceholder: "How can we help?",
-      submit: "Send message",
-      invalid: "Please add your name, a valid email, and a message.",
-      mailtoNote:
-        "If your email app doesn't open, write to support@clipstrack.com directly.",
-    },
-    mailtoSubject: "Contact from ClipsTrack",
-    mailtoBody:
-      "From the ClipsTrack contact page.\n\nName: {name}\nEmail: {email}\n\n{message}",
   },
 };

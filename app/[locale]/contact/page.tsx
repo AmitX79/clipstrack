@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { ContactForm } from "@/components/ContactForm";
 import { SubPage } from "@/components/SubPage";
 import {
   DEFAULT_LOCALE,
@@ -45,19 +44,16 @@ export default async function ContactPage({
 
   return (
     <SubPage locale={locale} eyebrow={c.eyebrow} title={c.title} sub={c.sub}>
-      <div className="max-w-5xl">
-        <ContactForm content={content} locale={locale} />
-      </div>
-      <div className="max-w-3xl border-t border-hairline pt-8">
+      <div className="max-w-3xl rounded-md border border-hairline bg-elevated p-5">
         <p className="text-sm text-body">
-          {c.email}
+          <span className="font-medium text-ink">Email:</span>{" "}
+          <a
+            href={`mailto:${c.email}`}
+            className="text-link underline underline-offset-2 hover:text-link-deep"
+          >
+            {c.email}
+          </a>
         </p>
-        <a
-          href={`mailto:${c.email}`}
-          className="mt-1 inline-block text-link hover:text-link-deep"
-        >
-          {c.email}
-        </a>
       </div>
     </SubPage>
   );

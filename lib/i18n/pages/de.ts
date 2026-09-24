@@ -124,22 +124,7 @@ export const de: PageContent = {
   contact: {
     eyebrow: "Kontakt",
     title: "Kontakt",
-    sub: "Eine Frage, ein Löschantrag, ein defekter Tracker - schicke uns eine Nachricht und wir melden uns bei dir.",
+    sub: "Fragen, Fehlermeldungen oder Löschanträge – schreib uns eine Nachricht und wir melden uns bei dir.",
     email: "support@clipstrack.com",
-    form: {
-      name: "Name",
-      email: "E-Mail",
-      message: "Nachricht",
-      namePlaceholder: "Dein Name",
-      emailPlaceholder: "du@beispiel.de",
-      messagePlaceholder: "Wobei können wir helfen?",
-      submit: "Nachricht senden",
-      invalid: "Bitte füge deinen Namen, eine gültige E-Mail und eine Nachricht hinzu.",
-      mailtoNote:
-        "Falls sich deine E-Mail-App nicht öffnet, schreibe direkt an support@clipstrack.com.",
-    },
-    mailtoSubject: "Kontakt von ClipsTrack",
-    mailtoBody:
-      "Von der ClipsTrack-Kontaktseite.\n\nName: {name}\nE-Mail: {email}\n\n{message}",
   },
 };

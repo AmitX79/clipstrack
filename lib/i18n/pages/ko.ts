@@ -123,23 +123,8 @@ export const ko: PageContent = {
   },
   contact: {
     eyebrow: "문의하기",
-    title: "문의하기",
-    sub: "질문, 삭제 요청, 오작동하는 트래커 - 메시지를 보내 주시면 답변드리겠습니다.",
+    title: "문의",
+    sub: "질문, 버그 신고, 삭제 요청 — 메모를 보내 주시면 곧 답변드리겠습니다.",
     email: "support@clipstrack.com",
-    form: {
-      name: "이름",
-      email: "이메일",
-      message: "메시지",
-      namePlaceholder: "이름",
-      emailPlaceholder: "you@example.com",
-      messagePlaceholder: "무엇을 도와드릴까요?",
-      submit: "메시지 보내기",
-      invalid: "이름, 유효한 이메일, 메시지를 입력해 주세요.",
-      mailtoNote:
-        "이메일 앱이 열리지 않으면 support@clipstrack.com으로 직접 작성해 주세요.",
-    },
-    mailtoSubject: "ClipsTrack 문의",
-    mailtoBody:
-      "ClipsTrack 문의 페이지에서 보냅니다.\n\n이름: {name}\n이메일: {email}\n\n{message}",
   },
 };

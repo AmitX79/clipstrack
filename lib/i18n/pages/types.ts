@@ -34,18 +34,5 @@ export interface PageContent {
     title: string;
     sub: string;
     email: string;
-    form: {
-      name: string;
-      email: string;
-      message: string;
-      namePlaceholder: string;
-      emailPlaceholder: string;
-      messagePlaceholder: string;
-      submit: string;
-      invalid: string;
-      mailtoNote: string;
-    };
-    mailtoSubject: string;
-    mailtoBody: string;
   };
 }

@@ -124,22 +124,7 @@ export const ja: PageContent = {
   contact: {
     eyebrow: "お問い合わせ",
     title: "お問い合わせ",
-    sub: "質問、削除依頼、トラッカーの不具合 - メッセージをお送りください。折り返しご連絡します。",
+    sub: "ご質問、バグのご報告、削除のご依頼 — メモをお送りください。折り返しご連絡します。",
     email: "support@clipstrack.com",
-    form: {
-      name: "お名前",
-      email: "メールアドレス",
-      message: "メッセージ",
-      namePlaceholder: "あなたのお名前",
-      emailPlaceholder: "you@example.com",
-      messagePlaceholder: "どのようなご用件ですか？",
-      submit: "送信する",
-      invalid: "お名前、有効なメールアドレス、メッセージを入力してください。",
-      mailtoNote:
-        "メールアプリが開かない場合は、support@clipstrack.com まで直接ご連絡ください。",
-    },
-    mailtoSubject: "ClipsTrackからのお問い合わせ",
-    mailtoBody:
-      "ClipsTrackのお問い合わせページから。\n\n名前: {name}\nメール: {email}\n\n{message}",
   },
 };
